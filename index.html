@@ -2664,7 +2664,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   /* 0. 시작 버튼 → 바로 다음 인트로 영상 */
   $("proStart").onclick=()=>{ $("proStart").disabled=true;
     try{ audio(); ac&&ac.resume(); }catch(e){}
-    camOn(); CAMHUB.start();   // 웹캠은 처음부터: 영상 오른쪽 아래 제미나이 로고를 가린다
+    // 웹캠은 여기서 켜지 않는다: 초대장이 나온 뒤 '카메라로 체험'을 눌러 허락해야 켜진다
     clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); });
   };
   /* 1. 영상 마지막 — 손에 든 봉투 */
@@ -2676,7 +2676,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     this.classList.add("opening","noanim"); sfx(900,.25,.12,"bandpass"); try{ paper(); }catch(e){}   // 봉투는 열지 않고 바로 검문 창
     // 봉투가 열리면 그 장면을 흐리게 깔고, 그 위에 생체 검문 창이 바로 뜬다
     setTimeout(()=>{ const sc=this.closest(".ps"), box=document.querySelector(".pro .consent"); if(!sc||!box) return;
-       sc.classList.add("behind"); sc.appendChild(box); $("proCam").classList.add("on"); requestAnimationFrame(()=>requestAnimationFrame(()=>box.classList.add("in"))); },60); };
+       sc.classList.add("behind"); sc.appendChild(box); requestAnimationFrame(()=>requestAnimationFrame(()=>box.classList.add("in"))); },60); };
   /* 3. 찢기 (원본 P3 로직 — 마우스 드래그 버전) */
   const Lp=[[0,0,0],[0,100,100],[6,96,100],[13,100,100],[22,95,100],[30,99,100],[41,94,100],[52,100,100],[63,95,100],[71,99,100],[82,94,100],[91,99,100],[100,96,100],[100,0,0]];
   const Rp=[[0,4,0],[0,100,100],[100,100,100],[100,4,0],[91,0,0],[82,5,0],[71,0,0],[63,4,0],[52,0,0],[41,5,0],[30,1,0],[22,4,0],[13,0,0],[6,3,0]];
@@ -2883,7 +2883,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     else if(st==="nohands"){ handOn=false; camOff.style.display="none"; setH("손 인식 로딩 실패 · 마우스로 진행"); }
     else if(st==="nocam"){ handOn=false; camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; hTag.textContent=""; }
     else { handOn=false; } });
-  function denied(msg){ CAMHUB.stop(); camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camTag.textContent=""; hTag.textContent="";
+  function denied(msg){ CAMHUB.stop(); camBox.classList.remove("on"); camTag.textContent=""; hTag.textContent="";
     $("proTearHint").innerHTML=msg; dip(()=>show("tear"),200); }
   $("proDeny").onclick=()=>denied('초대장을 <b>좌우로 드래그</b>해 찢으세요');
   let camConnecting=false;

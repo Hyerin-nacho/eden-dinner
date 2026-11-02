@@ -643,19 +643,19 @@ button{font:inherit;cursor:pointer;color:inherit}
 .pro .vcap.red{color:#e07070}
 /* 생체 검문(웹캠) */
 .pro .consent{font-family:'Cormorant Garamond',serif;max-width:62cqw;text-align:center;border:1px solid rgba(210,173,99,.35);padding:4cqh 4cqw;background:rgba(10,8,6,.6)}
-.pro .consent h3{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:max(26px,4.2cqw);margin:1cqh 0 1.4cqh;letter-spacing:.02em;color:#f1e6cc}
-.pro .consent p{font-family:"Noto Sans KR",sans-serif;color:rgba(236,226,203,.78);font-size:max(13px,1.35cqw);line-height:1.85;margin:0 0 3cqh;font-weight:400}
-.pro .consent .ko{font-family:"Noto Sans KR",sans-serif;font-size:max(11px,1.05cqw);letter-spacing:.5em;color:var(--brass);margin:-.4cqh 0 2.4cqh}
+.pro .consent h3{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(26px,3.4cqw,58px);line-height:1.15;margin:1cqh 0 1.4cqh;letter-spacing:.02em;color:#f1e6cc;word-break:keep-all;overflow-wrap:normal}
+.pro .consent p{font-family:"Noto Sans KR",sans-serif;color:rgba(236,226,203,.78);font-size:clamp(13px,1.3cqw,22px);line-height:1.85;margin:0 0 2.6cqh;font-weight:400}
+.pro .consent .ko{font-family:"Noto Sans KR",sans-serif;font-size:clamp(11px,1cqw,17px);letter-spacing:.5em;color:var(--brass);margin:-.4cqh 0 2.2cqh}
 .pro .consent p b{color:var(--brass)}
 .pro .consent .row{display:flex;gap:1.4cqw;justify-content:center;flex-wrap:wrap}
 .pro .consent .pbtn.ghost{border-color:rgba(236,226,203,.25);color:rgba(236,226,203,.55)}
 .pro .consent .pbtn.ghost:hover{background:rgba(236,226,203,.1);color:var(--paper)}
-.pro .consent .fine{font-family:"Noto Sans KR",sans-serif;margin-top:2.6cqh;font-size:max(10.5px,1cqw);color:rgba(236,226,203,.42);line-height:1.8}
+.pro .consent .fine{font-family:"Noto Sans KR",sans-serif;margin-top:2.2cqh;font-size:clamp(10.5px,.95cqw,16px);color:rgba(236,226,203,.42);line-height:1.8}
 .pro .consent .fine.error{color:#f2b3a7;font-size:clamp(12px,1.15cqw,16px);max-width:52ch;margin-left:auto;margin-right:auto}
-.pro .consent .brand{font-family:var(--mono);font-size:max(10px,.95cqw);letter-spacing:.32em}
-.pro .consent .pbtn{font-family:"Noto Sans KR",sans-serif;font-weight:500;font-size:max(13px,1.3cqw);letter-spacing:.2em;min-width:14cqw}
+.pro .consent .brand{font-family:var(--mono);font-size:clamp(10px,.9cqw,15px);letter-spacing:.32em}
+.pro .consent .pbtn{font-family:"Noto Sans KR",sans-serif;font-weight:500;font-size:clamp(13px,1.2cqw,20px);letter-spacing:.2em;min-width:min(14cqw,260px)}
 .pro .ps.behind>:not(.consent){filter:blur(12px) brightness(.42);transition:filter .9s ease;pointer-events:none}
-.pro .ps.behind .consent{position:absolute!important;left:50%;top:50%;width:min(640px,62cqw);box-sizing:border-box;transform:translate(-50%,-44%);opacity:0;transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1);z-index:5;background:rgba(10,8,6,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.pro .ps.behind .consent{position:absolute!important;left:50%;top:50%;width:min(92cqw,clamp(520px,52cqw,900px));max-height:94cqh;overflow:auto;box-sizing:border-box;transform:translate(-50%,-44%);opacity:0;transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1);z-index:5;background:rgba(10,8,6,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);box-shadow:0 30px 80px rgba(0,0,0,.6)}
 .pro .ps.behind .consent.in{opacity:1;transform:translate(-50%,-50%)}
 .pro .cam{position:absolute;right:var(--cr,14px);bottom:var(--cb,14px);width:var(--cw,16cqw);aspect-ratio:4/3;z-index:48;border:1px solid #6b5630;background:#000;box-shadow:0 10px 30px rgba(0,0,0,.6);display:none;pointer-events:none}
 .pro .cam.on{display:block}
@@ -1196,7 +1196,7 @@ const CAMHUB=(()=>{
         return true;
       } finally{ starting=null; } })();
       return starting; },
-    stop(){ H.blocked=true; try{ stream&&stream.getTracks().forEach(t=>t.stop()); }catch(e){} stream=null; v.srcObject=null;
+    stop(soft){ if(!soft) H.blocked=true; try{ stream&&stream.getTracks().forEach(t=>t.stop()); }catch(e){} stream=null; v.srcObject=null;
       binds.forEach(el=>{ try{ el.pause(); el.srcObject=null; }catch(e){} }); window.__cameraOptIn=false; set("off"); }
   };
   return H; })();
@@ -1528,7 +1528,7 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
   const R=new THREE.WebGLRenderer({antialias:true,alpha:true}); R.outputEncoding=THREE.sRGBEncoding; R.physicallyCorrectLights=true; R.toneMapping=THREE.ACESFilmicToneMapping; R.setPixelRatio(Math.min(devicePixelRatio,1.5)); wrap.appendChild(R.domElement);
   const S=new THREE.Scene(), C=new THREE.PerspectiveCamera(30,16/9,.01,50); S.environment=exEnv(R);
   S.add(new THREE.HemisphereLight(0xffe7c4,0x16241a,.8)); const key=new THREE.PointLight(0xffc98a,22,8,1.6); key.position.set(1.1,1.4,1.6); S.add(key); const rim=new THREE.PointLight(0x9ec4ae,6,8,1.6); rim.position.set(-1.3,1.1,-1.4); S.add(rim);
-  const hint=document.createElement("div"); hint.className="v3hint"; hint.innerHTML="<small>레이스 드레스를 입은 인형. 한쪽 눈 안쪽에서 빨간 불빛이 깜빡인다.</small><b>끌어서 인형을 돌려 살펴보자.</b>"; wrap.appendChild(hint);
+  const hint=document.createElement("div"); hint.className="v3hint"; hint.innerHTML="<small>레이스 드레스를 입은 인형. 한쪽 눈 안쪽에서 빨간 불빛이 깜빡인다.</small><b>인형을 돌려서 살펴보자.</b>"; wrap.appendChild(hint);
   const spot=document.createElement("button"); spot.className="exspot"; spot.innerHTML="<span>등의 작은 스피커</span>"; wrap.appendChild(spot);
   const x=document.createElement("button"); x.className="dollx"; x.innerHTML="내려놓기"; x.onclick=()=>{ dollClose(); $("cuPh").classList.remove("cudim"); drawHots(); }; wrap.appendChild(x);
   const obj=new THREE.Group(); S.add(obj);
@@ -1570,7 +1570,8 @@ function recPanel(){
   const {s}=CU, L=$("cuLayer"); $("cuPh").classList.add("cudim");
   const p=document.createElement("div"); p.className="panel2"; L.appendChild(p);
   const add=(tag,cls,html)=>{const e=document.createElement(tag); if(cls)e.className=cls; e.innerHTML=html; p.appendChild(e); return e;};
-  renderMini(s,p,add,found.has(s.id)); CU.f=()=>MINIF&&MINIF();
+  const first=!found.has(s.id); renderMini(s,p,add,!first); CU.f=()=>MINIF&&MINIF();
+  if(first) setTimeout(()=>{ if(mode==="closeup"&&MINIF) MINIF(); },700);   // 처음엔 재생 버튼을 누르지 않아도 자동으로 재생
    // 녹음은 사용자가 재생 버튼을 눌렀을 때 시작한다.
 }
 function closeCloseup(){
@@ -1640,7 +1641,7 @@ const EXAM={
   card:{pre:"꽃병 옆에 룸서비스 전표가 끼워져 있다. 앞면엔 주문 내역뿐이다.",hint:"끌어서 전표를 뒤집어 보자.",
         label:"뒷면의 서명",build:()=>exSlip(),cam:[0,.05,1.9],spot:{p:[-.06,-.2,-.004],n:[0,0,-1]},pitch:[-.5,.5],yaw:.25},
   bedside:{pre:"협탁의 서류 밑에 갈색 약병이 숨겨져 있다. 라벨엔 ‘수면제’라고만 인쇄돼 있다.",hint:"끌어서 병을 돌려 라벨 뒤쪽을 보자.",
-        label:"라벨 뒤 손글씨",build:()=>exBottle(),cam:[0,.12,1.5],spot:{p:[0,-.03,-.106],n:[0,0,-1]},pitch:[-.4,.4],yaw:.3},
+        label:"라벨 뒤 손글씨",build:()=>exBottle(),cam:[0,.1,1.05],spot:{p:[0,-.03,-.106],n:[0,0,-1]},pitch:[-.4,.4],yaw:.3},
   glass:{pre:"러그 옆에 깨진 와인잔이 떨어져 있다. 남은 와인에서 쓴 냄새가 난다.",hint:"아래로 끌어 잔을 기울여 안을 들여다보자.",
         label:"잔 바닥의 하얀 가루",build:()=>exGlass(),cam:[0,.18,2.0],spot:{p:[0,.1,0],n:[0,1,0]},pitch:[-.2,1.25],yaw:0}
 };
@@ -1752,6 +1753,12 @@ function exGlass(){ const G=new THREE.Group();
   const pw=new THREE.Mesh(new THREE.CircleGeometry(.14,48),new THREE.MeshStandardMaterial({map:pt,roughness:.85,transparent:true,depthWrite:false})); pw.rotation.x=-Math.PI/2; pw.position.y=.0765; G.add(pw);
   return G; }
 function unmountExam(){ if(!EX) return; cancelAnimationFrame(EX.raf); EX.wrap.remove(); try{ EX.R.dispose(); }catch(e){} EX=null; }
+function cropContent(cv){ const W=cv.width,H=cv.height, t=document.createElement("canvas"); t.width=W; t.height=H; const g=t.getContext("2d"); g.drawImage(cv,0,0);
+  const d=g.getImageData(0,0,W,H).data; let x0=W,y0=H,x1=0,y1=0;
+  for(let y=0;y<H;y+=2) for(let x=0;x<W;x+=2){ if(d[(y*W+x)*4+3]>24){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } }
+  if(x1<=x0||y1<=y0) return cv.toDataURL("image/jpeg",.85);
+  const px=(x1-x0)*.14, py=(y1-y0)*.1; x0=Math.max(0,x0-px); x1=Math.min(W,x1+px); y0=Math.max(0,y0-py); y1=Math.min(H,y1+py);
+  const o=document.createElement("canvas"); o.width=x1-x0; o.height=y1-y0; o.getContext("2d").drawImage(t,x0,y0,o.width,o.height,0,0,o.width,o.height); return o.toDataURL("image/png"); }
 function mountExam(s){ const CF=EXAM[s.id]; if(!window.THREE) return;
   if(EX&&EX.s===s){ EX.sync(); return; } unmountExam(); unmountStatue3D();
   const ph=$("iPhoto"), wrap=document.createElement("div"); wrap.className="v3d"; ph.appendChild(wrap); ph.classList.remove("veiled");
@@ -1789,8 +1796,9 @@ function mountExam(s){ const CF=EXAM[s.id]; if(!window.THREE) return;
     if(!EX.done && EX.face>=1){ const sp=wp.clone().project(C); spot.style.left=((sp.x+1)/2*100)+"%"; spot.style.top=((1-sp.y)/2*100)+"%"; if(!spot.classList.contains("on")){ spot.classList.add("on"); hit(1800,.05,.08,"bandpass"); } }
     else if(spot.classList.contains("on")&&EX.face<.5) spot.classList.remove("on");
     R.render(S,C);
-    if(s.id==="bedside"&&!EVIMG.bedside&&w&&h){
-      try{ EVIMG.bedside=R.domElement.toDataURL("image/jpeg",.85); }catch(e){}
+    if(s.id==="bedside"&&!EVIMG.bedside&&w&&h){   // 증거 사진: 라벨 뒤 손글씨 쪽을 가까이서 찍고, 약병만 잘라 크게
+      try{ const kp=C.position.clone(), kr=obj.rotation.y; C.position.set(0,.06,.8); C.lookAt(0,0,0); obj.rotation.set(0,Math.PI+.12,0); obj.updateMatrixWorld(true); R.render(S,C);
+        EVIMG.bedside=cropContent(R.domElement); C.position.copy(kp); C.lookAt(0,0,0); obj.rotation.set(EX.pitch,kr,0); }catch(e){}
     }
     EX.raf=requestAnimationFrame(loop); };
   EX.raf=requestAnimationFrame(loop);
@@ -2236,6 +2244,7 @@ function renderMini(s,B,add,replay){
       if(el<5.2) raf=requestAnimationFrame(draw);
       else if(!found.has(s.id)){ think("로크가 마지막으로 부른 이름. 엘레나.",2600); miniFinish(s); } };
     const play=()=>{ cancelAnimationFrame(raf); if(!replay) ls.forEach(d=>d.classList.remove("on")); t0=performance.now(); raf=requestAnimationFrame(draw); hit(2400,.08,.05,"highpass");
+      try{ if(soundOn){ if(!window.__recA){ window.__recA=new Audio("ev/doll_rec.mp3"); window.__recA.volume=.9; } window.__recA.currentTime=0; window.__recA.play().catch(()=>{}); } }catch(e){}   // 녹음 파일(ev/doll_rec.mp3)이 있으면 재생
       if(!found.has(s.id)) setTimeout(()=>{ if(!found.has(s.id)&&mode==="closeup") miniFinish(s); },1200); };
     box.querySelector("#mPlay").onclick=play; MINIF=play; tornClip(box.querySelector("#mPlay"),1.5,7,14); return;
   }
@@ -2856,13 +2865,15 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   const placeCam=()=>{ const w=pro.clientWidth,h=pro.clientHeight; if(!w||!h) return; const k=Math.min(w/854,h/480), vw=854*k, vh=480*k, ox=(w-vw)/2, oy=(h-vh)/2;
     pro.style.setProperty("--cw",(vw*.17).toFixed(1)+"px"); pro.style.setProperty("--cr",(ox+vw*.006).toFixed(1)+"px"); pro.style.setProperty("--cb",(oy+vh*.012).toFixed(1)+"px"); };
   try{ new ResizeObserver(placeCam).observe(pro); }catch(e){} placeCam();
-  function camOn(){ camBox.classList.add("on"); camTag.textContent="● REC — EDENLINE SECURITY"; }
+  const handScene=()=>onScene("tear")||onScene("relic")||doorWait;
+  const setH=t=>{ hTag.textContent=handScene()?t:""; };
+  function camOn(){ camBox.classList.add("on"); camTag.textContent="● REC"; }
   function stopCam(){ camBox.classList.remove("on"); }   // 화면에서만 숨긴다. 카메라는 조사 화면에서 계속 쓴다
   CAMHUB.onState(st=>{
     if(st==="connecting"){ camOff.style.display="flex"; camOff.textContent="CONNECTING…"; }
-    else if(st==="cam"){ camOff.style.display="none"; hTag.textContent="손 인식 준비 중…"; }
-    else if(st==="hands"){ camOff.style.display="none"; handOn=true; hTag.textContent="손바닥을 카메라에 보여주세요"; }
-    else if(st==="nohands"){ handOn=false; camOff.style.display="none"; hTag.textContent="영상 연결됨 · 손 인식 로딩 실패"; }
+    else if(st==="cam"){ camOff.style.display="none"; setH("손 인식 준비 중…"); }
+    else if(st==="hands"){ camOff.style.display="none"; handOn=true; setH("손바닥을 카메라에 보여주세요"); }
+    else if(st==="nohands"){ handOn=false; camOff.style.display="none"; setH("손 인식 로딩 실패 · 마우스로 진행"); }
     else if(st==="nocam"){ handOn=false; camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; hTag.textContent=""; }
     else { handOn=false; } });
   function denied(msg){ CAMHUB.stop(); camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camTag.textContent=""; hTag.textContent="";
@@ -2882,7 +2893,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   const onScene=n=>{ const e=pro.querySelector('.ps[data-s="'+n+'"]'); return e&&e.classList.contains("on"); };
   CAMHUB.sub(lm=>onHands(lm),()=>!pro.hidden);
   function onHands(lm){
-    hTag.textContent=lm?"✋ 손 감지":"손 미감지 — 손바닥을 보여주세요";
+    setH(lm?"✋ 손 감지":"손 미감지 — 손바닥을 보여주세요");
     const tc=$("proTCur");
      if(!lm){ tc.style.display="none"; handCenter=null; window.__proDoorPush?.(null); return; }
     const p=lm[9]; hx=1-p.x; hy=p.y; if(window.__proDoorPush) window.__proDoorPush(lm);
@@ -3046,17 +3057,24 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
 </script>
 
 <script>
-/* 살펴보기 중 웹캠 손 조작 (공용 카메라 허브) — 손을 좌우로 움직이면 돌아가고, 위아래로 움직이면 기울어지거나(동상은) 들어 올려진다.
-   빛나는 표시가 뜨면 엄지·검지로 '집으면' 단서가 기록된다. 집으려고 손을 오므리는 동안은 물건이 멈춘다. 마우스 드래그도 그대로 된다. */
+/* 살펴보기 중 웹캠 손 조작 (공용 카메라 허브)
+   - 카메라는 손이 필요한 순간에만 켜진다: 단서를 찾는 3D 살펴보기, 조각상 들기, 의자 밑 인형.
+     단서를 찾거나 화면을 벗어나면 잠시 뒤 자동으로 꺼지고, 방 둘러보기·수첩·심문에서는 켜지지 않는다.
+   - 손을 좌우로 움직이면 돌아가고, 빛나는 표시가 뜨면 엄지·검지로 '집으면' 단서가 기록된다. 집으려고 손을 오므리는 동안은 물건이 멈춘다. */
 (()=>{
  const I=$("insp"), box=document.createElement("div"); box.className="excam";
- box.innerHTML='<video playsinline muted autoplay></video><div class="off">카메라 연결 중…</div><div class="xtag">● REC — EVIDENCE CAM</div><div class="xhtag"></div><i class="hcur"></i>';
+ box.innerHTML='<video playsinline muted autoplay></video><div class="off">카메라 연결 중…</div><div class="xtag">● REC</div><div class="xhtag"></div><i class="hcur"></i>';
  I.parentElement.appendChild(box);
  const v=box.querySelector("video"), off=box.querySelector(".off"), htag=box.querySelector(".xhtag"), cur=box.querySelector(".hcur");
  let base=null, pinchN=0; const pf=CAMHUB.pinchFilter();
  CAMHUB.bind(v);
+ const bookOpen=()=>$("book").classList.contains("open");
  const examOpen=()=>I.classList.contains("exam")&&I.classList.contains("open")&&mode==="inspect";
- const active=()=>examOpen()||!!DV;
+ const needExam=()=>examOpen()&&((EX&&!EX.done)||(S3&&!S3.done));
+ const needDoll=()=>mode==="closeup"&&CU&&CU.s.id==="doll"&&!found.has("doll");
+ const needed=()=>!bookOpen()&&(needExam()||needDoll()||!!DV);
+ const active=()=>needExam()||!!DV;                       // 이 스크립트가 직접 다루는 장면 (3D 살펴보기·인형)
+ window.__excamHint=t=>{ htag.textContent=t; };
  CAMHUB.onState(st=>{ off.style.display=(st==="cam"||st==="hands"||st==="nohands")?"none":"flex"; off.textContent=st==="nocam"?"NO CAMERA":"카메라 연결 중…";
    box.classList.toggle("nocam",st==="nocam"); if(st==="nocam") htag.textContent="마우스로 끌어서 돌려 보세요"; else if(st==="nohands") htag.textContent="손 인식 불가 · 마우스로 돌려 보세요"; });
  const zoomTo=(o,sz)=>{ if(!base.sz){ base.sz=sz; base.z=o.zoom||1; } o.zoom=(o.zoom||1)+(Math.max(o===S3?.3:.22,Math.min(1.5,base.z*Math.pow(base.sz/sz,2.2)))-(o.zoom||1))*.25; };   // 손을 카메라에 가까이 대면 다가간다
@@ -3076,45 +3094,45 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
      X.yaw+=(base.yaw+(hx-base.hx)*9-X.yaw)*.35;
      X.pitch+=(Math.max(CF.pitch[0],Math.min(CF.pitch[1],base.pitch+(hy-base.hy)*4))-X.pitch)*.35; zoomTo(X,sz);
      htag.textContent=sp?"✊ 엄지·검지로 집어서 기록":"✋ 움직여 돌리기 · 가까이 대면 확대"; }
-   else if(S3){ if(S3.drag){ base=null; return; } if(!base) base={hx,hy,yaw:S3.yaw}; S3.hand=true;
-     S3.yaw+=(base.yaw+(hx-base.hx)*9-S3.yaw)*.35; zoomTo(S3,sz); htag.textContent=pinch?"✊ 집어서 위로 들어 올리는 중":"✋ 좌우로 돌리기 · 집은 채 올려 들기 · 가까이 확대";
-     if(!S3.done){ S3.liftT=Math.max(0,Math.min(1,(base.hy-hy)*(pinch?5.5:3.2))); const bar=S3.wrap.querySelector(".v3bar i"); if(bar) bar.style.width=S3.liftT*100+"%"; if(S3.liftT>=1) S3.step(0); } }
+   else if(S3){ if(S3.drag){ base=null; return; } if(!base) base={hx,hy,yaw:S3.yaw,py:hy}; S3.hand=true;
+     S3.yaw+=(base.yaw+(hx-base.hx)*9-S3.yaw)*.35; zoomTo(S3,sz); htag.textContent=pinch?"✊ 집은 채 위로 들어 올리기":"✋ 손을 위로 올려 들기 · 집으면 더 빨리 · 좌우로 돌리기";
+     if(!S3.done){ const up=Math.max(0,base.py-hy); base.py=hy;   // 손이 올라간 만큼 쌓인다 (손을 내렸다 다시 올려도 이어진다)
+       S3.liftT=Math.max(0,Math.min(1,(S3.liftT||0)+up*(pinch?10:7)-.0025)); const bar=S3.wrap.querySelector(".v3bar i"); if(bar) bar.style.width=S3.liftT*100+"%"; if(S3.liftT>=1) S3.step(0); } }
  }
  CAMHUB.sub(onRes,active);
- let shown=false;
- const sync=()=>{ if(!CAMHUB.on&&!CAMHUB.blocked&&CAMHUB.state==="off"&&mode==="explore"&&!window.__camAsked){ window.__camAsked=true; CAMHUB.start(); }
-   const a=!!window.__cameraOptIn&&CAMHUB.on&&(examOpen()||!!DV||mode==="explore"||mode==="closeup");
-   if(a!==shown){ shown=a; box.classList.toggle("on",a); base=null; } };
- window.__excam=sync; new MutationObserver(sync).observe(I,{attributes:true,attributeFilter:["class"]}); setInterval(sync,400);
+ /* 카메라 켜기/끄기: 손이 필요한 순간에만 */
+ let shown=false, idle=0, wasNeed=false;
+ const sync=()=>{ const proOn=!$("pro").hidden;
+   if(proOn){ if(shown){ shown=false; box.classList.remove("on"); } return; }   // 프롤로그 중엔 프롤로그의 웹캠 창이 맡는다
+   const n=needed();
+   if(n){ idle=0; if(!wasNeed&&!CAMHUB.on&&!CAMHUB.blocked) CAMHUB.start(); }
+   else if(CAMHUB.on){ if(!idle) idle=performance.now(); else if(performance.now()-idle>1500){ CAMHUB.stop(true); idle=0; } }
+   wasNeed=n;
+   const show=n&&(CAMHUB.on||CAMHUB.state==="connecting"||CAMHUB.state==="nocam");
+   if(show!==shown){ shown=show; box.classList.toggle("on",show); base=null; } };
+ window.__excam=sync; new MutationObserver(sync).observe(I,{attributes:true,attributeFilter:["class"]}); setInterval(sync,300);
  (function pre(){ if(mode==="title"||mode==="intro"){ setTimeout(pre,1500); return; } if(window.THREE&&THREE.GLTFLoader){ m3dLoad(M3D.statue.file,()=>{}); m3dLoad("bottle.json",()=>{}); m3dLoad("doll3d.json",()=>{}); m3dLoad("table3d.json",()=>{}); } else setTimeout(pre,800); })();   // 동상 모델 미리 받아 두기
 })();
 </script>
 
 <script>
-/* 손 포인터 — 카메라 앞에서 손끝으로 가리키고 엄지·검지로 '집으면' 그 자리의 물건·버튼이 눌린다.
-   방 둘러보기(물건 조사) · 확대 화면 · 심문 카드와 선택지 · 지목 · 엔딩 버튼에 모두 적용된다. */
+/* 의자 밑 인형: 손으로 한다 — ① 카메라 쪽으로 손을 쭉 뻗으면 '의자 밑으로 손 뻗기' ② 엄지·검지로 집으면 '인형 집어 들기'.
+   (그 다음 인형을 돌려 등의 스피커를 집는 단계는 위쪽 3D 살펴보기 손 조작이 맡는다) */
 (()=>{
- const cur=document.createElement("i"); cur.id="hcur"; document.body.appendChild(cur);
- const pf=CAMHUB.pinchFilter(); let cx=-99,cy=-99, hist=[], down=false, latch=null, byHand=false, cool=0;
- const SEL='button,[role=button],a,.polar,.tcard,.hs,.hot';
- const ok=()=>{ const p=document.getElementById("pro"); if(p&&!p.hidden) return false; return ["explore","closeup","talk","board","end","inspect"].includes(mode); };
- function fire(x,y){ const now=performance.now(); if(now<cool) return; if(document.querySelector(".exspot.on")) return; cool=now+450;
-   const el=document.elementFromPoint(x,y), t=el&&el.closest(SEL);
-   if(t&&!t.disabled&&!t.closest(".exspot")){ t.click(); return; }
-   if(mode==="explore"&&nearId){ const sp=SPOTS.find(q=>q.id===nearId); if(sp) inspect(sp); } }
+ const pf=CAMHUB.pinchFilter(); let base=null, hold=0, pn=0;
+ const q=s=>document.querySelector(s);
+ const when=()=>mode==="closeup"&&CU&&CU.s.id==="doll"&&!found.has("doll")&&!DV&&!$("book").classList.contains("open");
+ const hint=t=>{ window.__excamHint&&window.__excamHint(t); };
+ const bar=(el,p)=>{ if(el) el.style.setProperty("--p",p.toFixed(3)); };
  CAMHUB.sub(lm=>{
-   if(!lm||!ok()){ cur.style.display="none"; pf(null); down=false; latch=null; hist.length=0; if(byHand){ ptr.in=false; byHand=false; } return; }
-   const tx=Math.max(0,Math.min(innerWidth,((1-lm[8].x)-.5)*1.3*innerWidth+innerWidth/2)), ty=Math.max(0,Math.min(innerHeight,(lm[8].y-.5)*1.3*innerHeight+innerHeight/2));
-   if(cx<0){ cx=tx; cy=ty; } else { cx+=(tx-cx)*.5; cy+=(ty-cy)*.5; }
-   const pinch=pf(lm), closing=CAMHUB.ratio<.7;
-   if(!closing){ hist.push([cx,cy]); if(hist.length>5) hist.shift(); latch=null; } else if(!latch&&hist.length) latch=hist[0].slice();   // 손을 오므리는 동안 손끝이 흔들려도 가리키던 자리를 유지
-   const px=(closing&&latch)?latch[0]:cx, py=(closing&&latch)?latch[1]:cy;
-   cur.style.display="block"; cur.style.left=px+"px"; cur.style.top=py+"px"; cur.classList.toggle("pinch",pinch);
-   if(mode==="explore"){ const r=stage.getBoundingClientRect(); ptr.x=clamp((px-r.left)/r.width,0,1); ptr.y=clamp((py-r.top)/r.height,0,1); ptr.in=true; touchMode=false; byHand=true;
-     const rt=$("reticle"); rt.style.left=(px-r.left)+"px"; rt.style.top=(py-r.top)+"px"; tgt.fx=15+ptr.x*70; tgt.fy=20+ptr.y*60; }
-   else if(byHand){ ptr.in=false; byHand=false; }
-   if(pinch&&!down){ down=true; fire(px,py); } else if(!pinch) down=false;
- },ok);
+   const rb=q("#cuLayer .reach"), hb=q("#cuLayer .hot")||q("#cuLayer .doll-lift button");
+   if(!lm){ base=null; hold=0; pn=0; pf(null); bar(rb,0); hint("손바닥을 보여 주세요"); return; }
+   if(rb){   // 손 뻗기: 손이 카메라에 가까워져 커 보이면 진행
+     const sz=Math.hypot(lm[0].x-lm[9].x,lm[0].y-lm[9].y); if(base===null||sz<base) base=Math.max(sz,.05);
+     const p=Math.max(0,Math.min(1,(sz/base-1)/.3)); bar(rb,p); hint("✋ 카메라 쪽으로 손을 쭉 뻗어라");
+     if(p>=1){ if(++hold>1){ hold=0; base=null; rb.click(); } } else hold=0; return; }
+   base=null; hold=0;
+   if(hb){ const pinch=pf(lm); hint(pinch?"✊ 집는 중…":"✊ 엄지·검지로 집어라"); if(pinch){ if(++pn>=3){ pn=0; pf(null); hb.click(); } } else pn=0; } },when);
 })();
 </script>
 <style>
@@ -3405,8 +3423,9 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .evclip .ev-video-skip{bottom:auto;top:4%}
 .pro .proskip{right:auto;left:3%}
 @media(max-width:760px){.carou{height:min(235px,38cqh)}.carou .polar{width:clamp(125px,31vw,180px)}.polar .cap{font-size:15px}.sboard .sb-grid{grid-template-columns:repeat(2,minmax(0,1fr));overflow:auto;bottom:13%}.sboard .sc{min-height:380px}}
-#hcur{position:fixed;width:30px;height:30px;margin:-15px 0 0 -15px;border:2px solid #ffe2a8;border-radius:50%;pointer-events:none;z-index:99999;box-shadow:0 0 14px #ffd28a;display:none;transition:background .08s,transform .08s}
-#hcur.pinch{background:rgba(255,226,168,.85);transform:scale(.65)}
 .excam .hcur.pinch{background:#ffe2a8}
+#cuLayer .reach{position:absolute;overflow:hidden}
+#cuLayer .reach::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:calc(var(--p,0)*100%);background:#d2ad63}
+.pro .cam .htag:empty{display:none}
 </style>
 </body></html>

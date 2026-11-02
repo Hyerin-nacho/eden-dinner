@@ -2232,19 +2232,19 @@ function renderMini(s,B,add,replay){
     MINIF=dragger(ph,set,()=>{ setTimeout(()=>{ ph.style.transform=""; pw.style.opacity=0; ph.classList.remove("tilting"); },1200); think(s.th,2400); miniFinish(s); },"x",.8); return;
   }
   if(s.mini==="rec"){
-    const LINES=[[0.3,"[21:41] …대표님, 한 잔 더 드세요.",0],[1.6,"[21:44] (잔 부딪히는 소리)",0],[2.9,"[21:46] …엘레나, 너 뭘……",1],[4.2,"[21:47] (둔탁한 소리) ……",1]];
+    const LINES=[[0.4,"[21:41] …대표님, 한 잔 더 드세요.",0,2.4],[3.0,"[21:44] (잔 부딪히는 소리)",0,.4],[3.5,"[21:46] …엘레나, 너 뭘……",1,2.0],[5.7,"[21:47] (둔탁한 소리) ……",1,.5]];
     box.classList.add("rec");
     box.innerHTML=`<canvas id="mWave" width="600" height="84"></canvas><div class="lines">${LINES.map(l=>{ const m=l[1].match(/^\[(.+?)\]\s*(.*)$/); return `<div class="${l[2]?"red":""}"><b>${m?m[1]:""}</b><span>${m?m[2]:l[1]}</span></div>`; }).join("")}</div><button class="torn-btn" id="mPlay">▶ 녹음 재생 <kbd>F</kbd></button>`;
     const cv=box.querySelector("#mWave"), g=cv.getContext("2d"), ls=[...box.querySelectorAll(".lines div")];
     if(replay) ls.forEach(d=>d.classList.add("on"));
     let t0=0, raf=0;
     const draw=t=>{ if(!cv.isConnected) return; const el=(t-t0)/1000; g.clearRect(0,0,600,84); g.strokeStyle="#d2ad63"; g.lineWidth=2; g.beginPath();
-      const talk=LINES.some(l=>el>l[0]&&el<l[0]+1.1);
+      const talk=LINES.some(l=>el>l[0]&&el<l[0]+(l[3]||1.1));
       for(let x=0;x<600;x+=2){ const a=(talk?22:4)*Math.abs(Math.sin(x*.07+el*9)*Math.sin(x*.013+el*3))+Math.random()*(talk?6:2); g.lineTo(x,42+((x/2)%2?a:-a)); }
-      g.stroke(); g.fillStyle="rgba(255,90,80,.9)"; g.fillRect(Math.min(598,el/5*600),0,2,84);
+      g.stroke(); g.fillStyle="rgba(255,90,80,.9)"; g.fillRect(Math.min(598,el/6.4*600),0,2,84);
       LINES.forEach((l,i)=>{ if(el>l[0]) ls[i].classList.add("on"); });
       if(talk&&soundOn&&audio()&&Math.random()<.3) hit(900+Math.random()*1600,.04,.05,"bandpass");
-      if(el<5.2) raf=requestAnimationFrame(draw);
+      if(el<6.5) raf=requestAnimationFrame(draw);
       else if(!found.has(s.id)){ think("로크가 마지막으로 부른 이름. 엘레나.",2600); miniFinish(s); } };
     const play=()=>{ cancelAnimationFrame(raf); if(!replay) ls.forEach(d=>d.classList.remove("on")); t0=performance.now(); raf=requestAnimationFrame(draw); hit(2400,.08,.05,"highpass");
       try{ if(soundOn){ if(!window.__recA){ window.__recA=new Audio("ev/doll_rec.mp3"); window.__recA.volume=.9; } window.__recA.currentTime=0; window.__recA.play().catch(()=>{}); } }catch(e){}   // 녹음 파일(ev/doll_rec.mp3)이 있으면 재생

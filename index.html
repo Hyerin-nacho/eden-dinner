@@ -2357,8 +2357,8 @@ const vid=$("tkVid"); let vRaf=0, vLast=0, vidOK=false;
 vid.addEventListener("loadeddata",()=>{ vidOK=true; talkEl.classList.add("hasvid"); if(!talkEl.hidden&&mode==="talk") vidStart(); });
 vid.addEventListener("error",()=>{ vidOK=false; talkEl.classList.remove("hasvid"); });
 function warmTalk(){ if(vid.getAttribute("src")) return; vid.src=ELENA_IDLE;
-  Object.entries(REACT).forEach(([k,src])=>{ const v=document.createElement("video"); v.preload="auto"; v.muted=true; v.src=src;
-    v.addEventListener("loadeddata",()=>reactOK[k]=true); v.addEventListener("error",()=>reactOK[k]=false); pre[k]=v; }); }
+  Object.entries(REACT).forEach(([k,list])=>{ reactOK[k]=[]; list.forEach(src=>{ const v=document.createElement("video"); v.preload="auto"; v.muted=true; v.src=src;
+    v.addEventListener("loadeddata",()=>{ if(!reactOK[k].includes(src)) reactOK[k].push(src); }); pre[src]=v; }); }); }
 function vidStart(){
   if(!vidOK) return; vid.muted=!soundOn; vid.volume=.65; vid.currentTime=0;
   vid.play().catch(()=>{ vid.muted=true; vid.play().catch(()=>{}); });
@@ -2373,11 +2373,12 @@ function rewind(t){
 }
 function vidStop(){ cancelAnimationFrame(vRaf); vid.pause(); reactStop(); }
 /* 반응 클립: 놀람(startle) · 둘러대기(lie). 파일이 없으면 조용히 건너뜀 */
-const REACT={startle:"elena-startle.mp4",lie:"elena-lie.mp4"}, reactOK={};
+const REACT={startle:["elena-startle.mp4","elena-startle2.mp4","elena-startle3.mp4","elena-startle4.mp4"],lie:["elena-lie.mp4","elena-lie2.mp4"]}, reactOK={}, reactLast={};   // 같은 장면의 다른 테이크: 있는 것 중에서 번갈아 쓴다
 const rv=$("tkReact"); const pre={};
 function react(k){
-  if(!vidOK||!reactOK[k]) return;
-  rv.src=REACT[k]; rv.muted=!soundOn; rv.volume=.65; rv.currentTime=0;
+  const ok=reactOK[k]||[]; if(!vidOK||!ok.length) return;
+  const pool=ok.length>1?ok.filter(x=>x!==reactLast[k]):ok; const src=pool[Math.random()*pool.length|0]; reactLast[k]=src;
+  rv.src=src; rv.muted=!soundOn; rv.volume=.65; rv.currentTime=0;
   rv.play().then(()=>{ rv.classList.add("on"); vid.muted=true; }).catch(()=>{});
 }
 rv.addEventListener("ended",()=>{ rv.classList.remove("on"); vid.muted=!soundOn; });

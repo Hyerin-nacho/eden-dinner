@@ -1,6 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>녹색 방의 만찬</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Nanum+Pen+Script&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap">
@@ -909,14 +910,14 @@ button{font:inherit;cursor:pointer;color:inherit}
       <video class="title-train" id="titleTrainV" src="pro/11_heroShot.mp4" muted playsinline preload="auto" aria-hidden="true"></video>
       <div class="title-vignette" aria-hidden="true"></div>
       <div class="title-content">
-        <img class="title-logo" src="pro/orpheus-title-warm.png" alt="beyond the ORPHEUS · EDEN LINE COMPANY">
+        <img class="title-logo" src="pro/orpheus-title-warm.webp" alt="beyond the ORPHEUS · EDEN LINE COMPANY">
         <div class="title-sub">녹색 방의 만찬</div>
         <button class="pbtn title-start" id="proStart">시작하기</button>
       </div>
       <audio id="titleTrainSound" src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Steam_engine.ogg" preload="none"></audio>
     </div>
     <div class="ps" data-s="hand">
-      <img class="hand" id="proHand" src="pro/hand.png" alt="">
+      <img class="hand" id="proHand" src="pro/hand.webp" alt="">
       <div class="hitz" id="proHit" role="button" aria-label="봉투 받기"></div>
       <div class="cta pulse">봉투를 <b>클릭</b>하세요</div>
     </div>
@@ -947,7 +948,7 @@ button{font:inherit;cursor:pointer;color:inherit}
       <div class="ring" id="proRing"></div>
     </div>
     <div class="ps hero" data-s="hero" aria-label="오르페우스 탑승 — 드래그해서 열차 안으로 들어가기">
-      <video id="proHeroV" muted playsinline preload="auto" src="pro/11_heroShot.mp4"></video>
+      <video id="proHeroV" muted playsinline preload="metadata" src="pro/11_heroShot.mp4"></video>
       <div class="htitle">ABOARD THE ORPHEUS</div>
       <div class="hhint" id="proHeroHint">마우스를 <b>드래그</b>해 열차에 오르세요</div>
       <div class="hprog"><i id="proHeroBar"></i></div>
@@ -1159,7 +1160,7 @@ const $ = id => document.getElementById(id);
 /* ---------- 카메라 허브: 웹캠 1개 + 손 인식 1개를 모든 장면이 함께 쓴다 ---------- */
 const CAMHUB=(()=>{
   const v=document.createElement("video"); v.playsInline=true; v.muted=true; v.autoplay=true;
-  let stream=null, hands=null, starting=null, loopOn=false, busy=false, state="off";
+  let stream=null, hands=null, starting=null, loopOn=false, busy=false, state="off", openGate; const gate=new Promise(r=>{ openGate=r; });
   const subs=new Set(), stSubs=new Set(), binds=new Set();
   const loadJS=src=>new Promise((ok,no)=>{ const t=document.createElement("script"); t.src=src; t.crossOrigin="anonymous"; t.onload=ok; t.onerror=()=>no(new Error("hands_script")); document.head.appendChild(t); });
   const set=st=>{ state=st; H.state=st; stSubs.forEach(f=>{ try{ f(st); }catch(e){} }); };
@@ -1178,7 +1179,8 @@ const CAMHUB=(()=>{
     pinchRatio(lm){ const d=Math.hypot((lm[4].x-lm[8].x)*4/3,lm[4].y-lm[8].y), p=Math.hypot((lm[0].x-lm[9].x)*4/3,lm[0].y-lm[9].y)||.1; return d/p; },
     pinchFilter(){ let down=false; return lm=>{ if(!lm){ down=false; H.ratio=1; return false; } const r=H.pinchRatio(lm); H.ratio=r; down=down?r<.62:r<.44; return down; }; },
     emit(lm){ subs.forEach(x=>{ if(!x.when||x.when()){ try{ x.fn(lm); }catch(e){ console.warn(e); } } }); },   // 테스트·시뮬레이션용
-    start(){ H.blocked=false; if(stream&&state!=="off") return Promise.resolve(true); if(starting) return starting;
+    allowHands(){ openGate(); },   // 손 인식 모델 내려받기를 허용 (프롤로그에서는 인트로 영상이 끝난 뒤)
+    start(now){ if(now) openGate(); H.blocked=false; if(stream&&state!=="off") return Promise.resolve(true); if(starting) return starting;
       starting=(async()=>{ try{ set("connecting");
         try{ if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia) throw new Error("insecure");
           let to, expired=false; const tp=new Promise((_,rej)=>{ to=setTimeout(()=>{ expired=true; rej(new Error("timeout")); },12000); });
@@ -1187,6 +1189,7 @@ const CAMHUB=(()=>{
           if(H.blocked){ stream.getTracks().forEach(t=>t.stop()); stream=null; set("off"); return false; }
           v.srcObject=stream; await v.play(); binds.forEach(attach); window.__cameraOptIn=true; set("cam");
         }catch(e){ H.err=e; stream=null; window.__cameraOptIn=false; set("nocam"); return false; }
+        await gate;
         try{ if(!window.Hands) await loadJS("https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.min.js");
           if(!hands){ hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
             hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.5,minTrackingConfidence:.45});
@@ -1467,7 +1470,7 @@ function tornClip(el,ax=1,ay=1.4,n=36,sides="trbl"){
 }
 /* 증거 확대 이미지 (ev/<id>.jpg) — 없으면 방 사진을 잘라 씀 */
 const EVIMG={};
-["glass","plates","card","bedside","victim","window","sofa","books","statue","shawl","doll","crow"].forEach(id=>{ const im=new Image(); im.onload=()=>{ EVIMG[id]=im.src; }; im.src="ev/"+id+".jpg"; });
+["doll"].forEach(id=>{ const im=new Image(); im.onload=()=>{ EVIMG[id]=im.src; }; im.src="ev/"+id+".jpg"; });
 function crop(el,s,Z,r){ if(EVIMG[s.id]){ el.style.backgroundImage=`url(${EVIMG[s.id]})`; el.style.backgroundSize="contain"; el.style.backgroundPosition="center"; return; } const a=.5625;
   const px=clamp((s.x/100*Z-.5)/(Z-1),0,1)*100, py=clamp((s.y/100*Z*a-r/2)/(Z*a-r),0,1)*100;
   el.style.backgroundImage=`url(${IMG})`; el.style.backgroundSize=`${Z*100}% auto`; el.style.backgroundPosition=`${px.toFixed(1)}% ${py.toFixed(1)}%`; }
@@ -1607,7 +1610,7 @@ function fndCamStop(){ fndOn=false; $("fndCam").classList.remove("on"); $("fndCu
     cur.style.display="block"; cur.style.left=px+"%"; cur.style.top=py+"%"; cur.classList.toggle("pinch",pinch);
     if(pinch && fndHit(px,py)){ if(++hold>2) fndFound(); } else hold=0; },()=>fndOn&&!!FND); }
 $("fndCamBtn").onclick=async e=>{ e.stopPropagation(); const hint=$("fndHint"); hint.innerHTML="카메라 연결 중…";
-  const ok=await CAMHUB.start();
+  const ok=await CAMHUB.start(true);
   if(!ok){ hint.innerHTML="카메라를 쓸 수 없다 — <b>클릭</b>해서 찾아라"; return; }
   CAMHUB.bind($("fndCamV")); $("fndCam").classList.add("on");
   if(!CAMHUB.handsReady){ hint.innerHTML="손 인식을 불러오지 못했다 — 수상한 책을 <b>클릭</b>하라"; return; }
@@ -1933,7 +1936,7 @@ function renderInspect(s){
   add("div","stamp2"+(s.herring||!s.ev?" gray":"")+(now?" hit":""),`<span>${!s.ev?"관찰 기록":s.herring?"사건과 무관":"증거 확보"}<small>ORPHEUS R.R.</small></span>`);
   $("iNew").hidden=!(now && s.ev);
 }
-function collect(s){ found.add(s.id); freshId=s.id; lastFound=s.id; paper(); notify(s.ev); render(); invDone(s); }
+function collect(s){ found.add(s.id); freshId=s.id; lastFound=s.id; paper(); notify(s.ev); render(); if(found.size>=3) warmTalk(); invDone(s); }
 /* 단서 5개를 모두 모으면 잠시 뒤 자동으로 엘레나 심문으로 넘어간다 */
 let invAuto=false;
 function invDone(s){ if(invAuto||!EVID.every(e=>found.has(e.id))) return; invAuto=true;
@@ -2347,9 +2350,11 @@ function play(lines,done){
 /* ---------- 엘레나 대기 영상 (앞으로 재생 → 되감기 반복) ---------- */
 const ELENA_IDLE="elena-idle.mp4";
 const vid=$("tkVid"); let vRaf=0, vLast=0, vidOK=false;
-vid.addEventListener("loadeddata",()=>{ vidOK=true; talkEl.classList.add("hasvid"); });
+vid.addEventListener("loadeddata",()=>{ vidOK=true; talkEl.classList.add("hasvid"); if(!talkEl.hidden&&mode==="talk") vidStart(); });
 vid.addEventListener("error",()=>{ vidOK=false; talkEl.classList.remove("hasvid"); });
-vid.src=ELENA_IDLE;
+function warmTalk(){ if(vid.getAttribute("src")) return; vid.src=ELENA_IDLE;
+  Object.entries(REACT).forEach(([k,src])=>{ const v=document.createElement("video"); v.preload="auto"; v.muted=true; v.src=src;
+    v.addEventListener("loadeddata",()=>reactOK[k]=true); v.addEventListener("error",()=>reactOK[k]=false); pre[k]=v; }); }
 function vidStart(){
   if(!vidOK) return; vid.muted=!soundOn; vid.volume=.65; vid.currentTime=0;
   vid.play().catch(()=>{ vid.muted=true; vid.play().catch(()=>{}); });
@@ -2366,8 +2371,6 @@ function vidStop(){ cancelAnimationFrame(vRaf); vid.pause(); reactStop(); }
 /* 반응 클립: 놀람(startle) · 둘러대기(lie). 파일이 없으면 조용히 건너뜀 */
 const REACT={startle:"elena-startle.mp4",lie:"elena-lie.mp4"}, reactOK={};
 const rv=$("tkReact"); const pre={};
-Object.entries(REACT).forEach(([k,src])=>{ const v=document.createElement("video"); v.preload="auto"; v.muted=true; v.src=src;
-  v.addEventListener("loadeddata",()=>reactOK[k]=true); v.addEventListener("error",()=>reactOK[k]=false); pre[k]=v; });
 function react(k){
   if(!vidOK||!reactOK[k]) return;
   rv.src=REACT[k]; rv.muted=!soundOn; rv.volume=.65; rv.currentTime=0;
@@ -2381,7 +2384,7 @@ function openTalk(){
   closeBook(); mode="talk"; stage.classList.remove("explore"); $("prompt").classList.remove("show");
   $("tabTalk").setAttribute("aria-selected",true); $("tabScene").setAttribute("aria-selected",false);
   const sp=SPOTS.find(x=>x.id==="elena"); ease=.06; tgt.fx=sp.x; tgt.fy=sp.y; tgt.s=1.8;
-  talkEl.hidden=false; gauge(); steps(1); vidStart();
+  talkEl.hidden=false; gauge(); steps(1); warmTalk(); vidStart();
   if(!talkEl.dataset.met){ talkEl.dataset.met=1; play([["E","……손님도 오셨군요. 제가 처음 발견했어요. 무엇이든 물어보세요."]],menu); }
   else menu();
 }
@@ -2479,7 +2482,7 @@ function scrubCamStop(){ scrOn=false; $("scrCam").classList.remove("on"); $("scr
 CAMHUB.sub(lm=>{ const cur=$("scrCur"); if(!lm||!SCR){ cur.style.display="none"; if(SCR) SCR.last=null; return; }
   const x=1-lm[9].x, y=lm[9].y; cur.style.display="block"; cur.style.left=(x*100)+"%"; cur.style.top=(y*100)+"%"; scrubAt(x*SCR.cv.width, y*SCR.cv.height); },()=>scrOn&&!!SCR);
 $("scrCamBtn").onclick=async()=>{
-  const hint=$("scrHint"); hint.innerHTML="카메라 연결 중…"; const ok=await CAMHUB.start();
+  const hint=$("scrHint"); hint.innerHTML="카메라 연결 중…"; const ok=await CAMHUB.start(true);
   if(!ok){ hint.innerHTML="카메라를 쓸 수 없다 — 마우스로 <b>삭삭 문질러</b> 털어내라"; return; }
   CAMHUB.bind($("scrCamV")); $("scrCam").classList.add("on");
   if(!CAMHUB.handsReady){ hint.innerHTML="손 인식을 불러오지 못했다 — 마우스로 <b>삭삭 문질러</b> 털어내라"; return; }
@@ -2658,7 +2661,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   $("proStart").onclick=()=>{ $("proStart").disabled=true;
     try{ audio(); ac&&ac.resume(); }catch(e){}
     camOn(); CAMHUB.start();   // 웹캠은 처음부터: 영상 오른쪽 아래 제미나이 로고를 가린다
-    clip(PRO.intro,null,()=>{ show("hand"); });
+    clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); });
   };
   /* 1. 영상 마지막 — 손에 든 봉투 */
   const hand=$("proHand"), hz=$("proHit");
@@ -2883,7 +2886,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   $("proAllow").onclick=async()=>{
     if(camConnecting) return; camConnecting=true; $("proAllow").disabled=true;
     camFine.textContent="카메라 연결을 확인하는 중…"; camFine.classList.remove("error");
-    camOn(); const ok=await CAMHUB.start();
+    camOn(); const ok=await CAMHUB.start(true);
     if(!ok){ camOff.style.display="flex"; camOff.textContent="CAMERA OFF";
       camFine.textContent=camError(CAMHUB.err)+` [${CAMHUB.err?.name||CAMHUB.err?.message||"unknown"}]`; camFine.classList.add("error"); camConnecting=false; $("proAllow").disabled=false; return; }
     if(!handOn){ camFine.textContent="손 인식을 불러오지 못했습니다. 마우스로 진행할 수 있습니다."; camFine.classList.add("error"); }
@@ -3105,7 +3108,7 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
  const sync=()=>{ const proOn=!$("pro").hidden;
    if(proOn){ if(shown){ shown=false; box.classList.remove("on"); } return; }   // 프롤로그 중엔 프롤로그의 웹캠 창이 맡는다
    const n=needed();
-   if(n){ idle=0; if(!wasNeed&&!CAMHUB.on&&!CAMHUB.blocked) CAMHUB.start(); }
+   if(n){ idle=0; if(!wasNeed&&!CAMHUB.on&&!CAMHUB.blocked) CAMHUB.start(true); }
    else if(CAMHUB.on){ if(!idle) idle=performance.now(); else if(performance.now()-idle>1500){ CAMHUB.stop(true); idle=0; } }
    wasNeed=n;
    const show=n&&(CAMHUB.on||CAMHUB.state==="connecting"||CAMHUB.state==="nocam");

@@ -1021,8 +1021,8 @@ button{font:inherit;cursor:pointer;color:inherit}
   </section>
   <section class="ending" id="ending" hidden>
     <div class="case">CASE CLOSED · ORPHEUS EXPRESS R.R.</div>
-    <h2>다음 장면은 게임에서.</h2>
-    <p>VIP실의 사건은 풀렸다. 하지만 오르페우스의 이야기는 이제 시작이다.</p>
+    <h2 class="q">그를 죽인 범인이<br>정말 엘레나가 맞을까?</h2>
+    <p class="en">The next scene begins <em>in the game</em>.</p>
     <div class="row"><button class="enter" id="ctaBtn" disabled aria-disabled="true">게임 다운로드 페이지 준비 중</button><button class="skip" style="position:static" id="againBtn">처음으로 돌아가기</button></div>
   </section>
   <!-- 증거 게시판 (조사) -->
@@ -2314,24 +2314,23 @@ function opts(list,m="act"){
    if(evidenceRoomImage.complete&&evidenceRoomImage.naturalWidth) draw(); else evidenceRoomImage.addEventListener("load",draw,{once:true});
  }
 function evCarousel(O,list){
+  /* 증거 카드를 한 줄로 고르게 펼쳐 놓고, 누르면 바로 들이민다 (겹치지 않고, 사진이 카드 밖으로 나가지 않는다) */
   const head=list.find(o=>o.h), items=list.filter(o=>o.e), quit=list.find(o=>!o.h&&!o.e);
-  const stage=document.createElement("div"); stage.className="carou"; O.appendChild(stage);
+  const wrap=document.createElement("div"); wrap.className="evp"; O.appendChild(wrap);
   if(!items.length&&quit){ const b=document.createElement("button"); b.className="opt"; b.innerHTML=`<span class="k">–</span><span>${quit.t}</span>`; b.onclick=quit.f; O.appendChild(b); return; }
-  const cards=items.map((o,i)=>{ const b=document.createElement("button"); b.className="polar"; b.innerHTML=`<span class="k">${o.k}</span><i class="ph"></i><b class="cap">${SHORT[o.e.id]||o.e.title}</b><small>${o.t}</small>`;
-     evidencePhoto(b.querySelector(".ph"),o.e); stage.appendChild(b); return b; });
+  if(head){ const h=document.createElement("div"); h.className="evp-h"; h.textContent=head.h; wrap.appendChild(h); }
+  const row=document.createElement("div"); row.className="evp-row"; wrap.appendChild(row);
+  const cards=items.map((o,i)=>{ const b=document.createElement("button"); b.type="button"; b.className="evc"+(o.e.id==="bedside"?" tall":""); b.style.setProperty("--r",[-1.6,1.1,-.7,1.4,-1.2,.8][i%6]+"deg");
+    b.innerHTML=`<span class="k">${o.k}</span><i class="evc-ph"></i><b class="cap">${SHORT[o.e.id]||o.e.title}</b><small>${o.t}</small>`;
+    evidencePhoto(b.querySelector(".evc-ph"),o.e); row.appendChild(b); return b; });
   const C={cur:Math.floor((items.length-1)/2),busy:false};
-  const lay=()=>cards.forEach((b,i)=>{ const d=i-C.cur, a=Math.abs(d);
-     b.style.transform=`translateX(calc(-50% + ${d*Math.min(190,innerWidth*.17)}px)) scale(${a?.87:1.05})`;
-     b.style.opacity=a>2?0:(1-a*.2).toFixed(2); b.style.zIndex=10-a; b.style.pointerEvents=a>2?"none":"auto"; b.classList.toggle("focus",!a); });
+  const lay=()=>cards.forEach((b,i)=>b.classList.toggle("focus",i===C.cur));
   const go=i=>{ i=Math.max(0,Math.min(cards.length-1,i)); if(i===C.cur) return; C.cur=i; lay(); hit(2600,.05,.06,"bandpass"); };
-  const pick=()=>{ if(C.busy) return; C.busy=true; const b=cards[C.cur]; b.classList.add("chosen"); b.style.transform=`translateX(-50%) translateY(-38vh) scale(1.35) rotate(-3deg)`; b.style.opacity=0; paper(); setTimeout(()=>items[C.cur].f(),520); };
-  cards.forEach((b,i)=>b.onclick=()=>{ if(i!==C.cur){ C.cur=i; lay(); } pick(); });   // 어느 카드든 한 번 누르면 바로 들이민다
-  const nav=document.createElement("div"); nav.className="cnav"; nav.innerHTML=`<button class="cl" aria-label="이전 증거">‹</button><span><b style=\"color:var(--brass)\">증거 카드를 눌러</b> 들이민다 · ← → 로 넘겨 볼 수 있다</span><button class="cr" aria-label="다음 증거">›</button>`; O.appendChild(nav);
-  nav.querySelector(".cl").onclick=()=>go(C.cur-1); nav.querySelector(".cr").onclick=()=>go(C.cur+1);
-  stage.addEventListener("wheel",e=>{ e.preventDefault(); if(C.wt) return; C.wt=setTimeout(()=>C.wt=0,180); go(C.cur+((e.deltaY||e.deltaX)>0?1:-1)); },{passive:false});
-  let sx=null; stage.addEventListener("pointerdown",e=>{ sx=e.clientX; }); addEventListener("pointerup",e=>{ if(sx===null) return; const dx=e.clientX-sx; sx=null; if(Math.abs(dx)>40) go(C.cur+(dx<0?1:-1)); },{once:false});
+  const pick=(i=C.cur)=>{ if(C.busy) return; C.busy=true; C.cur=i; lay(); cards.forEach((x,j)=>{ if(j!==i) x.classList.add("dim"); }); cards[i].classList.add("picked"); paper(); setTimeout(()=>items[i].f(),520); };
+  cards.forEach((b,i)=>{ b.onclick=()=>pick(i); b.onmouseenter=()=>{ if(!C.busy){ C.cur=i; lay(); } }; });
+  const hint=document.createElement("div"); hint.className="evp-hint"; hint.innerHTML=`<b>증거 카드를 눌러</b> 들이민다 <span>· ← → 로 고르고 Enter</span>`; wrap.appendChild(hint);
   if(quit){ const q=document.createElement("button"); q.className="opt quiet"; q.innerHTML=`<span class="k">ESC</span><span>${quit.t}</span>`; q.onclick=quit.f; O.appendChild(q); C.quit=quit.f; }
-  O._car={go:d=>go(C.cur+d),pick,cards,quit:C.quit}; lay();
+  O._car={go:d=>go(C.cur+d),pick:()=>pick(),cards,quit:C.quit}; lay();
 }
 function caseCards(){ const C=$("tkCase"); if(!C) return;
   C.innerHTML=`<div class="tc-h"><span>진술 기록</span><small>모순 ${BROKEN.size} / ${STATE.length}</small></div>`;
@@ -3288,7 +3287,8 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
 .cnav{display:flex;align-items:center;gap:16px;color:rgba(239,230,208,.6);font-size:12px;letter-spacing:.06em}
 .cnav button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(210,173,99,.5);background:rgba(10,8,6,.6);color:#efe6d0;font-size:20px;line-height:1;cursor:pointer}
 .cnav button:hover{background:rgba(210,173,99,.2)}
-.talk[data-m="ev"] .tk-case,.talk[data-m="ev"] .tk-meter{opacity:.25}
+.talk[data-m="ev"] .tk-meter{opacity:.25}
+.talk[data-m="ev"] .tk-case{opacity:1}
 </style>
 <style>
 /* 한글 줄바꿈: 단어 중간에서 끊지 않기 */
@@ -3308,6 +3308,10 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 /* 엔딩: 조사 화면 UI가 비치지 않게 완전히 덮고, 시계를 쥔 Rook을 흐리게 깔기 */
 .ending{z-index:70;background:radial-gradient(ellipse at 50% 45%,rgba(14,10,6,.72),rgba(0,0,0,.96) 75%),url(pro/relic_bg.jpg) 70% 40%/cover no-repeat}
 .ending p{text-wrap:balance}
+.ending h2.q{font-size:clamp(24px,4.4vw,52px);letter-spacing:.01em;word-break:keep-all;line-height:1.3;text-shadow:0 2px 24px rgba(0,0,0,.8)}
+.ending p.en{font-family:"Cormorant Garamond",var(--serif);font-style:italic;font-weight:500;font-size:clamp(17px,2vw,26px);letter-spacing:.12em;color:#d9cdb0;max-width:none;margin-top:4px}
+.ending p.en em{color:var(--brass);font-style:italic;font-weight:600;text-decoration:underline;text-decoration-color:rgba(210,173,99,.45);text-underline-offset:.25em}
+.ending .row{margin-top:18px}
 .ended>:not(.ending):not(.pro){visibility:hidden!important}
 </style>
 <style>
@@ -3430,5 +3434,27 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 #cuLayer .reach{position:absolute;overflow:hidden}
 #cuLayer .reach::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:calc(var(--p,0)*100%);background:#d2ad63}
 .pro .cam .htag:empty{display:none}
+.talk .tk-case .tcard{background:#e9dfc8!important;background-image:none!important;color:#2a211a;filter:drop-shadow(0 6px 10px rgba(0,0,0,.6))!important;opacity:.95}
+.talk .tk-case .tcard b{color:#2a211a}
+.talk .tk-case .tcard em{color:#7a6c58}
+.talk .tk-case .tcard.cur{box-shadow:inset 0 0 0 2px rgba(210,173,99,.9)}
+.talk .tk-case .tcard.cur em{color:#b8352b}
+.talk .tk-case .tcard.done{opacity:.6}
+.evp{width:min(1360px,97%);display:flex;flex-direction:column;align-items:center;gap:12px}
+.evp-h{font-family:var(--mono);font-size:12.5px;letter-spacing:.16em;color:#d2ad63;text-shadow:0 1px 10px #000;text-align:center}
+.evp-row{display:flex;justify-content:center;gap:clamp(10px,1.5vw,24px);width:100%;padding:22px 16px 26px;overflow-x:auto;scrollbar-width:none}
+.evp-row::-webkit-scrollbar{display:none}
+.evc{flex:0 0 clamp(140px,15vw,240px);box-sizing:border-box;position:relative;border:0;border-radius:2px;padding:8px 8px 11px;background:#efe6d0;color:#2a211a;display:flex;flex-direction:column;gap:6px;text-align:left;cursor:pointer;font:inherit;transform:rotate(var(--r,0deg));transition:transform .22s cubic-bezier(.2,.9,.3,1.2),box-shadow .22s,opacity .3s,filter .3s;box-shadow:0 10px 22px rgba(0,0,0,.6)}
+.evc-ph{display:block;width:100%;aspect-ratio:16/10;overflow:hidden;background-color:#16130f;background-position:center;background-repeat:no-repeat;box-shadow:inset 0 0 0 1px rgba(48,43,34,.4)}
+.evc.tall .evc-ph{background-size:auto 96%!important}
+.evc.focus,.evc:hover{transform:translateY(-14px) rotate(0) scale(1.05);box-shadow:0 0 0 2px rgba(210,173,99,.95),0 22px 38px rgba(0,0,0,.75);z-index:2;outline:none}
+.evc .cap{font-family:"Nanum Pen Script",cursive;font-weight:400;font-size:clamp(20px,1.7vw,27px);line-height:1}
+.evc small{font-size:clamp(10px,.82vw,12.5px);line-height:1.35;color:#6b5c48;display:block;word-break:keep-all}
+.evc .k{position:absolute;left:-7px;top:-7px;width:22px;height:22px;border-radius:50%;background:#1d1a17;color:#efe6d0;font-family:var(--mono);font-size:11px;display:grid;place-items:center;z-index:3}
+.evc.dim{opacity:.22;filter:blur(1.5px) saturate(.6)}
+.evc.picked{transform:translateY(-34vh) rotate(-4deg) scale(1.25);opacity:0;transition:transform .5s cubic-bezier(.3,.7,.2,1),opacity .5s;z-index:9}
+.evp-hint{font-size:12.5px;letter-spacing:.06em;color:rgba(239,230,208,.7)}
+.evp-hint b{color:#d2ad63;font-weight:600}.evp-hint span{opacity:.7}
+@media(max-width:760px){.evp-row{justify-content:flex-start;scroll-snap-type:x proximity;padding:12px 10px 14px}.evc{flex-basis:104px;padding:5px 5px 7px;scroll-snap-align:center}.evc small{display:none}.evc .cap{font-size:15px}.evp-hint span{display:none}.evp-h{font-size:10px}}
 </style>
 </body></html>

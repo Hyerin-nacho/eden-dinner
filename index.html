@@ -1705,7 +1705,7 @@ function exBottle(){ const G=new THREE.Group(), r=.1;
     " vec3 amb=vec3(0.34,0.085,0.01)*pow(1.0-fr,1.4)*(gl_FrontFacing?0.55:0.0); outgoingLight=dif*mix(1.0,0.3,fr)+spc+amb; diffuseColor.a=mix(diffuseColor.a,0.97,pow(fr,0.8)); }\ngl_FragColor = vec4( outgoingLight, diffuseColor.a );"); };
   const body=new THREE.Mesh(new THREE.LatheGeometry(prof,180),glass); body.renderOrder=2; G.add(body);
   /* 유리만 따로 비추는 반사 환경: 어두운 방 + 세로로 긴 창빛 두 줄 + 램프 → 유리 특유의 날카로운 세로 하이라이트 */
-  body.onBeforeRender=R=>{ if(glass.userData.env) return; const c=document.createElement("canvas"); c.width=1024; c.height=512; const g=c.getContext("2d");
+  body.onBeforeRender=R=>{ simPills(); if(glass.userData.env) return; const c=document.createElement("canvas"); c.width=1024; c.height=512; const g=c.getContext("2d");
     g.fillStyle="#120b07"; g.fillRect(0,0,1024,512); const fl=g.createLinearGradient(0,300,0,512); fl.addColorStop(0,"rgba(60,36,20,0)"); fl.addColorStop(1,"rgba(60,36,20,.8)"); g.fillStyle=fl; g.fillRect(0,300,1024,212);
     [[300,26,1],[352,10,.7],[690,40,.85]].forEach(([x,w,a])=>{ const q=g.createLinearGradient(x-w,0,x+w,0); q.addColorStop(0,"rgba(255,236,205,0)"); q.addColorStop(.5,`rgba(255,240,215,${a})`); q.addColorStop(1,"rgba(255,236,205,0)"); g.fillStyle=q; g.fillRect(x-w,70,w*2,300); });
     [[520,150,50],[160,120,34],[860,170,30]].forEach(([x,y,r])=>{ const q=g.createRadialGradient(x,y,0,x,y,r); q.addColorStop(0,"rgba(255,214,150,1)"); q.addColorStop(1,"rgba(255,170,90,0)"); g.fillStyle=q; g.fillRect(x-r,y-r,2*r,2*r); });
@@ -1717,8 +1717,37 @@ function exBottle(){ const G=new THREE.Group(), r=.1;
     x.strokeStyle="rgba(120,110,95,.55)"; x.lineWidth=5; x.beginPath(); x.moveTo(w*.12,h/2); x.lineTo(w*.88,h/2); x.stroke(); });
   const pm=[new THREE.MeshStandardMaterial({color:0xeee8dc,roughness:.55}),new THREE.MeshStandardMaterial({map:pt,roughness:.55}),new THREE.MeshStandardMaterial({map:pt,roughness:.55})];
   const pg=new THREE.CylinderGeometry(.019,.019,.009,24); pg.translate(0,0,0);
-  for(let i=0;i<9;i++){ const a=Math.random()*6.28, d=Math.sqrt(Math.random())*.06, p=new THREE.Mesh(pg,pm);
-    p.position.set(Math.cos(a)*d,-.229+(i>5?.009+Math.random()*.006:Math.random()*.003),Math.sin(a)*d); p.rotation.set((Math.random()-.5)*(i>5?1.1:.25),Math.random()*6,(Math.random()-.5)*(i>5?1.1:.25)); G.add(p); }
+  /* 알약 물리: 병의 기울기를 병 기준 중력으로 바꿔 알약이 바닥·벽을 따라 미끄러지고 서로 밀어낸다.
+     빨리 돌리면 흔들려 달그락거리고, 벽·바닥에 세게 부딪히면 유리에 닿는 '딸깍' 소리가 난다 */
+  const PILLS=[], PR=.019, IN=.0915, Y=new THREE.Vector3(0,1,0);
+  for(let i=0;i<9;i++){ const a=Math.random()*6.28, d=Math.sqrt(Math.random())*.055, p=new THREE.Mesh(pg,pm);
+    p.position.set(Math.cos(a)*d,-.226+(i>5?.012:0)+Math.random()*.004,Math.sin(a)*d); p.quaternion.setFromEuler(new THREE.Euler((Math.random()-.5)*.3,Math.random()*6,(Math.random()-.5)*.3));
+    p.userData={v:new THREE.Vector3(),c:0,sa:Math.random()*6}; G.add(p); PILLS.push(p); }
+  const gL=new THREE.Vector3(), qW=new THREE.Quaternion(), qPrev=new THREE.Quaternion(), up=new THREE.Vector3(), tq=new THREE.Quaternion(), sq=new THREE.Quaternion(), tmp=new THREE.Vector3();
+  let plt=0, pFirst=true, clinkT=0;
+  const clink=sp=>{ const n=performance.now(); if(n-clinkT<55) return; clinkT=n; try{ hit(2400+Math.random()*2200,Math.min(.045,.01+sp*.05),.045,"bandpass"); }catch(e){} };
+  const simPills=()=>{ const now=performance.now(), dt=Math.min(.033,(now-(plt||now))/1000); plt=now; if(dt<.001) return;
+    G.updateWorldMatrix(true,false); G.getWorldQuaternion(qW);
+    const ang=pFirst?0:2*Math.acos(Math.min(1,Math.abs(qW.dot(qPrev))))/dt; qPrev.copy(qW); pFirst=false;   // 병이 얼마나 빨리 돌고 있나
+    gL.set(0,-8,0).applyQuaternion(sq.copy(qW).invert());                                             // 병 안에서 본 중력 방향
+    const shake=Math.min(1.6,Math.max(0,ang-.6)*.35);
+    for(const p of PILLS){ const v=p.userData.v; v.addScaledVector(gL,dt);
+      if(shake>0) v.add(tmp.set(Math.random()-.5,Math.random()*.6,Math.random()-.5).multiplyScalar(shake*dt*9));
+      v.multiplyScalar(Math.pow(.18,dt)); p.position.addScaledVector(v,dt); }
+    for(let it=0;it<3;it++){
+      for(let i=0;i<PILLS.length;i++) for(let j=i+1;j<PILLS.length;j++){ const A=PILLS[i].position, B=PILLS[j].position; tmp.subVectors(B,A); const d=tmp.length(), m=PR*1.55;   // 납작한 정제라 조금 겹쳐 쌓임
+        if(d<m&&d>1e-6){ tmp.multiplyScalar((m-d)/d*.5); A.sub(tmp); B.add(tmp); const va=PILLS[i].userData.v, vb=PILLS[j].userData.v; tmp.copy(va).sub(vb).multiplyScalar(.15); va.sub(tmp); vb.add(tmp); } }
+      for(const p of PILLS){ const P=p.position, v=p.userData.v, rr=Math.hypot(P.x,P.z)||1e-6;
+        const lim=(P.y>.09?Math.max(.03,IN-(P.y-.09)/.1*.065):IN)-PR;                      // 어깨 위로 갈수록 좁아짐
+        if(rr>lim){ const vn=(v.x*P.x+v.z*P.z)/rr; if(vn>0){ if(vn>.14&&it===0) clink(vn); v.x-=1.35*vn*P.x/rr; v.z-=1.35*vn*P.z/rr; v.y*=.8; } P.x*=lim/rr; P.z*=lim/rr; p.userData.c=1; }
+        const fl=-.2355+.0035*Math.max(0,1-rr/.07)+.0045;                                    // 바닥(가운데가 살짝 솟음) + 정제 두께 절반
+        if(P.y<fl){ if(v.y<-.14&&it===0) clink(-v.y); P.y=fl; v.y*=-.22; v.x*=.86; v.z*=.86; p.userData.c=2; }
+        if(P.y>.2){ P.y=.2; if(v.y>0) v.y*=-.3; } } }
+    for(const p of PILLS){ const P=p.position, v=p.userData.v, spd=v.length();                 // 닿은 면에 납작하게 눕고, 굴러가면 빙글 돈다
+      if(p.userData.c===1) up.set(P.x,0,P.z).normalize(); else up.copy(Y);
+      p.userData.c=0; p.userData.sa+=spd*dt*28;
+      tq.setFromUnitVectors(Y,up).multiply(sq.setFromAxisAngle(Y,p.userData.sa));
+      p.quaternion.slerp(tq,Math.min(1,dt*(spd>.05?7:3))); } };
   // 코르크 마개: 입구에 박혀 위로 살짝 튀어나옴. 알갱이 무늬 + 윗면 나이테 + 손때
   const ckSide=exTex(256,128,(x,w,h)=>{ x.fillStyle="#8a6038"; x.fillRect(0,0,w,h);
     for(let i=0;i<1600;i++){ const l=Math.random(); x.fillStyle=l<.5?`rgba(${50+Math.random()*30|0},${30+Math.random()*20|0},14,${.3+Math.random()*.5})`:`rgba(${170+Math.random()*40|0},${130+Math.random()*30|0},80,${.2+Math.random()*.4})`; x.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*3,1+Math.random()*2); }

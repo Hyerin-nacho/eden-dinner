@@ -2764,7 +2764,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
       if(F){ x=TSC.getContext("2d"); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,TSC.width,TSC.height); x.setTransform(d,0,0,d,ox*d,oy*d); }
       x.save();
       if(F){ const cx=W*(dir<0?.25:.75), cy=H*.5; x.translate(cx+F.fx,cy+F.fy); x.rotate(F.rot); const cy2=Math.cos(F.th); x.scale(F.sc*F.flip*(1-.18*Math.abs(Math.sin(F.th))), F.sc*(Math.abs(cy2)<.04?(cy2<0?-.04:.04):cy2)); x.translate(-cx,-cy); }
-      for(let y=0;y<tipY;y+=SH){ const h=Math.min(SH,tipY-y), k=Math.pow(Math.max(0,tipY-y)/H,1.1), dx=dir*sp*k, dy=Math.abs(dx)*.12;
+      for(let y=0;y<tipY;y+=SH){ const h=Math.min(SH,tipY-y), k=Math.pow(Math.max(0,tipY-y)/H,1.1), dx=dir*sp*k, dy=Math.abs(dx)*.12+dir*Math.abs(dx)*.3;
         x.drawImage(img,0,y*d,img.width,h*d,dx,y+dy,W,h+.6); }
       x.restore();
       if(F){ x.save(); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation="source-atop"; x.fillStyle=`rgba(20,12,4,${(Math.abs(Math.sin(F.th))*.45+(1-F.flip)*.4+(Math.cos(F.th)<0?.08:0)).toFixed(3)})`; x.fillRect(0,0,TSC.width,TSC.height); x.restore();
@@ -2785,7 +2785,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     [[-1,HL,HLb],[1,HR,HRb]].forEach(([dir,img,bimg])=>{
       const el=document.createElement("div"); el.className="tpiece"; el.style.transformOrigin=(dir<0?"11.54%":"88.46%")+" 50%";
       const mkc=src=>{ const c=document.createElement("canvas"); c.width=Math.round(W*1.3*d); c.height=Math.round(H*d); const x=c.getContext("2d");
-        for(let y=0;y<H;y+=2){ const h=Math.min(2,H-y), k=Math.pow(Math.max(0,H-y)/H,1.1), dx=dir*sp*k, dy=Math.abs(dx)*.12;
+        for(let y=0;y<H;y+=2){ const h=Math.min(2,H-y), k=Math.pow(Math.max(0,H-y)/H,1.1), dx=dir*sp*k, dy=Math.abs(dx)*.12+dir*Math.abs(dx)*.3;
           x.drawImage(src,0,y*d,src.width,h*d,(dx+m)*d,(y+dy)*d,W*d,(h+.6)*d); } return c; };
       const f=mkc(img), b=mkc(bimg); b.style.display="none"; el.append(f,b); card.insertBefore(el,$("proTCur"));
       PCS.push({el,f,b,dir,a:Math.random()*6.28,bb:Math.random()*6.28,dd:Math.random()*.12,yy:Math.random()*.08,turn:Math.random()<.5?105:285,back:false}); }); }
@@ -2813,20 +2813,63 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     const g=ac.createGain(); g.gain.value=0; s.connect(hp); hp.connect(pk); pk.connect(g); g.connect(sfxBus||ac.destination); s.start(); tsnd={s,g}; }catch(e){} }
   function tearSnd(v){ if(tsnd) try{ tsnd.g.gain.setTargetAtTime(v,ac.currentTime,.015); }catch(e){} }
   function tearSndStop(){ if(!tsnd) return; const t=tsnd; tsnd=null; try{ t.g.gain.setTargetAtTime(0,ac.currentTime,.05); }catch(e){} setTimeout(()=>{ try{ t.s.stop(); }catch(e){} },400); }
+  /* ---- 찢기 v4 : 당기는 힘 vs 종이 저항 ----
+     드래그 '속도'가 당기는 힘(pull). 찢어지는 끝의 저항보다 세게 당겨야 찢어진다.
+     첫 찢김은 뻑뻑하고, 중간중간 질긴 섬유 매듭이 있어서 버티다가 '툭' 하고 터진다.
+     소리는 쉬익 하는 잡음 대신 섬유가 하나하나 끊기는 '바스락' 알갱이(crackle)로, 찢는 속도만큼 촘촘해진다.
+     두 쪽은 손으로 찢을 때처럼 한쪽은 위로, 한쪽은 아래로 어긋나고, 카드는 당기는 쪽으로 살짝 기운다 */
+  let pull=0, lastMv=0, pdir=1, tiltV=0, RES=[], RESkey=null, strain=0, snapCD=0;
+  function genRes(){ RESkey=TP[0]; RES=[]; for(let i=0;i<=TN;i++) RES.push(.16+Math.random()*.06);
+    for(let i=0;i<=8;i++) RES[i]=Math.max(RES[i],.62-i*.05);                       // 첫 찢김: 제일 뻑뻑
+    const knots=5+(Math.random()*4|0);
+    for(let n=0;n<knots;n++){ const c=14+(Math.random()*(TN-28)|0), w=2+(Math.random()*4|0), h=.22+Math.random()*.3;   // 질긴 섬유 매듭
+      for(let j=-w;j<=w;j++){ const i=c+j; if(i>=0&&i<=TN) RES[i]=Math.max(RES[i],.18+h*(1-Math.abs(j)/(w+1))); } } }
+  const resAt=t=>RES[Math.min(TN,Math.max(0,Math.round(t*TN)))]||.2;
   function setTear(v){ if(torn) return; goal=Math.max(goal,Math.min(1,v)); if(goal>=.96) goal=1; if(goal>0) tearSndStart(); }
+  /* 섬유가 끊기는 소리: 아주 짧은 잡음 알갱이를 무작위 높이·타이밍으로 흩뿌린다 */
+  let CRK=null;
+  function crackle(n,vol){ try{ if(!soundOn||!audio()||n<1) return;
+    if(!CRK){ CRK=ac.createBuffer(1,Math.round(ac.sampleRate*.02),ac.sampleRate); const d=CRK.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2.5); }
+    const t0=ac.currentTime;
+    for(let i=0;i<n;i++){ const s=ac.createBufferSource(); s.buffer=CRK; s.playbackRate.value=.6+Math.random()*1.4;
+      const f=ac.createBiquadFilter(); f.type="bandpass"; f.frequency.value=1800+Math.random()*4500; f.Q.value=.8+Math.random()*1.5;
+      const g=ac.createGain(); g.gain.value=vol*(.3+Math.random()*.9);
+      s.connect(f); f.connect(g); g.connect(sfxBus||ac.destination); s.start(t0+Math.random()*.035); } }catch(e){} }
+  /* 찢어지는 끝에서 종이 섬유 부스러기가 튄다 */
+  function fibers(n,big){ const W=card.clientWidth,H=card.clientHeight, p=TP[Math.min(TN,Math.round(tear*TN))]; if(!p||!W) return; const px=p[0]*W, py=tear*H;
+    for(let i=0;i<n;i++){ const f=document.createElement("i"), s=1+Math.random()*(big?2.6:1.6), a=Math.random()*6.28, d=8+Math.random()*(big?44:22);
+      Object.assign(f.style,{position:"absolute",left:px+"px",top:py+"px",width:(s*(Math.random()<.5?3.2:1))+"px",height:s+"px",background:"rgba(244,237,222,.95)",borderRadius:"1px",pointerEvents:"none",zIndex:6});
+      card.appendChild(f);
+      f.animate([{transform:`translate(-50%,-50%) rotate(${a}rad)`,opacity:1},{transform:`translate(calc(-50% + ${(Math.cos(a)*d).toFixed(1)}px),calc(-50% + ${(Math.sin(a)*d*.5+16+Math.random()*34).toFixed(1)}px)) rotate(${(a+Math.random()*5).toFixed(2)}rad)`,opacity:0}],
+        {duration:450+Math.random()*550,easing:"cubic-bezier(.2,.7,.4,1)"}).onfinish=()=>f.remove(); } }
+  /* 매듭이 터지는 순간: 바스락 뭉치 + 카드가 움찔 + (폰이면) 진동 + 섬유가 튐 */
+  function snap(power){ tipFlash=1; dirty=true;
+    crackle(6+Math.round(power*8),.035); sfx(240+Math.random()*120,.008+power*.012,.05);
+    try{ card.animate([{translate:"0 0"},{translate:`${((Math.random()-.5)*power*6).toFixed(1)}px ${(power*3).toFixed(1)}px`},{translate:"0 0"}],{duration:110+power*70,easing:"ease-out"}); }catch(e){}
+    try{ navigator.vibrate&&navigator.vibrate(Math.round(6+power*18)); }catch(e){}
+    fibers(2+Math.round(power*7),power>.5); }
   let looping=true;
   function tloop(){
     looping=true; const now=performance.now();
     if(!torn){
+      if(RESkey!==TP[0]) genRes();
+      if(now-lastMv>60) pull*=.82;  if(!drag) pull*=.7;                    // 손을 멈추거나 놓으면 장력이 빠진다
+      const r=resAt(tear);
+      if(pull>r && goal<1){ goal=Math.min(1,goal+(pull-r)*.022);
+        if(r>.3 && resAt(goal+.01)<r-.04 && now>snapCD){ goal=Math.min(1,goal+.02+pull*.03); snap(Math.min(1,pull)); snapCD=now+90; } }   // 매듭이 터지면 확 찢김
+      strain=pull>0?Math.min(1,pull/Math.max(r,.01)):0;
       const before=tear;
-      if(goal>tear+.0005 && Math.random()<.92){ tear+=Math.min(goal-tear,.014+Math.random()*Math.random()*.09); tipFlash=1; }   // 덜컥덜컥 끊기며 진행
+      if(goal>tear+.0005 && Math.random()<.92){ tear+=Math.min(goal-tear,.008+Math.random()*Math.random()*.05); tipFlash=Math.max(tipFlash,.6); }
       tipFlash*=.85;
-      const v=tear-before, pulling=drag||(typeof handOn!=="undefined"&&handOn);
-      const tgt=.22*tear+(pulling?.04:0)*Math.min(1,tear*4);
-      if(Math.abs(open-tgt)>.0003){ open+=(tgt-open)*.24; dirty=true; }
-      if(v>0){ dirty=true; $("proBar").style.width=tear*100+"%"; tearSnd(Math.min(.11,v*11)*(.45+Math.random()*.7)); } else tearSnd(0);
+      const v=tear-before;
+      const tgt=.22*tear+.05*Math.min(1,pull)*Math.min(1,tear*6+.3);        // 당기는 만큼 벌어지고, 놓으면 살짝 되돌아감
+      if(Math.abs(open-tgt)>.0003){ open+=(tgt-open)*(tgt>open?.3:.12); dirty=true; }
+      if(v>0){ dirty=true; $("proBar").style.width=tear*100+"%"; tearSnd(Math.min(.018,v*2.2)); crackle(Math.min(6,Math.round(v*260+Math.random())),.03); if(Math.random()<v*40) fibers(1,false); } else tearSnd(0);
+      if(drag && strain>.7 && strain<1 && Math.random()<.25){ try{ card.animate([{translate:"0 0"},{translate:`${((Math.random()-.5)*1.4).toFixed(2)}px 0`},{translate:"0 0"}],{duration:60}); }catch(e){} }   // 버티는 동안 미세하게 떨림
+      const tilt=drag?pdir*Math.min(1,pull)*1.6*(1-tear*.5):0; tiltV+=(tilt-tiltV)*.15;   // 당기는 쪽으로 카드가 살짝 기욺
+      if(Math.abs(tiltV)>.01) card.style.rotate=tiltV.toFixed(2)+"deg"; else if(card.style.rotate) card.style.rotate="";
       if(tipFlash>.02) dirty=true;
-      if(tear>=.995){ tear=1; torn=true; dirty=true; finishTear(); }
+      if(tear>=.995){ tear=1; torn=true; dirty=true; tiltV=0; card.style.rotate=""; finishTear(); }
     } else if(fallT>=0) dirty=true;
     if(dirty && onScene("tear")){ drawTear(now); dirty=false; }
     if(fallT>=0 && !landed && now-fallT0>FALL_T*960){ landed=true; sfx(420,.07,.09); setTimeout(()=>sfx(360,.05,.08),90); }   // 책상에 내려앉는 소리
@@ -2843,8 +2886,10 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
                ()=>dip(()=>{ clip("pro/corridor_scream.mp4",[[.2,"나는 그를 만나러, 이 열차에 올랐다.",null,1800]],()=>toRoom(),4); setTimeout(playScream,1300); },120),4.2),120),3.8);
            setTimeout(playScream,500); },120),4.3),180);
      },FALL_T*1000+80); }
-  card.addEventListener("pointerdown",e=>{ drag=true; lx=e.clientX; try{ card.setPointerCapture(e.pointerId); }catch(_){} });
-  window.addEventListener("pointermove",e=>{ if(!drag||torn) return; setTear(goal+Math.abs(e.clientX-lx)/PRO_TEAR_PX); lx=e.clientX; });
+  card.addEventListener("pointerdown",e=>{ drag=true; lx=e.clientX; lastMv=performance.now(); try{ card.setPointerCapture(e.pointerId); }catch(_){} });
+  window.addEventListener("pointermove",e=>{ if(!drag||torn) return; const now=performance.now(), dt=Math.max(8,now-lastMv), dxs=e.clientX-lx, dx=Math.abs(dxs);
+    lx=e.clientX; lastMv=now; if(dx>1) pdir=Math.sign(dxs); const sp=dx/dt;                 // 드래그 속도(px/ms) = 당기는 힘
+    pull=Math.max(pull*.6,Math.min(1.6,pull*.55+sp*.55)); if(pull>.05) tearSndStart(); });
   window.addEventListener("pointerup",()=>{ drag=false; });
   /* ---- 테스트: 종이 찢기만 반복 ----
      주소 끝에 #tear 를 붙여 열거나, 프롤로그 중 T 키. 다 찢으면 새 초대장이 다시 나온다(찢긴 결도 매번 달라짐) */

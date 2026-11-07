@@ -473,7 +473,14 @@ button{font:inherit;cursor:pointer;color:inherit}
 .outl polygon{fill:rgba(255,226,160,0);stroke:rgba(255,226,160,0);stroke-width:1.6;vector-effect:non-scaling-stroke;transition:fill .25s,stroke .25s;filter:drop-shadow(0 0 4px rgba(255,210,130,.8))}
 .outl polygon.on{fill:rgba(255,226,160,0);stroke:rgba(255,226,160,0)}
 .outl{display:none}
-.v3d{position:absolute;inset:0;cursor:grab;touch-action:none;background:radial-gradient(ellipse 60% 55% at 30% 18%,rgba(255,196,120,.16),transparent 70%),radial-gradient(ellipse 80% 60% at 50% 62%,rgba(40,28,16,.28),rgba(6,4,3,.86) 100%),linear-gradient(180deg,rgba(0,0,0,.25),transparent 30%,transparent 70%,rgba(0,0,0,.55));-webkit-backdrop-filter:blur(18px) brightness(.62) saturate(.8);backdrop-filter:blur(18px) brightness(.62) saturate(.8)}
+.v3d{position:absolute;inset:0;cursor:grab;touch-action:none;
+  background:
+    radial-gradient(circle at 14% 24%,rgba(255,190,110,.22) 0 2.2%,rgba(255,190,110,.07) 2.6%,transparent 4.8%),
+    radial-gradient(circle at 86% 20%,rgba(255,190,110,.18) 0 1.8%,rgba(255,190,110,.06) 2.2%,transparent 4%),
+    radial-gradient(circle at 70% 34%,rgba(255,206,140,.08) 0 1.2%,transparent 2.6%),
+    radial-gradient(ellipse 34% 46% at 50% 44%,rgba(150,96,46,.26),transparent 72%),
+    radial-gradient(ellipse 120% 90% at 50% 40%,#1d140d 0%,#0f0a07 55%,#060403 100%);}
+.v3d::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.35),transparent 22%,transparent 72%,rgba(0,0,0,.5))}
 .v3d.grab{cursor:grabbing}
 .v3d canvas{width:100%!important;height:100%!important;display:block}
 .v3hint{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);background:rgba(20,17,16,.85);color:#e8dfc9;font-size:.72em;padding:.3em .9em;white-space:nowrap;pointer-events:none}
@@ -1987,9 +1994,10 @@ function exDustPlane(pw=5,pd=1.6,opt={}){ const W=2048,H=Math.max(256,Math.round
   if(opt.stadium){ g.globalCompositeOperation="source-over"; const r0=H/2, ins=H*.02;
     const stad=(x,i)=>{ x.beginPath(); x.moveTo(r0,i); x.lineTo(W-r0,i); x.arc(W-r0,H/2,r0-i,-Math.PI/2,Math.PI/2); x.lineTo(r0,H-i); x.arc(r0,H/2,r0-i,Math.PI/2,Math.PI*1.5); x.closePath(); };
     g.globalCompositeOperation="destination-in"; g.save(); g.filter="blur(3px)"; g.fillStyle="#000"; stad(g,ins); g.fill(); g.restore(); g.globalCompositeOperation="source-over"; }
-  else { const e=Math.min(W,H)*.08; [[0,0,W,e,0,0,0,e],[0,H-e,W,e,0,H,0,H-e],[0,0,e,H,0,0,e,0],[W-e,0,e,H,W,0,W-e,0]].forEach(([x,y,w,hh,x1,y1,x2,y2])=>{ const l=g.createLinearGradient(x1,y1,x2,y2); l.addColorStop(0,"rgba(0,0,0,1)"); l.addColorStop(1,"rgba(0,0,0,0)"); g.fillStyle=l; g.fillRect(x,y,w,hh); });
+  else if(!opt.raw){ const e=Math.min(W,H)*.08; [[0,0,W,e,0,0,0,e],[0,H-e,W,e,0,H,0,H-e],[0,0,e,H,0,0,e,0],[W-e,0,e,H,W,0,W-e,0]].forEach(([x,y,w,hh,x1,y1,x2,y2])=>{ const l=g.createLinearGradient(x1,y1,x2,y2); l.addColorStop(0,"rgba(0,0,0,1)"); l.addColorStop(1,"rgba(0,0,0,0)"); g.fillStyle=l; g.fillRect(x,y,w,hh); });
   g.globalCompositeOperation="source-over"; }
   const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.anisotropy=8;
+  if(opt.raw){ t.encoding=THREE.LinearEncoding; return t; }
   const m=new THREE.Mesh(new THREE.PlaneGeometry(pw,pd),new THREE.MeshStandardMaterial({map:t,transparent:true,roughness:1,metalness:0,depthWrite:false})); m.rotation.x=-Math.PI/2; m.position.y=.002; return m; }
 function mountStatue3D(s){ const CF=M3D[s.id];
   if(!window.THREE||!THREE.GLTFLoader) return;
@@ -2005,11 +2013,19 @@ function mountStatue3D(s){ const CF=M3D[s.id];
   const dust=new THREE.Mesh(new THREE.RingGeometry(.2,.62,48),new THREE.MeshStandardMaterial({color:0x120a05,roughness:.3,transparent:true,opacity:.35})); dust.rotation.x=-Math.PI/2; dust.position.y=.002; if(CF.lift){ const dp=exDustPlane(); S.add(dp);
     m3dLoad("table3d.json",g=>{ if(!S3||S3.s!==s) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3()), k=2.4/Math.max(sz.x,sz.z);
       m.position.set(-c.x,-b.max.y,-c.z); const p=new THREE.Group(); p.add(m); p.scale.setScalar(k); p.position.y=-.004; p.rotation.y=Math.PI/2; S.add(p); if(top) top.visible=false; S.remove(dp);
-      /* 테이블 '윗면'만 재서 먼지를 딱 그 크기로 깐다 (아래쪽 장식까지 포함한 전체 크기로 깔면 테두리 밖으로 떠 보임) */
-      p.updateMatrixWorld(true); const v=new THREE.Vector3(); let topY=-1e9; const pts=[];
-      p.traverse(o=>{ if(!o.isMesh) return; const pa=o.geometry.attributes.position; for(let i=0;i<pa.count;i+=1){ v.fromBufferAttribute(pa,i).applyMatrix4(o.matrixWorld); pts.push(v.x,v.y,v.z); if(v.y>topY) topY=v.y; } });
-      let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9; for(let i=0;i<pts.length;i+=3){ if(pts[i+1]<topY-.012) continue; x0=Math.min(x0,pts[i]); x1=Math.max(x1,pts[i]); z0=Math.min(z0,pts[i+2]); z1=Math.max(z1,pts[i+2]); }
-      const d2=exDustPlane((x1-x0)*.985,(z1-z0)*.985,{stadium:true}); d2.position.set((x0+x1)/2,topY+.0015,(z0+z1)/2); S.add(d2); }); }   // 받은 사이드 테이블 모델   // 받은 사이드 테이블 모델
+      /* 먼지를 판으로 따로 깔지 않고 테이블 표면에 직접 입힌다: 위에서 내려다본 먼지 지도를 테이블에 투영하고,
+         위를 향한 면에만 쌓이게 한다 → 울퉁불퉁한 테두리·홈·몰딩 모양 그대로 먼지가 따라간다 (옆면엔 안 쌓임) */
+      const bb=new THREE.Box3().setFromObject(p), bw=bb.max.x-bb.min.x, bd=bb.max.z-bb.min.z, dt=exDustPlane(bw,bd,{raw:true});
+      p.traverse(o=>{ if(!o.isMesh) return; const mats=[].concat(o.material).map(mt=>{ const m2=mt.clone();
+          m2.onBeforeCompile=sh=>{ sh.uniforms.dustMap={value:dt}; sh.uniforms.dustBox={value:new THREE.Vector4(bb.min.x,bb.min.z,bw,bd)};
+            sh.vertexShader=sh.vertexShader.replace("#include <common>","#include <common>\nvarying vec3 vDW; varying vec3 vDN;")
+              .replace("#include <worldpos_vertex>","#include <worldpos_vertex>\nvDW=(modelMatrix*vec4(transformed,1.0)).xyz; vDN=normalize(mat3(modelMatrix)*objectNormal);");
+            sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform sampler2D dustMap; uniform vec4 dustBox; varying vec3 vDW; varying vec3 vDN; float dAmt;")
+              .replace("#include <map_fragment>","#include <map_fragment>\n{ vec2 du=(vDW.xz-dustBox.xy)/dustBox.zw; vec4 dd=texture2D(dustMap,vec2(du.x,1.0-du.y)); float up=smoothstep(0.45,0.92,normalize(vDN).y);"+
+                " dAmt=clamp(dd.a*up*0.85,0.0,0.62); diffuseColor.rgb=mix(diffuseColor.rgb,pow(dd.rgb,vec3(2.2))*0.72,dAmt); }")
+              .replace("#include <roughnessmap_fragment>","#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,1.0,dAmt);"); };
+          m2.customProgramCacheKey=()=>"dusty"; return m2; });
+        o.material=Array.isArray(o.material)?mats:mats[0]; }); }); }   // 받은 사이드 테이블 모델   // 받은 사이드 테이블 모델
   const vial=new THREE.Group(); const gl=new THREE.Mesh(new THREE.CylinderGeometry(.035,.04,.16,24),new THREE.MeshStandardMaterial({color:0xcfe3ea,roughness:.12,metalness:.1,transparent:true,opacity:.7,emissive:0x1a262a}));
   const pw=new THREE.Mesh(new THREE.CylinderGeometry(.033,.038,.035,24),new THREE.MeshStandardMaterial({color:0xffffff,roughness:1})); pw.position.y=-.06;
   const ck=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,.04,16),new THREE.MeshStandardMaterial({color:0x6b4a2a})); ck.position.y=.1; vial.add(gl,pw,ck); vial.position.set(.05,.08,.02); vial.visible=false; S.add(vial);
@@ -3332,7 +3348,7 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
 .board.exam .b-card::before,.board.exam .b-card::after{display:none}
 .board.exam .b-card>:not(.photo){display:none}
 .board.exam .b-card .photo{position:absolute;inset:0;width:auto;height:auto;aspect-ratio:auto;filter:sepia(.25) saturate(.85) brightness(.75);box-shadow:none;background-size:contain!important;background-position:center!important}
-.board.exam .v3d{background:radial-gradient(ellipse at 50% 50%,rgba(40,26,14,.25),rgba(6,4,3,.86) 78%);-webkit-backdrop-filter:blur(14px) brightness(.8);backdrop-filter:blur(14px) brightness(.8)}
+.board.exam .v3d{-webkit-backdrop-filter:none;backdrop-filter:none}   /* 배경 사진 대신 .v3d 의 어두운 방 + 램프 보케를 그대로 쓴다 */
 .board.exam .v3d::before,.dollv::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;opacity:.18;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
 .board.exam .v3hint{white-space:normal;text-align:center;width:max-content;max-width:60%;bottom:3%;padding:.8em 1.8em;font-size:1em;line-height:1.6;border:1px solid rgba(210,173,99,.35)}
 .board.exam .exspot span{font-size:14px;padding:4px 12px}

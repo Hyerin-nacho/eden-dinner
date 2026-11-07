@@ -1948,7 +1948,7 @@ function exWoodMat(){ const c=document.createElement("canvas"); c.width=c.height
    · 고르게 내려앉은 아주 고운 먼지(픽셀 단위) + 저주파 노이즈로 쌓인 양이 들쭉날쭉
    · 굵은 먼지 덩어리 몇 개, 휘어진 섬유 보풀
    · 닦인 자리는 가장자리가 부드럽고, 밀려난 먼지가 테두리에 살짝 쌓임 · 손가락 자국은 번진 줄 */
-function exDustPlane(pw=5,pd=1.6){ const W=2048,H=Math.max(256,Math.round(W*pd/pw)),u=W/pw,c=document.createElement("canvas"); c.width=W; c.height=H; const g=c.getContext("2d"), cx=W/2, cy=H/2, R=.3*u;
+function exDustPlane(pw=5,pd=1.6,opt={}){ const W=2048,H=Math.max(256,Math.round(W*pd/pw)),u=W/pw,c=document.createElement("canvas"); c.width=W; c.height=H; const g=c.getContext("2d"), cx=W/2, cy=H/2, R=.3*u;
   // 저주파 밀도 맵 (두 옥타브를 부드럽게 키워 겹침)
   const den=document.createElement("canvas"); den.width=W/8|0; den.height=H/8|0; const dg=den.getContext("2d");
   for(const [n,a] of [[10,.7],[34,.35]]){ const sm=document.createElement("canvas"); sm.width=n; sm.height=Math.max(2,Math.round(n*H/W)); const sg=sm.getContext("2d");
@@ -1982,9 +1982,14 @@ function exDustPlane(pw=5,pd=1.6){ const W=2048,H=Math.max(256,Math.round(W*pd/p
     const gr=g.createLinearGradient(x0,y0,x0+Math.cos(a2)*len,y0+Math.sin(a2)*len); gr.addColorStop(0,"rgba(0,0,0,.75)"); gr.addColorStop(1,"rgba(0,0,0,0)");
     g.strokeStyle=gr; g.lineWidth=w; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x0+Math.cos(a2)*len,y0+Math.sin(a2)*len); g.stroke(); } }
   g.restore();
-  // 7) 테이블 가장자리로 갈수록 자연스럽게 사라짐
-  const e=Math.min(W,H)*.08; [[0,0,W,e,0,0,0,e],[0,H-e,W,e,0,H,0,H-e],[0,0,e,H,0,0,e,0],[W-e,0,e,H,W,0,W-e,0]].forEach(([x,y,w,hh,x1,y1,x2,y2])=>{ const l=g.createLinearGradient(x1,y1,x2,y2); l.addColorStop(0,"rgba(0,0,0,1)"); l.addColorStop(1,"rgba(0,0,0,0)"); g.fillStyle=l; g.fillRect(x,y,w,hh); });
-  g.globalCompositeOperation="source-over";
+  // 7) 테이블 윗면 모양(양끝이 둥근 타원형)대로 끝까지 덮고, 맨 가장자리만 아주 살짝 흐리게.
+  //    가장자리 몰딩 쪽엔 먼지가 조금 더 끼어 있다
+  if(opt.stadium){ g.globalCompositeOperation="source-over"; const r0=H/2, ins=H*.012;
+    const stad=(x,i)=>{ x.beginPath(); x.moveTo(r0,i); x.lineTo(W-r0,i); x.arc(W-r0,H/2,r0-i,-Math.PI/2,Math.PI/2); x.lineTo(r0,H-i); x.arc(r0,H/2,r0-i,Math.PI/2,Math.PI*1.5); x.closePath(); };
+    g.save(); g.filter="blur(5px)"; g.strokeStyle="rgba(190,180,162,.32)"; g.lineWidth=H*.05; stad(g,H*.04); g.stroke(); g.restore();
+    g.globalCompositeOperation="destination-in"; g.save(); g.filter="blur(3px)"; g.fillStyle="#000"; stad(g,ins); g.fill(); g.restore(); g.globalCompositeOperation="source-over"; }
+  else { const e=Math.min(W,H)*.08; [[0,0,W,e,0,0,0,e],[0,H-e,W,e,0,H,0,H-e],[0,0,e,H,0,0,e,0],[W-e,0,e,H,W,0,W-e,0]].forEach(([x,y,w,hh,x1,y1,x2,y2])=>{ const l=g.createLinearGradient(x1,y1,x2,y2); l.addColorStop(0,"rgba(0,0,0,1)"); l.addColorStop(1,"rgba(0,0,0,0)"); g.fillStyle=l; g.fillRect(x,y,w,hh); });
+  g.globalCompositeOperation="source-over"; }
   const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.anisotropy=8;
   const m=new THREE.Mesh(new THREE.PlaneGeometry(pw,pd),new THREE.MeshStandardMaterial({map:t,transparent:true,roughness:1,metalness:0,depthWrite:false})); m.rotation.x=-Math.PI/2; m.position.y=.002; return m; }
 function mountStatue3D(s){ const CF=M3D[s.id];
@@ -2001,7 +2006,7 @@ function mountStatue3D(s){ const CF=M3D[s.id];
   const dust=new THREE.Mesh(new THREE.RingGeometry(.2,.62,48),new THREE.MeshStandardMaterial({color:0x120a05,roughness:.3,transparent:true,opacity:.35})); dust.rotation.x=-Math.PI/2; dust.position.y=.002; if(CF.lift){ const dp=exDustPlane(); S.add(dp);
     m3dLoad("table3d.json",g=>{ if(!S3||S3.s!==s) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3()), k=2.4/Math.max(sz.x,sz.z);
       m.position.set(-c.x,-b.max.y,-c.z); const p=new THREE.Group(); p.add(m); p.scale.setScalar(k); p.position.y=-.004; p.rotation.y=Math.PI/2; S.add(p); if(top) top.visible=false; S.remove(dp);
-      const d2=exDustPlane(sz.z*k*.74,sz.x*k*.74); d2.position.y=.003; S.add(d2); }); }   // 받은 사이드 테이블 모델
+      const d2=exDustPlane(sz.z*k*.97,sz.x*k*.97,{stadium:true}); /* 테이블 윗면 끝까지, 둥근 양끝 모양 그대로 */ d2.position.y=.003; S.add(d2); }); }   // 받은 사이드 테이블 모델
   const vial=new THREE.Group(); const gl=new THREE.Mesh(new THREE.CylinderGeometry(.035,.04,.16,24),new THREE.MeshStandardMaterial({color:0xcfe3ea,roughness:.12,metalness:.1,transparent:true,opacity:.7,emissive:0x1a262a}));
   const pw=new THREE.Mesh(new THREE.CylinderGeometry(.033,.038,.035,24),new THREE.MeshStandardMaterial({color:0xffffff,roughness:1})); pw.position.y=-.06;
   const ck=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,.04,16),new THREE.MeshStandardMaterial({color:0x6b4a2a})); ck.position.y=.1; vial.add(gl,pw,ck); vial.position.set(.05,.08,.02); vial.visible=false; S.add(vial);

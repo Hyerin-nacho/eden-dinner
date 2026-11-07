@@ -1858,15 +1858,8 @@ function exGlass(){ const G=new THREE.Group();
   const pt=new THREE.CanvasTexture(pc); pt.encoding=THREE.sRGBEncoding; pt.anisotropy=8;
   const pw=new THREE.Mesh(new THREE.CircleGeometry(.14,48),new THREE.MeshStandardMaterial({map:pt,roughness:.85,transparent:true,depthWrite:false})); pw.rotation.x=-Math.PI/2; pw.position.y=.0765; G.add(pw);
   return G; }
-/* 3D 증거 화면 배경 후보 — 테스트 화면(#statue, #bottle)에서 위쪽 버튼으로 바꿔 보며 비교 */
-const V3BG=[["now","지금"],["a","A 증거 촬영"],["b","B 객실 벽"],["c","C 밤 창가"]];
-function v3bg(wrap){ let k="b"; try{ k=localStorage.getItem("v3bg")||"b"; }catch(e){}
-  const bg=document.createElement("div"); bg.className="v3bg"; bg.innerHTML='<i class="l1"></i><i class="l2"></i><i class="l3"></i>'; wrap.prepend(bg);
-  const set=v=>{ k=v; wrap.dataset.bg=v; try{ localStorage.setItem("v3bg",v); }catch(e){} wrap.querySelectorAll(".v3sw button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); };
-  if(/^#(statue|bottle|test)/.test(location.hash)){ const sw=document.createElement("div"); sw.className="v3sw";
-    sw.innerHTML="<span>배경</span>"+V3BG.map(([v,t])=>`<button type="button" data-v="${v}">${t}</button>`).join(""); wrap.appendChild(sw);
-    sw.addEventListener("pointerdown",e=>e.stopPropagation()); sw.querySelectorAll("button").forEach(b=>b.onclick=e=>{ e.stopPropagation(); set(b.dataset.v); }); }
-  set(k); }
+/* 3D 증거 화면 배경: 증거 촬영 — 무광 회색 배경지 + 위에서 떨어지는 스포트라이트 */
+function v3bg(wrap){ const bg=document.createElement("div"); bg.className="v3bg"; bg.innerHTML='<i class="l1"></i><i class="l2"></i><i class="l3"></i>'; wrap.prepend(bg); wrap.dataset.bg="a"; }
 function unmountExam(){ if(!EX) return; cancelAnimationFrame(EX.raf); EX.wrap.remove(); try{ EX.R.dispose(); }catch(e){} EX=null; }
 function cropContent(cv){ const W=cv.width,H=cv.height, t=document.createElement("canvas"); t.width=W; t.height=H; const g=t.getContext("2d"); g.drawImage(cv,0,0);
   const d=g.getImageData(0,0,W,H).data; let x0=W,y0=H,x1=0,y1=0;
@@ -3994,39 +3987,14 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .testmenu kbd{font-family:var(--mono);border:1px solid rgba(239,230,208,.35);padding:0 5px}
 </style>
 <style>
-/* ===== 3D 증거 화면 배경 후보 ===== */
+/* ===== 3D 증거 화면 배경: 증거 촬영 ===== */
 .v3d canvas{position:relative;z-index:1}
 .v3bg{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;display:none}
 .v3bg i{position:absolute;inset:-30px;display:block}
-.v3d[data-bg="a"] .v3bg,.v3d[data-bg="b"] .v3bg,.v3d[data-bg="c"] .v3bg{display:block}
+.v3d[data-bg="a"] .v3bg{display:block}
 /* A. 증거 촬영: 무광 회색 배경지 + 위에서 떨어지는 스포트라이트 + 바닥 쪽으로 어두워짐 */
 .v3d[data-bg="a"] .v3bg .l1{background:linear-gradient(180deg,#2b2926 0%,#211f1c 52%,#151311 100%)}
 .v3d[data-bg="a"] .v3bg .l2{background:radial-gradient(ellipse 26% 62% at 50% 26%,rgba(255,244,222,.20),rgba(255,244,222,.06) 55%,transparent 75%),radial-gradient(ellipse 60% 22% at 50% 70%,rgba(255,240,215,.10),transparent 70%)}
 .v3d[data-bg="a"] .v3bg .l3{background:radial-gradient(ellipse 85% 85% at 50% 45%,transparent 50%,rgba(0,0,0,.65) 100%)}
-/* B. 객실 벽: 녹색 다마스크 벽지 + 황동 몰딩 + 나무 징두리 판넬 + 왼쪽 벽등, 초점이 나가 흐릿 */
-.v3d[data-bg="b"] .v3bg .l1{filter:blur(7px) brightness(.55) saturate(.85);
-  background:
-    linear-gradient(180deg,transparent 0 57%,#8a6a36 57% 57.8%,#2a170c 57.8% 59.5%,transparent 59.5%),
-    repeating-linear-gradient(90deg,rgba(0,0,0,.45) 0 3px,rgba(255,210,150,.05) 3px 5px,transparent 5px 18%),
-    linear-gradient(180deg,transparent 0 59.5%,#3b2314 59.5% 100%),
-    radial-gradient(ellipse 13px 20px at 50% 50%,rgba(180,160,100,.22) 45%,transparent 50%) 0 0/54px 76px,
-    radial-gradient(ellipse 7px 11px at 50% 50%,rgba(180,160,100,.16) 45%,transparent 50%) 27px 38px/54px 76px,
-    #1d2d24}
-.v3d[data-bg="b"] .v3bg .l2{background:radial-gradient(circle at 16% 30%,rgba(255,200,120,.55) 0 1.4%,rgba(255,190,110,.18) 3%,transparent 16%),radial-gradient(ellipse 40% 50% at 16% 30%,rgba(255,180,100,.14),transparent 70%),radial-gradient(ellipse 30% 44% at 50% 42%,rgba(255,200,140,.08),transparent 70%)}
-.v3d[data-bg="b"] .v3bg .l3{background:radial-gradient(ellipse 90% 90% at 50% 45%,transparent 45%,rgba(0,0,0,.72) 100%)}
-/* C. 밤 창가: 창밖 밤 풍경에 불빛이 스쳐 지나가고, 양옆에 붉은 벨벳 커튼 */
-.v3d[data-bg="c"] .v3bg .l1{background:linear-gradient(180deg,#070a12 0%,#0c1220 55%,#05070b 100%)}
-.v3d[data-bg="c"] .v3bg .l2{filter:blur(6px);opacity:.9;background:repeating-linear-gradient(90deg,transparent 0 22%,rgba(255,196,120,0) 22%,rgba(255,196,120,.35) 23.5%,rgba(255,220,170,.5) 24%,rgba(255,196,120,0) 26%,transparent 26% 44%) 0 38%/260% 14% no-repeat,linear-gradient(180deg,transparent 60%,rgba(20,24,30,.9) 60%);animation:v3pass 3.2s linear infinite}
-@keyframes v3pass{from{background-position:100% 38%,0 0}to{background-position:0% 38%,0 0}}
-.v3d[data-bg="c"] .v3bg .l3{background:
-    repeating-linear-gradient(90deg,rgba(0,0,0,.35) 0 6px,rgba(255,255,255,.03) 6px 14px) left/14% 100% no-repeat,
-    repeating-linear-gradient(90deg,rgba(0,0,0,.35) 0 6px,rgba(255,255,255,.03) 6px 14px) right/14% 100% no-repeat,
-    linear-gradient(90deg,#3a0d10 0 14%,transparent 14% 86%,#3a0d10 86%),
-    radial-gradient(ellipse 85% 85% at 50% 45%,transparent 45%,rgba(0,0,0,.7) 100%);filter:blur(2px)}
-/* 비교용 스위치 (테스트 화면에서만) */
-.v3sw{position:absolute;left:12px;top:12px;z-index:6;display:flex;align-items:center;gap:4px;padding:4px;background:rgba(8,6,4,.72);border:1px solid rgba(210,173,99,.35);font-family:var(--mono);font-size:11px}
-.v3sw span{color:var(--brass);letter-spacing:.2em;padding:0 6px}
-.v3sw button{background:none;border:1px solid transparent;color:rgba(239,230,208,.75);font:inherit;padding:4px 8px;cursor:pointer}
-.v3sw button.on{border-color:var(--brass);color:#efe6d0;background:rgba(210,173,99,.18)}
 </style>
 </body></html>

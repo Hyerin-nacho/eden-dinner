@@ -2680,7 +2680,8 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   $("proStart").onclick=()=>{ $("proStart").disabled=true;
     try{ audio(); ac&&ac.resume(); }catch(e){}
     // 웹캠은 여기서 켜지 않는다: 초대장이 나온 뒤 '카메라로 체험'을 눌러 허락해야 켜진다
-    coldOpen(()=>clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); },0,1.7));
+    camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camTag.textContent="";   // 웹캠 자리는 처음부터 보이게(영상 속 로고 가림). 카메라는 허락 뒤에만 켜진다
+    coldOpen(()=>clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); }));
   };
   /* 1. 영상 마지막 — 손에 든 봉투 */
   const hand=$("proHand"), hz=$("proHit");
@@ -2833,8 +2834,8 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   function finishTear(){ sfx(2600,.12,.2,"bandpass"); sfx(700,.09,.15); tearSndStop();
     setTimeout(()=>{ spawnPieces(); fallT0=performance.now(); fallT=0; dirty=true; },40);
      setTimeout(()=>{ if(tearTest){ resetTear(); return; }
-       dip(()=>clip(PRO.memory,[[.2,"그날 아내는 열차에서 돌아오지 못했다.",null,2800]],
-         ()=>dip(()=>clip("pro/seated.mp4",[[.2,"나는 그 범인을 찾으러 이 열차에 타야만 한다.",null,2400]],()=>toRoom(),2.6),120),3.2),180);
+       dip(()=>clip(PRO.memory,[[.2,"5년 전, 오르페우스. 아내는 이 열차에서 돌아오지 못했다.",null,3400]],
+         ()=>dip(()=>{ clip("pro/seated.mp4",[[.2,"경찰은 ‘단순 사고’라고 했다.",null,1900],[2.3,"그런데 아직도, 그날의 비명이 들린다.","red",2300],[4.8,"범인은 이 열차 안에 있다. 이번엔 내가 찾는다.",null,2300]],()=>toRoom(),6.8); setTimeout(playScream,2200); },120),3.6),180);
      },FALL_T*1000+80); }
   card.addEventListener("pointerdown",e=>{ drag=true; lx=e.clientX; try{ card.setPointerCapture(e.pointerId); }catch(_){} });
   window.addEventListener("pointermove",e=>{ if(!drag||torn) return; setTear(goal+Math.abs(e.clientX-lx)/PRO_TEAR_PX); lx=e.clientX; });
@@ -2898,7 +2899,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     else if(st==="nohands"){ handOn=false; camOff.style.display="none"; setH("손 인식 로딩 실패 · 마우스로 진행"); }
     else if(st==="nocam"){ handOn=false; camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; hTag.textContent=""; }
     else { handOn=false; } });
-  function denied(msg){ CAMHUB.stop(); camBox.classList.remove("on"); camTag.textContent=""; hTag.textContent="";
+  function denied(msg){ CAMHUB.stop(); camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camTag.textContent=""; hTag.textContent="";
     $("proTearHint").innerHTML=msg; dip(()=>show("tear"),200); }
   $("proDeny").onclick=()=>denied('초대장을 <b>좌우로 드래그</b>해 찢으세요');
   let camConnecting=false;
@@ -2967,7 +2968,8 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
       raf=requestAnimationFrame(tick); })();
   }
    /* 탑승 컷 다음에는 실제 문 앞 컷을 보여 주고, 그 프레임 위에서 문을 열게 한다. */
-   function toRoom(){ dip(()=>clip("pro/bridge_door.mp4",null,finish,2.8),180); }
+   function playScream(){ try{ if(!soundOn) return; const a=new Audio("pro/scream.mp3"); a.volume=.55; a.play().catch(()=>{}); }catch(e){} }   // pro/scream.mp3 가 있으면 재생, 없으면 조용히 건너뜀
+  function toRoom(){ dip(()=>clip("pro/bridge_door.mp4",null,finish,2.8),180); }
   /* 7. VIP실 문 앞 — 영상 마지막 장면에서 "문을 연다" (클릭 / 카메라 앞으로 손 밀기) */
   let doorWait=false, doorBase=null, doorHold=0;
   function finish(){ if(done) return; done=true; doorWait=true; doorBase=null; doorHold=0;

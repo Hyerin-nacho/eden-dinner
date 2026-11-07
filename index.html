@@ -1782,14 +1782,18 @@ function mountExam(s){ const CF=EXAM[s.id]; if(!window.THREE) return;
   const obj=CF.build(); S.add(obj);
   const hint=document.createElement("div"); hint.className="v3hint"; wrap.appendChild(hint);
   const spot=document.createElement("button"); spot.className="exspot"; spot.innerHTML=`<span>${CF.label}</span>`; spot.setAttribute("aria-label",CF.label+" 살펴보기"); wrap.appendChild(spot);
-  EX={s,R,S,C,wrap,obj,raf:0,yaw:CF.yaw||0,pitch:0,drag:null,face:0,done:found.has(s.id)};
+  EX={s,R,S,C,wrap,obj,raf:0,yaw:CF.yaw||0,pitch:0,drag:null,face:0,done:found.has(s.id),
+      ry:(CF.yaw||0)-.9,rp:.35,vy:0,vp:0,t0:0,lx:0,ly:0,lt:0};   // ry/rp: 실제로 보이는 각도(목표를 무게감 있게 따라감), vy/vp: 놓은 뒤 남는 회전 관성
   EX.sync=()=>{ EX.done=found.has(s.id); hint.innerHTML=EX.done?"끌어서 돌려 보기":`<small>${CF.pre}</small><b>${CF.hint}</b>`; };
   EX.sync();
   const el=R.domElement;
-  el.onpointerdown=e=>{ EX.drag={x:e.clientX,y:e.clientY,yaw:EX.yaw,pitch:EX.pitch}; wrap.classList.add("grab"); try{ el.setPointerCapture(e.pointerId); }catch(_){} };
-  el.onpointermove=e=>{ if(!EX||!EX.drag) return; const r=el.getBoundingClientRect();
-    EX.yaw=EX.drag.yaw+(e.clientX-EX.drag.x)/Math.min(r.width,640)*5; EX.pitch=Math.max(CF.pitch[0],Math.min(CF.pitch[1],EX.drag.pitch+(e.clientY-EX.drag.y)/Math.min(r.height,420)*2.6)); };
-  el.onpointerup=()=>{ if(!EX) return; EX.drag=null; wrap.classList.remove("grab"); };
+  /* 손에 쥔 느낌: 끄는 동안엔 각도가 손을 살짝 늦게 따라오고, 휙 던지듯 놓으면 그 속도로 계속 돌다가 서서히 멈춘다 */
+  el.onpointerdown=e=>{ EX.drag={x:e.clientX,y:e.clientY,yaw:EX.yaw,pitch:EX.pitch}; EX.vy=EX.vp=0; EX.lx=e.clientX; EX.ly=e.clientY; EX.lm=performance.now(); wrap.classList.add("grab"); try{ el.setPointerCapture(e.pointerId); }catch(_){} };
+  el.onpointermove=e=>{ if(!EX||!EX.drag) return; const r=el.getBoundingClientRect(), now=performance.now(), dt=Math.max(8,now-EX.lm);
+    const py=EX.yaw, pp=EX.pitch;
+    EX.yaw=EX.drag.yaw+(e.clientX-EX.drag.x)/Math.min(r.width,640)*5; EX.pitch=Math.max(CF.pitch[0],Math.min(CF.pitch[1],EX.drag.pitch+(e.clientY-EX.drag.y)/Math.min(r.height,420)*2.6));
+    EX.vy=EX.vy*.5+(EX.yaw-py)/dt*1000*.5; EX.vp=EX.vp*.5+(EX.pitch-pp)/dt*1000*.5; EX.lm=now; };   // 라디안/초
+  el.onpointerup=()=>{ if(!EX) return; if(performance.now()-EX.lm>80){ EX.vy=EX.vp=0; } EX.drag=null; wrap.classList.remove("grab"); };
   el.onwheel=e=>{ e.preventDefault(); EX.zoom=Math.max(.22,Math.min(1.5,(EX.zoom||1)*(e.deltaY>0?1.08:.92))); };
   spot.onclick=e=>{ e.stopPropagation(); if(EX.done) return; EX.done=true; spot.classList.remove("on"); wrap.classList.add("exhit"); hint.innerHTML="";
     const fb=document.createElement("div"); fb.className="exfound"; fb.innerHTML=`<small>단서 발견</small><b>${CF.label}</b>`; wrap.appendChild(fb);
@@ -1797,8 +1801,16 @@ function mountExam(s){ const CF=EXAM[s.id]; if(!window.THREE) return;
   const wp=new THREE.Vector3(), wn=new THREE.Vector3(), tc=new THREE.Vector3(), q=new THREE.Quaternion();
   const loop=t=>{ if(!EX||EX.s!==s) return; if(activeSpot!==s||mode!=="inspect"){ unmountExam(); return; }
     const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&R.domElement.width!==Math.round(w*R.getPixelRatio())){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
-    const idle=EX.drag?0:Math.sin(t/900)*.04;
-    obj.rotation.set(EX.pitch,EX.yaw+idle,0);
+    const dt0=Math.min(.05,(t-(EX.pt||t))/1000); EX.pt=t;
+    if(!EX.drag && (Math.abs(EX.vy)>.01||Math.abs(EX.vp)>.01)){                 // 던진 회전이 마찰로 서서히 멈춤
+      EX.yaw+=EX.vy*dt0; EX.pitch=Math.max(CF.pitch[0],Math.min(CF.pitch[1],EX.pitch+EX.vp*dt0));
+      const fr=Math.pow(.06,dt0); EX.vy*=fr; EX.vp*=fr; if(EX.pitch<=CF.pitch[0]||EX.pitch>=CF.pitch[1]) EX.vp*=-.35; }
+    const pry=EX.ry; EX.ry+=(EX.yaw-EX.ry)*(1-Math.pow(.0008,dt0)); EX.rp+=(EX.pitch-EX.rp)*(1-Math.pow(.0008,dt0));   // 무게감 있게 따라감
+    const spin=dt0?(EX.ry-pry)/dt0:0;
+    if(!EX.t0) EX.t0=t; const it=Math.min(1,(t-EX.t0)/750), ie=1+2.2*Math.pow(it-1,3)+1.2*Math.pow(it-1,2);   // 집어 드는 등장: 아래에서 올라와 살짝 넘쳤다 자리 잡음
+    const idle=EX.drag?0:Math.sin(t/900)*.04, sway=Math.sin(t/1300)*.012;
+    obj.position.set(0,(1-ie)*-.28+Math.sin(t/1100)*.006,0); obj.scale.setScalar(.82+.18*ie);
+    obj.rotation.set(EX.rp+(1-ie)*.55+sway,EX.ry+idle,Math.max(-.12,Math.min(.12,-spin*.03)));   // 빨리 돌리면 손목이 살짝 기욺
     const cp=CF.cam, k=($("insp").classList.contains("exam")?1.75:1)*(EX.zoom||1); C.position.set(cp[0]*k,cp[1]*k,cp[2]*k); C.lookAt(0,0,0); obj.updateMatrixWorld(true);
     wp.set(...CF.spot.p); obj.localToWorld(wp); obj.getWorldQuaternion(q); wn.set(...CF.spot.n).applyQuaternion(q).normalize();
     tc.copy(C.position).sub(wp).normalize(); const facing=wn.dot(tc);
@@ -1878,7 +1890,7 @@ function mountStatue3D(s){ const CF=M3D[s.id];
     m.position.set(-c.x,-b.min.y,-c.z); const p=new THREE.Group(); p.add(m); p.scale.setScalar(.2/sz.y); p.rotation.y=.5; vial.clear(); vial.add(p); vial.position.set(0,0,0); });   // 받침대 속에 숨겨진 초록 병
   const hint=document.createElement("div"); hint.className="v3hint"; if(CF.lift) hint.innerHTML=`<small>${s.text}</small><b>좌우로 끌어 돌려 보고, 위로 끌어 들어 올려 보자.</b>`; else hint.textContent=CF.hint||"끌어서 돌려 보기"; wrap.appendChild(hint);
   const bar=document.createElement("div"); bar.className="v3bar"; bar.innerHTML="<i></i>"; wrap.appendChild(bar);
-  S3={s,R,S,C,wrap,raf:0,zoom:1,model:null,yaw:.6,lift:0,liftT:0,drag:null,done:opened.has(s.id)};
+  S3={s,R,S,C,wrap,raf:0,zoom:1,model:null,yaw:.6,ry:.6,vy:0,lift:0,lv:0,liftT:0,drag:null,done:opened.has(s.id),pt:0,lm:0,landed:true};
   S3.sync=()=>{ S3.done=!CF.lift||opened.has(s.id); if(S3.done&&CF.lift){ S3.liftT=1; hint.textContent="좌우로 끌어 돌려 보기"; } };
   S3.sync();
   m3dLoad(CF.file,g=>{ if(!S3||S3.s!==s) return; const m=g.scene.clone();
@@ -1887,17 +1899,26 @@ function mountStatue3D(s){ const CF=M3D[s.id];
     const b2=new THREE.Box3().setFromObject(pivot); pivot.position.y=-b2.min.y; S3.model=pivot; S.add(pivot); ph.classList.remove("veiled"); });
 
   const el=R.domElement;
-  el.onpointerdown=e=>{ S3.drag={x:e.clientX,y:e.clientY,yaw:S3.yaw,lift:S3.liftT}; wrap.classList.add("grab"); try{el.setPointerCapture(e.pointerId)}catch(_){} };
-  el.onpointermove=e=>{ if(!S3.drag) return; const r=el.getBoundingClientRect(); S3.yaw=S3.drag.yaw+(e.clientX-S3.drag.x)/r.width*5; if(!CF.lift) S3.tilt=Math.max(-.6,Math.min(.9,(S3.drag.tilt??(S3.drag.tilt=S3.tilt||0))+(e.clientY-S3.drag.y)/r.height*2));
+  el.onpointerdown=e=>{ S3.drag={x:e.clientX,y:e.clientY,yaw:S3.yaw,lift:S3.liftT}; S3.vy=0; S3.lm=performance.now(); wrap.classList.add("grab"); try{el.setPointerCapture(e.pointerId)}catch(_){} };
+  el.onpointermove=e=>{ if(!S3.drag) return; const r=el.getBoundingClientRect(), now=performance.now(), dt=Math.max(8,now-S3.lm), py=S3.yaw; S3.yaw=S3.drag.yaw+(e.clientX-S3.drag.x)/r.width*5; S3.vy=S3.vy*.5+(S3.yaw-py)/dt*1000*.5; S3.lm=now; if(!CF.lift) S3.tilt=Math.max(-.6,Math.min(.9,(S3.drag.tilt??(S3.drag.tilt=S3.tilt||0))+(e.clientY-S3.drag.y)/r.height*2));
     if(CF.lift&&!S3.done){ S3.liftT=Math.max(0,Math.min(1,S3.drag.lift-(e.clientY-S3.drag.y)/r.height*2.2)); bar.firstChild.style.width=(S3.liftT*100)+"%";
       if(S3.liftT>=1){ S3.done=true; S3.drag=null; hit(900,.25,.3); paper(); opened.add(s.id); refreshMarkers(); setTimeout(()=>{ if(activeSpot===s){ renderInspect(s); renderSide(); think(s.th); } },500); } } };
-  el.onpointerup=()=>{ if(!S3) return; S3.drag=null; wrap.classList.remove("grab"); };
+  el.onpointerup=()=>{ if(!S3) return; if(performance.now()-S3.lm>80) S3.vy=0; S3.drag=null; wrap.classList.remove("grab"); };
   el.onwheel=e=>{ e.preventDefault(); S3.zoom=Math.max(.3,Math.min(1.5,S3.zoom*(e.deltaY>0?1.08:.92))); };
   S3.step=d=>{ if(S3.done||!CF.lift) return; S3.liftT=Math.min(1,S3.liftT+d); bar.firstChild.style.width=(S3.liftT*100)+"%"; if(S3.liftT>=1){ S3.done=true; hit(900,.25,.3); paper(); opened.add(s.id); refreshMarkers(); setTimeout(()=>{ renderInspect(s); renderSide(); think(s.th); },500);} };
   const loop=t=>{ if(!S3) return; const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&(R.domElement.width!==Math.round(w*R.getPixelRatio()))){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
-    if(!S3.drag&&!S3.done&&!S3.hand) S3.liftT=Math.max(0,S3.liftT-.02);
-    S3.lift+=(S3.liftT-S3.lift)*.15;
-    if(S3.model){ S3.model.rotation.y=S3.yaw; S3.model.rotation.x=S3.tilt||0; S3.model.position.y=(S3.model.userData.y0??(S3.model.userData.y0=S3.model.position.y))+S3.lift*.45; S3.model.rotation.z=Math.sin(t/300)*.02*S3.lift; }
+    const dt0=Math.min(.05,(t-(S3.pt||t))/1000); S3.pt=t;
+    if(!S3.drag&&!S3.done&&!S3.hand) S3.liftT=0;                                   // 손을 놓으면 무게 때문에 떨어진다
+    /* 들어 올리기: 무게 있는 용수철. 올릴 땐 묵직하게 늦게 따라오고, 놓으면 중력처럼 가속해 떨어져 '쿵' 하고 살짝 튄다 */
+    { const up=S3.liftT>S3.lift, k=up?55:0, c=up?11:0, g=S3.liftT<S3.lift-.001?-9:0;
+      S3.lv+=((S3.liftT-S3.lift)*k-S3.lv*c+g)*dt0; S3.lift+=S3.lv*dt0;
+      if(S3.lift<0){ if(S3.lv<-.6&&!S3.landed){ try{ hit(110,.14,.16); }catch(e){} S3.landed=true; } S3.lift=0; S3.lv=Math.abs(S3.lv)>.6?-S3.lv*.18:0; }   // 바닥에 닿으면 쿵 + 작게 튐
+      if(S3.lift>.03) S3.landed=false;
+      if(S3.liftT>=S3.lift&&!up) { S3.lift+=(S3.liftT-S3.lift)*.2; S3.lv*=.6; } }
+    if(!S3.drag&&Math.abs(S3.vy)>.01){ S3.yaw+=S3.vy*dt0; S3.vy*=Math.pow(.08,dt0); }   // 던진 회전이 서서히 멈춤
+    const pry=S3.ry; S3.ry+=(S3.yaw-S3.ry)*(1-Math.pow(.001,dt0)); const spin=dt0?(S3.ry-pry)/dt0:0;
+    if(S3.model){ S3.model.rotation.y=S3.ry; S3.model.rotation.x=S3.tilt||0; S3.model.position.y=(S3.model.userData.y0??(S3.model.userData.y0=S3.model.position.y))+S3.lift*.45;
+      S3.model.rotation.z=Math.sin(t/300)*.02*S3.lift+Math.max(-.1,Math.min(.1,S3.lv*.04))*S3.lift-Math.max(-.06,Math.min(.06,spin*.02))*S3.lift; }   // 들고 있을 때 흔들림
     vial.visible=CF.lift&&S3.lift>.15; bar.style.opacity=(S3.done||!CF.lift)?0:1;
     const cp=CF.cam, kz=$("insp").classList.contains("exam")?1.45:1; C.position.set(cp[0],cp[1]+S3.lift*.15,cp[2]*S3.zoom*kz); C.lookAt(0,CF.look+S3.lift*.12,0); R.render(S,C); S3.raf=requestAnimationFrame(loop); };
   S3.raf=requestAnimationFrame(loop);
@@ -2704,7 +2725,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
      들쭉날쭉한 찢긴 결 + 겉장이 먼저 찢긴 쪽에 드러나는 하얀 섬유 + 찢어진 끝에서부터 V자로 벌어짐
      + 덜컥덜컥 끊기며 진행 + 찢는 속도만큼 나는 바스락 소리 + 다 찢기면 두 조각이 떨어져 나감 */
   let tear=0, goal=0, torn=false, drag=false, lx=0, open=0, fallT=-1, fallT0=0, tipFlash=0, dirty=true, landed=false;
-   const FALL_T=.8;   // 찢은 조각이 책상에 내려앉는 시간(초)
+   const FALL_T=1.5;   // 찢은 조각이 책상에 내려앉는 시간(초) — 종이는 공기를 타고 천천히
   const card=$("proCard"), tcv=document.createElement("canvas"); tcv.className="tearcv"; card.insertBefore(tcv,$("proTCur"));
   const tctx=tcv.getContext("2d"), pimg=new Image(); let pready=false;
   pimg.onload=()=>{ pready=true; dirty=true; }; pimg.src="pro/paperHalf.png";
@@ -2783,25 +2804,33 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   function spawnPieces(){ PCS.forEach(p=>p.el.remove()); PCS=[];
     const W=HW, H=HH, d=HD, sp=open*W, m=.15*W;
     [[-1,HL,HLb],[1,HR,HRb]].forEach(([dir,img,bimg])=>{
-      const el=document.createElement("div"); el.className="tpiece"; el.style.transformOrigin=(dir<0?"11.54%":"88.46%")+" 50%";
+      const el=document.createElement("div"); el.className="tpiece"; el.style.transformOrigin=(dir<0?"30.8%":"69.2%")+" 50%";   // 조각 자기 중심을 축으로 팔랑임
       const mkc=src=>{ const c=document.createElement("canvas"); c.width=Math.round(W*1.3*d); c.height=Math.round(H*d); const x=c.getContext("2d");
         for(let y=0;y<H;y+=2){ const h=Math.min(2,H-y), k=Math.pow(Math.max(0,H-y)/H,1.1), dx=dir*sp*k, dy=Math.abs(dx)*.12+dir*Math.abs(dx)*.3;
           x.drawImage(src,0,y*d,src.width,h*d,(dx+m)*d,(y+dy)*d,W*d,(h+.6)*d); } return c; };
       const f=mkc(img), b=mkc(bimg); b.style.display="none"; el.append(f,b); card.insertBefore(el,$("proTCur"));
-      PCS.push({el,f,b,dir,a:Math.random()*6.28,bb:Math.random()*6.28,dd:Math.random()*.12,yy:Math.random()*.08,turn:Math.random()<.5?105:285,back:false}); }); }
-  function animPieces(now){ const W=HW, H=HH, t=Math.min(1,(now-fallT0)/1000/FALL_T), sm=t*t*(3-2*t), dec=Math.pow(1-t,1.3);
-    const u=Math.max(0,(t-.12)/.88), us=u*u*(3-2*u);
+      PCS.push({el,f,b,dir,a:Math.random()*6.28,bb:Math.random()*6.28,dd:Math.random()*.12,yy:Math.random()*.08,turn:Math.random()<.5?105:285,sw:.85+Math.random()*.5,r:Math.random(),flip:Math.random()<.35,back:false}); }); }
+  /* 떨어지는 조각 v2 : 카드처럼 빙글빙글 도는 대신 '종이 낙엽'처럼
+     ① 찢긴 순간 손에서 놓인 듯 바깥으로 살짝 벌어지고 ② 공기를 타고 좌우로 미끄러지며(진자) 미끄러지는 쪽으로 기울고
+     ③ 흔들림이 점점 잦아들며 책상 쪽으로 내려앉아 납작하게 눕는다. 가끔(35%) 한 번만 뒤집혀 뒷면으로 눕는다 */
+  function animPieces(now){ const W=HW, H=HH, t=Math.min(1,(now-fallT0)/1000/FALL_T);
     PCS.forEach(p=>{ const dir=p.dir;
-      const sw=75*(1-Math.pow(1-Math.min(1,t/.22),2));                     // 먼저 뒤로 젖혀지고
-      const ry=-dir*(sw+p.turn*us);                                          // 그대로 넘어가며 뒤집힘
-      const rx=22*Math.sin(10*t+p.a)*dec, rz=dir*18*sm+12*Math.sin(7*t+p.bb)*dec;   // 팔랑팔랑
-      const fx=dir*W*(.22+p.dd)*sm+W*.08*Math.sin(8*t+p.a)*dec, fy=H*(.04+p.yy)*sm;
-      const fz=-H*.8*sm+H*.12*Math.sin(Math.PI*t)*(1-t);                    // 책상 쪽으로 멀어짐
+      const pop=1-Math.pow(1-Math.min(1,t/.14),3);                           // ① 툭 벌어짐
+      const fall=Math.max(0,Math.min(1,(t-.06)/.94)), fs=1-Math.pow(1-fall,1.7);   // ② 내려앉는 진행 (처음엔 빠르게, 끝엔 사뿐히)
+      const damp=Math.pow(1-fall,1.2);                                       // 흔들림이 잦아듦
+      const ph=p.a+fall*Math.PI*2*p.sw, sway=Math.sin(ph)*damp, lean=Math.cos(ph)*damp;
+      const fx=dir*W*(.05*pop+(.14+p.dd)*fs)+W*.11*sway;                     // 좌우 진자
+      const fy=H*(.03+p.yy)*fs+H*.025*Math.abs(sway);                        // 진자 끝에서 살짝 떠오르는 느낌
+      const fz=-H*.72*fs;                                                    // 책상 쪽으로 멀어짐
+      const flipT=p.flip?Math.max(0,Math.min(1,(fall-.18)/.55)):0, fl=flipT*flipT*(3-2*flipT);
+      const rz=dir*(3*pop+(10+p.r*8)*fs)+12*lean;                            // 미끄러지는 쪽으로 기울기
+      const ry=-dir*16*pop*(1-fs)+34*lean-dir*180*fl;                        // 진자에 맞춰 젖혀짐 (+ 한 번 뒤집힘)
+      const rx=26*Math.sin(ph+1.3)*damp;
       const rad=ry*Math.PI/180, back=Math.cos(rad)*Math.cos(rx*Math.PI/180)<0;
       if(back!==p.back){ p.back=back; p.f.style.display=back?"none":""; p.b.style.display=back?"":"none"; }
-      const sh=Math.abs(Math.sin(rad)), lift=1-sm;
+      const sh=Math.abs(Math.sin(rad))*.8+Math.abs(Math.sin(rx*Math.PI/180))*.4, lift=1-fs;
       p.el.style.transform=`translate3d(${fx.toFixed(1)}px,${fy.toFixed(1)}px,${fz.toFixed(1)}px) rotateZ(${rz.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg)`;
-      p.el.style.filter=`brightness(${(1-.45*sh).toFixed(3)}) drop-shadow(0 ${(20*lift+3).toFixed(1)}px ${(26*lift+5).toFixed(1)}px rgba(0,0,0,${(.55-.15*sm).toFixed(2)}))`; }); }
+      p.el.style.filter=`brightness(${(1-.4*Math.min(1,sh)).toFixed(3)}) drop-shadow(0 ${(22*lift+2).toFixed(1)}px ${(28*lift+4).toFixed(1)}px rgba(0,0,0,${(.5-.12*fs).toFixed(2)}))`; }); }
   /* 찢는 소리: 끊김 없이 흐르는 잡음을 찢는 속도에 맞춰 크게/작게 */
   let tsnd=null;
   function tearSndStart(){ try{ if(tsnd||!soundOn||!audio()) return; ac.resume&&ac.resume();

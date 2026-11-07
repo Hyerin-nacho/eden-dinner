@@ -3173,10 +3173,10 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   function finishTear(){ sfx(2600,.12,.2,"bandpass"); sfx(700,.09,.15); tearSndStop();
     setTimeout(()=>{ spawnPieces(); fallT0=performance.now(); fallT=0; dirty=true; },40);
      setTimeout(()=>{ if(tearTest){ resetTear(); return; }
-       dip(()=>clip(PRO.memory,[[.1,"5 YEARS AGO · ORPHEUS EXPRESS · C-3","stamp",1800],[2,"아내는 이 열차에서 돌아오지 못했다.",null,2300]],
+       dip(()=>clip(PRO.memory,null,
          ()=>dip(()=>{
-           clip("pro/locked_door.mp4",[[.2,"문은 밖에서 잠겨 있었다.","red",3200]],
-             ()=>dip(()=>clip("pro/story_door.mp4",null,finish),120),3.8);
+           clip("pro/locked_door.mp4",null,
+             ()=>dip(()=>clip("pro/story_door.mp4",null,()=>toRoom()),120),3.8);
            },120),4.3),180);
      },FALL_T*1000+80); }
   card.addEventListener("pointerdown",e=>{ drag=true; lx=e.clientX; lastMv=performance.now(); try{ card.setPointerCapture(e.pointerId); }catch(_){} });
@@ -3278,9 +3278,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   }
   /* 5. 회상 : 시간 되감기 → 공방(Ada) → 붉은 복도 */
   function flashback(){ if(flash) return; flash=true;
-    dip(()=>clip(PRO.rewind,null,()=>clip(PRO.memory,null,()=>dip(()=>clip(PRO.corridor,[
-      [.3,"5년 전, 오르페우스.",null,2600],[3,"문은 밖에서 잠겨 있었다.",null,2300],[5.4,"“누구 없어요…! 문 좀 열어줘요…!”","red",1900]
-    ],()=>dip(()=>clip(PRO.news,[[.3,"‘단순 사고’. 문을 잠근 사람은 끝내 밝혀지지 않았다.",null,2600],[3,"이번엔, 내가 그 문을 열 차례다.",null,2200]],()=>toRoom()),200)),200))),200); }   // 체험 시간 단축: 창에 비친 남자 장면은 뺐다
+    dip(()=>clip(PRO.rewind,null,()=>clip(PRO.memory,null,()=>dip(()=>clip(PRO.corridor,null,()=>dip(()=>clip(PRO.news,null,()=>toRoom()),200)),200))),200); }   // 체험 시간 단축: 창에 비친 남자 장면은 뺐다
   /* 5-1. 탑승 히어로샷 — 드래그(또는 휠)한 만큼 영상이 진행되며 기차 안으로 줌인 (원본 P7-1 스크롤 스크럽) */
   const HERO_DRAG_PX=1400, HERO_ZOOM=1.35;   // 드래그 거리(px)만큼 가면 끝까지, 마지막 확대 배율
   function hero(next){
@@ -3313,7 +3311,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   }
    /* 탑승 컷 다음에는 실제 문 앞 컷을 보여 주고, 그 프레임 위에서 문을 열게 한다. */
    function playScream(){ try{ if(!soundOn) return; const a=new Audio("pro/scream.mp3"); a.volume=.7; a.play().catch(()=>{}); }catch(e){} }   // pro/scream.mp3 가 있으면 재생, 없으면 조용히 건너뜀
-  function toRoom(){ dip(()=>clip("pro/story_door.mp4",null,finish),180); }
+  function toRoom(){ dip(()=>clip("pro/bridge_door.mp4",null,finish,2.8),180); }
   /* 7. VIP실 문 앞 — 영상 마지막 장면에서 "문을 연다" (클릭 / 카메라 앞으로 손 밀기) */
   let doorWait=false, doorBase=null, doorHold=0;
   /* 문 열기: 손잡이를 잡은 첫 장면에서, 아래로 끌어 내리는 만큼 손잡이가 돌고 문이 열린다 (문 여는 영상이 손을 따라감).

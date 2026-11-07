@@ -914,12 +914,23 @@ button{font:inherit;cursor:pointer;color:inherit}
     <button class="proskip" id="proVideoSkip" type="button" hidden>영상 넘기기 ›</button>
     <div class="ps on" data-s="start"><div class="bg"></div>
       <video class="title-train" id="titleTrainV" src="pro/vip_loop.mp4" muted loop autoplay playsinline preload="auto" aria-hidden="true"></video>
+      <div class="tt-slats" aria-hidden="true"></div>
+      <canvas class="tt-fx" id="ttFx" aria-hidden="true"></canvas>
       <div class="title-vignette" aria-hidden="true"></div>
+      <div class="tt-grain" aria-hidden="true"></div>
+      <div class="tt-bars" aria-hidden="true"><i></i><i></i></div>
+      <div class="tt-top" aria-hidden="true"><span>EDENLINE COMPANY</span><span>PRESENTS</span></div>
       <div class="title-content">
-        <img class="title-logo" src="pro/orpheus-title-warm.webp" alt="beyond the ORPHEUS · EDEN LINE COMPANY">
+        <div class="tt-logo"><img class="title-logo" src="pro/orpheus-title-warm.webp" alt="beyond the ORPHEUS · EDEN LINE COMPANY"><i class="tt-sheen" aria-hidden="true"></i></div>
         <div class="title-sub">An Interactive Mystery</div>
-        <button class="pbtn title-start" id="proStart">시작하기</button>
+        <button class="pbtn title-start tt-ticket" id="proStart" aria-label="시작하기">
+          <span class="tk-l" aria-hidden="true"><small>ADMIT</small><b>ONE</b></span>
+          <span class="tk-m"><b>시작하기</b><small>탑승권을 내고 오르페우스에 오른다</small></span>
+          <span class="tk-r" aria-hidden="true"><small>VIP · No.</small><b>0047</b></span>
+          <i class="tk-hole" aria-hidden="true"></i>
+        </button>
       </div>
+      <div class="tt-foot" aria-hidden="true"><span>ORPHEUS EXPRESS · 21:47 발</span><span>🎧 소리를 켜면 더 깊이 빠져듭니다</span></div>
       <audio id="titleTrainSound" src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Steam_engine.ogg" preload="none"></audio>
     </div>
     <div class="cold" id="proCold" aria-hidden="true"><div class="cold-t">21:47</div><div class="cold-s">ORPHEUS EXPRESS · EDEN LINE</div></div>
@@ -2777,12 +2788,14 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     setTimeout(()=>{ c.classList.add("out"); setTimeout(()=>{ c.classList.remove("on","out"); stopN(); },450); next(); },2800);
   }
   /* 0. 시작 버튼 → 콜드 오픈 → 인트로 영상 */
-  $("proStart").onclick=()=>{ $("proStart").disabled=true;
+  $("proStart").onclick=()=>{ if($("proStart").disabled) return; $("proStart").disabled=true;
     try{ audio(); ac&&ac.resume(); }catch(e){}
+    $("proStart").classList.add("punched"); sfx(1600,.09,.04,"bandpass"); sfx(240,.1,.07);   // 검표 펀치 '찰칵'
+    setTimeout(()=>{
     // 웹캠은 여기서 켜지 않는다: 초대장이 나온 뒤 '카메라로 체험'을 눌러 허락해야 켜진다
     camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camTag.textContent="";   // 웹캠 자리는 처음부터 보이게(영상 속 로고 가림). 카메라는 허락 뒤에만 켜진다
     coldOpen(()=>clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); }));
-  };
+    },560); };
   /* 1. 영상 마지막 — 손에 든 봉투 */
   const hand=$("proHand"), hz=$("proHit");
   hz.onmouseenter=()=>hand.classList.add("hover"); hz.onmouseleave=()=>hand.classList.remove("hover");
@@ -3656,4 +3669,90 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 @keyframes nagf{0%,92%,100%{opacity:.9}94%{opacity:.25}96%{opacity:.9}98%{opacity:.4}}
 .pro .vcap.stamp{bottom:auto;top:8%;background:none;padding:0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:max(11px,1.35cqw);letter-spacing:.34em;color:#d9b26a}
 </style>
+<style>
+/* ===== 타이틀 v2 : 밤 열차 1등석 탑승권 =====
+   레터박스 → 창밖 불빛이 훑으며 로고가 드러남 → 열차 흔들림·증기·먼지·그레인이 살아 있는 배경 → 금박 반짝임 → 탑승권 버튼 */
+.pro .ps[data-s="start"]{--mx:0;--my:0}
+.pro .ps[data-s="start"] .title-train{animation:ttpush 28s ease-in-out infinite alternate,ttrock 3.4s ease-in-out infinite}
+@keyframes ttrock{0%,100%{translate:0 0;rotate:0deg}22%{translate:.18% .25%;rotate:.08deg}48%{translate:-.1% -.1%;rotate:-.05deg}71%{translate:.06% .3%;rotate:.04deg}}
+.pro .ps[data-s="start"] .tt-slats{position:absolute!important;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;opacity:0;
+  background:repeating-linear-gradient(100deg,transparent 0 9%,rgba(255,206,140,.0) 9%,rgba(255,206,140,.22) 11.5%,rgba(255,226,180,.32) 12.5%,rgba(255,206,140,.0) 15%,transparent 15% 24%);
+  background-size:260% 100%;animation:ttslat 1.5s .15s cubic-bezier(.4,0,.6,1) both,ttslat2 8s 3.2s linear infinite}
+@keyframes ttslat{0%{opacity:0;background-position:100% 0}15%{opacity:1}85%{opacity:1}100%{opacity:0;background-position:0 0}}
+@keyframes ttslat2{0%,78%{opacity:0;background-position:100% 0}80%{opacity:.75}96%{opacity:.75}100%{opacity:0;background-position:0 0}}
+.pro .ps[data-s="start"] .tt-fx{position:absolute!important;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;mix-blend-mode:screen}
+.pro .ps[data-s="start"] .tt-grain{position:absolute!important;inset:-50%;z-index:4;pointer-events:none;opacity:.09;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation:ttgrain .9s steps(6) infinite}
+@keyframes ttgrain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+.pro .ps[data-s="start"] .tt-bars{position:absolute!important;inset:0;pointer-events:none;z-index:5}
+.pro .ps[data-s="start"] .tt-bars i{position:absolute;left:0;right:0;height:7.5cqh;background:#000;z-index:5;pointer-events:none;animation:ttbar 1.4s cubic-bezier(.6,0,.2,1) both}
+.pro .ps[data-s="start"] .tt-bars i:first-child{top:0;transform-origin:top}.pro .ps[data-s="start"] .tt-bars i:last-child{bottom:0;transform-origin:bottom}
+@keyframes ttbar{from{transform:scaleY(7)}to{transform:scaleY(1)}}
+.pro .ps[data-s="start"] .tt-top,.pro .ps[data-s="start"] .tt-foot{position:absolute!important;left:0;right:0;z-index:6;display:flex;justify-content:center;gap:2.4em;pointer-events:none;
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:max(9px,.85cqw);letter-spacing:.42em;color:rgba(217,178,106,.62);opacity:0;animation:tlogo 2s 2.4s ease-out both}
+.pro .ps[data-s="start"] .tt-top{top:calc(7.5cqh - 2.8em)}
+.pro .ps[data-s="start"] .tt-top span+span::before,.pro .ps[data-s="start"] .tt-foot span+span::before{content:"◆";margin-right:2.4em;opacity:.45;font-size:.7em}
+.pro .ps[data-s="start"] .tt-foot{bottom:calc(7.5cqh - 2.8em);color:rgba(236,226,203,.42);letter-spacing:.22em}
+.pro .ps[data-s="start"] .title-content{translate:calc(var(--mx)*-10px) calc(var(--my)*-6px);transition:translate .6s cubic-bezier(.2,.7,.2,1)}
+.pro .ps[data-s="start"] .tt-logo{position:relative;display:inline-block;line-height:0}
+.pro .ps[data-s="start"] .tt-sheen{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,240,200,.0) 42%,rgba(255,244,214,.85) 50%,rgba(255,240,200,0) 58%,transparent 65%) 160% 0/250% 100% no-repeat;
+  -webkit-mask:url(pro/orpheus-title-warm.webp) center/contain no-repeat;mask:url(pro/orpheus-title-warm.webp) center/contain no-repeat;animation:ttsheen 7s 2.6s ease-in-out infinite}
+@keyframes ttsheen{0%{background-position:160% 0}22%,100%{background-position:-60% 0}}
+.pro .ps[data-s="start"] .title-sub{letter-spacing:.24em;animation:tlogo 2.6s 1.1s cubic-bezier(.2,.7,.2,1) both,ttspace 3.2s 1.1s cubic-bezier(.2,.7,.2,1) both}
+@keyframes ttspace{from{letter-spacing:.6em}to{letter-spacing:.24em}}
+/* 탑승권 버튼 */
+.pro .ps[data-s="start"] .tt-ticket{display:flex;align-items:stretch;gap:0;padding:0!important;margin-top:3.6cqh;letter-spacing:0;border:none!important;color:#2a1d12!important;cursor:pointer;
+  background:linear-gradient(180deg,#efe2bf,#dcc795)!important;-webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:0 1.4cqh 3cqh rgba(0,0,0,.55),0 0 0 1px rgba(90,60,25,.35) inset;transform-origin:50% 60%;transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s,filter .35s;
+  -webkit-mask:radial-gradient(circle at 0 50%,transparent .9cqh,#000 calc(.9cqh + .5px)) left/51% 100% no-repeat,radial-gradient(circle at 100% 50%,transparent .9cqh,#000 calc(.9cqh + .5px)) right/51% 100% no-repeat;
+          mask:radial-gradient(circle at 0 50%,transparent .9cqh,#000 calc(.9cqh + .5px)) left/51% 100% no-repeat,radial-gradient(circle at 100% 50%,transparent .9cqh,#000 calc(.9cqh + .5px)) right/51% 100% no-repeat}
+.pro .ps[data-s="start"] .tt-ticket:hover,.pro .ps[data-s="start"] .tt-ticket:focus-visible{transform:translateY(-.6cqh) rotate(-1.2deg) scale(1.03);box-shadow:0 2.2cqh 4cqh rgba(0,0,0,.6),0 0 4cqh rgba(217,178,106,.28);filter:brightness(1.05);background:linear-gradient(180deg,#f4e8c8,#e0cb98)!important}
+.pro .ps[data-s="start"] .tt-ticket>span{display:flex;flex-direction:column;justify-content:center;padding:1.5cqh 1.6cqw;font-family:var(--serif);line-height:1.15}
+.pro .ps[data-s="start"] .tt-ticket .tk-l,.pro .ps[data-s="start"] .tt-ticket .tk-r{font-family:ui-monospace,Menlo,Consolas,monospace;color:#7a2a1c;align-items:center;margin:0!important}
+.pro .ps[data-s="start"] .tt-ticket .tk-l{border-right:2px dashed rgba(90,60,25,.45);padding-left:2.2cqw}
+.pro .ps[data-s="start"] .tt-ticket .tk-r{border-left:2px dashed rgba(90,60,25,.45);padding-right:2.2cqw}
+.pro .ps[data-s="start"] .tt-ticket .tk-l small,.pro .ps[data-s="start"] .tt-ticket .tk-r small{font-size:max(8px,.7cqw);letter-spacing:.3em}
+.pro .ps[data-s="start"] .tt-ticket .tk-l b,.pro .ps[data-s="start"] .tt-ticket .tk-r b{font-size:max(13px,1.35cqw);letter-spacing:.12em}
+.pro .ps[data-s="start"] .tt-ticket .tk-m{padding:1.6cqh 2.6cqw;align-items:center;margin:0!important;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(120,80,30,.04) 3px 4px)}
+.pro .ps[data-s="start"] .tt-ticket .tk-m b{font-size:max(17px,1.9cqw);font-weight:800;letter-spacing:.35em;margin-right:-.35em;color:#24170d}
+.pro .ps[data-s="start"] .tt-ticket .tk-m small{margin-top:.6cqh;font-size:max(9px,.78cqw);letter-spacing:.14em;color:rgba(60,40,20,.65)}
+.pro .ps[data-s="start"] .tt-ticket .tk-hole{position:absolute;right:calc(2.2cqw + 1.2cqh);top:50%;width:2.2cqh;height:2.2cqh;margin-top:-1.1cqh;border-radius:50%;background:#0b0705;box-shadow:inset 0 .3cqh .4cqh rgba(0,0,0,.8),0 0 0 1px rgba(90,60,25,.5);transform:scale(0);opacity:0}
+.pro .ps[data-s="start"] .tt-ticket.punched{animation:ttpunch .5s cubic-bezier(.3,.7,.2,1) both}
+.pro .ps[data-s="start"] .tt-ticket.punched .tk-hole{animation:tthole .18s .05s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes ttpunch{0%{transform:scale(1.03)}25%{transform:scale(.96) rotate(1deg)}55%{transform:scale(1.04) rotate(-1.5deg)}100%{transform:translateY(-1cqh) rotate(-2deg) scale(1.02);filter:brightness(1.15)}}
+@keyframes tthole{to{transform:scale(1);opacity:1}}
+.pro .ps[data-s="start"].playing .tt-top,.pro .ps[data-s="start"].playing .tt-foot{opacity:0!important;transition:opacity .45s}
+@media(max-width:650px){.pro .ps[data-s="start"] .tt-foot span:last-child,.pro .ps[data-s="start"] .tt-top span:last-child{display:none}.pro .ps[data-s="start"] .tt-ticket .tk-m small{display:none}}
+@media(prefers-reduced-motion:reduce){.pro .ps[data-s="start"] .title-train,.pro .ps[data-s="start"] .tt-grain,.pro .ps[data-s="start"] .tt-slats,.pro .ps[data-s="start"] .tt-sheen{animation:none!important}}
+</style>
+<script>
+/* 타이틀 v2 : 증기·먼지 파티클 + 마우스 깊이감 */
+(function(){
+  const sc=document.querySelector('.pro .ps[data-s="start"]'), cv=document.getElementById("ttFx"); if(!sc||!cv) return;
+  const g=cv.getContext("2d"), reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  let W=0,H=0,D=1; const P=[];
+  const fit=()=>{ const r=sc.getBoundingClientRect(); D=Math.min(1.5,devicePixelRatio||1); W=r.width; H=r.height; cv.width=Math.round(W*D); cv.height=Math.round(H*D); };
+  const steam=()=>({k:0,x:Math.random()*W,y:H+Math.random()*H*.2,r:(.08+Math.random()*.14)*H,vx:(Math.random()-.5)*.15,vy:-(.12+Math.random()*.22),a:0,life:0,max:900+Math.random()*900});
+  const dust=()=>({k:1,x:Math.random()*W,y:Math.random()*H,r:.6+Math.random()*1.6,vx:(Math.random()-.5)*.08,vy:(Math.random()-.5)*.06,ph:Math.random()*6.28,a:.25+Math.random()*.55});
+  fit(); for(let i=0;i<9;i++){ const s=steam(); s.y=H*(.55+Math.random()*.5); s.life=Math.random()*s.max; P.push(s); } for(let i=0;i<70;i++) P.push(dust());
+  addEventListener("resize",fit);
+  sc.addEventListener("pointermove",e=>{ const r=sc.getBoundingClientRect(); sc.style.setProperty("--mx",((e.clientX-r.left)/r.width-.5).toFixed(3)); sc.style.setProperty("--my",((e.clientY-r.top)/r.height-.5).toFixed(3)); });
+  let last=performance.now();
+  (function tick(now){ requestAnimationFrame(tick);
+    const on=sc.classList.contains("on")&&!sc.classList.contains("playing")&&!document.getElementById("pro")?.hidden;
+    if(!on||reduce) return; const dt=Math.min(50,now-last); last=now;
+    if(Math.abs(sc.getBoundingClientRect().width-W)>1) fit();
+    const mx=+getComputedStyle(sc).getPropertyValue("--mx")||0;
+    g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,cv.width,cv.height); g.setTransform(D,0,0,D,0,0);
+    for(let i=0;i<P.length;i++){ const p=P[i];
+      if(p.k===0){ p.life+=dt; p.x+=p.vx*dt*.06; p.y+=p.vy*dt*.06; p.r+=dt*.004;
+        const t=p.life/p.max, a=Math.sin(Math.min(1,t)*Math.PI)*.07; if(t>=1){ P[i]=steam(); continue; }
+        const q=g.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r); q.addColorStop(0,`rgba(240,214,170,${a})`); q.addColorStop(1,"rgba(240,214,170,0)"); g.fillStyle=q; g.fillRect(p.x-p.r,p.y-p.r,p.r*2,p.r*2); }
+      else { p.ph+=dt*.0012; p.x+=(p.vx+Math.sin(p.ph)*.03)*dt*.06-mx*.02; p.y+=(p.vy+Math.cos(p.ph*.7)*.02)*dt*.06;
+        if(p.x<-5) p.x=W+5; if(p.x>W+5) p.x=-5; if(p.y<-5) p.y=H+5; if(p.y>H+5) p.y=-5;
+        const tw=.55+.45*Math.sin(p.ph*3); g.fillStyle=`rgba(255,226,170,${(p.a*tw).toFixed(3)})`; g.beginPath(); g.arc(p.x,p.y,p.r,0,6.283); g.fill(); } } })(last);
+})();
+</script>
 </body></html>

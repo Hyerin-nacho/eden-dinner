@@ -996,7 +996,7 @@ button{font:inherit;cursor:pointer;color:inherit}
     </div>
     <div class="vcap" id="proCap"></div>
     <div class="cam" id="proCam"><video id="proCamV" playsinline muted autoplay></video><div class="off" id="proCamOff">No Connection</div><div class="tag" id="proCamTag"></div><div class="htag" id="proHTag"></div></div>
-    <div class="pdoor" id="proDoor"><button id="proDoorBtn">문을 연다</button><div class="pm" id="proDoorPm" hidden><i id="proDoorBar"></i></div><small id="proDoorHint"></small></div>
+    <div class="pdoor" id="proDoor"><i class="pd-arrow" aria-hidden="true"></i><button id="proDoorBtn" class="pd-alt">클릭해서 열기</button><div class="pm" id="proDoorPm" hidden><i id="proDoorBar"></i></div><small id="proDoorHint"></small></div>
     <div class="black" id="proBlack"></div>
   </section>
 
@@ -2890,13 +2890,14 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   if((ROOM_ONLY&&location.hash!=="#tear")||location.hash==="#room"){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>enterExplore(),60); return; }
   /* ---- 테스트 바로가기 (#test 로 열면 메뉴) ----
      #cold 21:47 오프닝 · #tear 초대장 찢기 · #bottle 약병 · #statue 조각상·먼지 · #doll 의자 밑 인형 · #talk 엘레나 심문 · #ending 엔딩 */
-  const TESTS=[["","타이틀 화면","탑승권 버튼 · 불빛·먼지 연출"],["#cold","21:47 오프닝","플립 시계 → 인트로"],["#tear","초대장 찢기","당기는 힘·바스락·종이 낙엽"],["#bottle","약병","실사 갈색병 · 돌리면 알약이 굴러감"],["#statue","조각상 · 테이블 먼지","들어 올리기 무게감 · 먼지"],["#doll","의자 밑 인형","붉은 눈 → 기억 재생 → 21:47 쿵"],["#talk","엘레나 심문","증거 3개 모두 가진 상태"],["#ending","엔딩","CASE CLOSED → 21:48 → 질문"]];
+  const TESTS=[["","타이틀 화면","탑승권 버튼 · 불빛·먼지 연출"],["#cold","21:47 오프닝","플립 시계 → 인트로"],["#tear","초대장 찢기","당기는 힘·바스락·종이 낙엽"],["#bottle","약병","실사 갈색병 · 돌리면 알약이 굴러감"],["#statue","조각상 · 테이블 먼지","들어 올리기 무게감 · 먼지"],["#doll","의자 밑 인형","붉은 눈 → 기억 재생 → 21:47 쿵"],["#door","VIP실 문 열기","손잡이를 아래로 끌어 연다"],["#talk","엘레나 심문","증거 3개 모두 가진 상태"],["#ending","엔딩","CASE CLOSED → 21:48 → 질문"]];
   const goTest=h=>{ location.hash=h||""; location.reload(); };
   if(location.hash==="#test"){ const m=document.createElement("div"); m.className="testmenu";
     m.innerHTML=`<div class="tm-in"><small>BEYOND THE ORPHEUS · 테스트 바로가기</small><h3>어디부터 볼까요?</h3>${TESTS.map(([h,t,d],i)=>`<button data-h="${h}"><b>${i+1}</b><span>${t}<em>${d}</em></span></button>`).join("")}<p>보던 화면에서 <kbd>\`</kbd> 키를 누르면 이 메뉴로 돌아와요</p></div>`;
     document.body.appendChild(m); m.querySelectorAll("button").forEach(b=>b.onclick=()=>goTest(b.dataset.h)); }
   addEventListener("keydown",e=>{ if(e.key==="`"&&!/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) goTest("#test"); });
   if(location.hash==="#cold"){ setTimeout(()=>$("proStart").click(),400); }
+  if(location.hash==="#door"){ setTimeout(()=>{ show(""); finish(); },300); }
   if(location.hash==="#talk"||location.hash==="#ending"||location.hash==="#statue"||location.hash==="#doll"){ pro.hidden=true; $("title").classList.add("gone");
     setTimeout(()=>{ enterExplore(); const h=location.hash;
       if(h==="#talk"){ EVID.forEach(e=>found.add(e.id)); warmTalk(); setTimeout(openTalk,900); }
@@ -2943,16 +2944,23 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
         g.gain.setValueAtTime(0,a.currentTime); g.gain.linearRampToValueAtTime(.7,a.currentTime+.5); g.gain.linearRampToValueAtTime(.0,a.currentTime+2.9);
         src.connect(lp); lp.connect(g); g.connect(sfxBus||a.destination); src.start(); stopN=()=>{ try{ src.stop(); }catch(e){} };
         [.3,.62,1.2,1.52,2.1,2.42,3.0,3.32].forEach(t=>setTimeout(()=>sfx(70,.18,.12),t*1000)); } }catch(e){}
-    /* 플립 시계: 21:44 → 45 → 46 → 47. 넘어갈 때마다 '철컥', 21:47에서 묵직하게 멈추고 화면이 한 번 덜컹 */
-    const T=$("coldT"), L=$("coldL"), digs=[...T.querySelectorAll(".fl")];
-    const setD=(i,v,heavy)=>{ const f=digs[i]; f.classList.remove("flip"); void f.offsetWidth; f.querySelector("b").textContent=v; f.classList.add("flip");
-      sfx(heavy?1500:2300,heavy?.09:.05,.03,"bandpass"); sfx(heavy?85:140,heavy?.25:.08,heavy?.22:.05); };
-    digs[2].querySelector("b").textContent="4"; digs[3].querySelector("b").textContent="4"; T.classList.remove("lock"); L.textContent=""; c.classList.remove("jolt");
-    setTimeout(()=>setD(3,"5"),850); setTimeout(()=>setD(3,"6"),1250);
-    setTimeout(()=>{ setD(3,"7",true); T.classList.add("lock"); c.classList.add("jolt"); },1700);
+    /* 플립 시계 v2: 공항 출발판처럼 각 자리 판이 '촥촥촥' 넘어가며 돌다가, 앞자리부터 하나씩 21:47에 멈춘다.
+       판 하나 = 위·아래 반쪽. 넘어갈 때 윗반쪽이 앞으로 꺾여 내려가고, 새 숫자의 아랫반쪽이 따라 내려와 덮는다 */
+    const T=$("coldT"), L=$("coldL"), digs=[...T.querySelectorAll(".fl")], TARGET="2147";
+    digs.forEach(f=>{ if(!f.querySelector(".ft")) f.innerHTML='<span class="h t"><b></b></span><span class="h b"><b></b></span><span class="h ft"><b></b></span><span class="h fb"><b></b></span>'; });
+    const put=(f,sel,v)=>f.querySelector(sel+" b").textContent=v;
+    const flip=(i,from,to,last)=>{ const f=digs[i]; put(f,".t",to); put(f,".b",from); put(f,".ft",from); put(f,".fb",to);
+      f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(()=>put(f,".b",to),70);
+      sfx(last?2400:3400+Math.random()*800,last?.05:.022,last?.03:.012,"highpass"); if(last) sfx(150,.07,.05); };
+    T.classList.remove("lock"); L.textContent=""; c.classList.remove("jolt");
+    const START=[1,9,5,2]; digs.forEach((f,i)=>{ put(f,".t",START[i]); put(f,".b",START[i]); f.classList.remove("go"); });
+    digs.forEach((f,i)=>{ const n=7+i*3, tgt=+TARGET[i], step=78, t0=550+i*110;   // 앞자리부터 차례로 멈춤
+      const seq=[START[i]]; for(let k=n-1;k>=0;k--) seq.push(((tgt-k)%10+10)%10);
+      for(let k=1;k<seq.length;k++) setTimeout(()=>flip(i,seq[k-1],seq[k],k===seq.length-1),t0+k*step); });
+    setTimeout(()=>{ T.classList.add("lock"); c.classList.add("jolt"); sfx(1500,.09,.03,"bandpass"); sfx(85,.25,.22); },550+3*110+16*78+120);   // 21:47 철컥 — 묵직하게 멈춤
     const LINE="그날 밤, 오르페우스는 멈추지 않았다."; let k=0;   // 한 글자씩 타자 치듯
-    setTimeout(function ty(){ if(k>LINE.length) return; L.textContent=LINE.slice(0,k++); if(k%3===0) sfx(2600,.012,.02,"highpass"); setTimeout(ty,42); },2250);
-    setTimeout(()=>{ c.classList.add("out"); setTimeout(()=>{ c.classList.remove("on","out","jolt"); stopN(); },450); next(); },3900);
+    setTimeout(function ty(){ if(k>LINE.length) return; L.textContent=LINE.slice(0,k++); if(k%3===0) sfx(2600,.012,.02,"highpass"); setTimeout(ty,42); },2500);
+    setTimeout(()=>{ c.classList.add("out"); setTimeout(()=>{ c.classList.remove("on","out","jolt"); stopN(); },450); next(); },4200);
   }
   /* 0. 시작 버튼 → 콜드 오픈 → 인트로 영상 */
   $("proStart").onclick=()=>{ if($("proStart").disabled) return; $("proStart").disabled=true;
@@ -3309,20 +3317,40 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   function toRoom(){ dip(()=>clip("pro/bridge_door.mp4",null,finish,2.8),180); }
   /* 7. VIP실 문 앞 — 영상 마지막 장면에서 "문을 연다" (클릭 / 카메라 앞으로 손 밀기) */
   let doorWait=false, doorBase=null, doorHold=0;
+  /* 문 열기: 손잡이를 잡은 첫 장면에서, 아래로 끌어 내리는 만큼 손잡이가 돌고 문이 열린다 (문 여는 영상이 손을 따라감).
+     중간에 놓으면 문이 다시 스르륵 닫히고, 끝까지 내리면 '철컥' 걸쇠가 풀리며 문이 활짝 열려 방 안으로 들어간다 */
+  const OPEN_T=1.85, DS={p:0,tp:0,drag:false,y0:0,base:0,latch:false,crk:false,raf:0,lt:0};
   function finish(){ if(done) return; done=true; doorWait=true; doorBase=null; doorHold=0;
     $("title").classList.add("gone");
+    hideVid(); const pv=$("proVid"); pv.onended=pv.onerror=pv.ontimeupdate=null; pv.src=INTRO_VIDEO; pv.muted=true; pv.style.display="block"; pv.pause(); try{ pv.currentTime=0; }catch(e){}
+    Object.assign(DS,{p:0,tp:0,drag:false,latch:false,crk:false});
     const cam=handOn; $("proDoorPm").hidden=!cam; if(cam) camBox.classList.add("on");
-    $("proDoorHint").innerHTML=cam?"카메라 앞으로 <b>손바닥을 밀어</b> 문을 열어라 · 또는 클릭":"비명이 들린 문. 손잡이는 차갑다.";
-    $("proDoor").classList.add("on"); }
-   function openDoor(){ if(!doorWait) return; doorWait=false; $("proDoor").classList.remove("on"); stopCam();
-     try{ creak&&creak(); }catch(e){}
+    $("proDoorHint").innerHTML=cam?"손잡이를 잡고 <b>아래로 끌어</b> 문을 열어라 · 카메라 앞으로 손바닥을 밀어도 된다":"손잡이를 잡고 <b>아래로 끌어</b> 문을 열어라";
+    pro.classList.add("doorgrab"); $("proDoor").classList.add("on"); cancelAnimationFrame(DS.raf); DS.raf=requestAnimationFrame(doorTick); }
+  function doorTick(){ if(!doorWait) return; const pv=$("proVid");
+    if(!DS.drag&&DS.tp<.97) DS.tp=Math.max(0,DS.tp-.03);                              // 놓으면 문이 다시 닫힘
+    DS.p+=(DS.tp-DS.p)*.2; if(Math.abs(DS.tp-DS.p)<.001) DS.p=DS.tp;
+    const t=DS.p*OPEN_T; if(!pv.seeking&&Math.abs(pv.currentTime-t)>.02) try{ pv.currentTime=t; }catch(e){}
+    $("proDoor").style.opacity=String(Math.max(0,1-DS.p*3));
+    if(DS.p>.42&&!DS.latch){ DS.latch=true; sfx(1300,.09,.04,"bandpass"); sfx(180,.12,.06); }   // 걸쇠 '철컥'
+    if(DS.p<.3) DS.latch=false;
+    if(DS.p>.62&&!DS.crk){ DS.crk=true; try{ creak&&creak(); }catch(e){} }
+    if(DS.p>.96){ openDoor(); return; }
+    DS.raf=requestAnimationFrame(doorTick); }
+  pro.addEventListener("pointerdown",e=>{ if(!doorWait||e.target.closest("button")) return; DS.drag=true; DS.y0=e.clientY; DS.base=DS.tp; pro.classList.add("grip"); });
+  addEventListener("pointermove",e=>{ if(!DS.drag||!doorWait) return; DS.tp=Math.max(0,Math.min(1,DS.base+(e.clientY-DS.y0)/(pro.clientHeight*.38))); });
+  addEventListener("pointerup",()=>{ DS.drag=false; pro.classList.remove("grip"); });
+  addEventListener("keydown",e=>{ if(!doorWait) return; if(e.key==="ArrowDown"||e.key===" "||e.key.toLowerCase()==="f"){ e.preventDefault(); DS.drag=true; DS.tp=Math.min(1,DS.tp+.08); clearTimeout(DS.kt); DS.kt=setTimeout(()=>DS.drag=false,260); } });
+   function openDoor(){ if(!doorWait) return; doorWait=false; cancelAnimationFrame(DS.raf); $("proDoor").classList.remove("on"); $("proDoor").style.opacity=""; pro.classList.remove("doorgrab","grip"); stopCam();
+     if(!DS.crk) try{ creak&&creak(); }catch(e){}
      $("door").classList.add("open");
-     clip(INTRO_VIDEO,null,()=>{ hideVid(); pro.hidden=true; enterExplore(); }); }
+     const pv=$("proVid"); let fin=false; const end=()=>{ if(fin) return; fin=true; pv.onended=null; hideVid(); pro.hidden=true; enterExplore(); };
+     pv.onended=end; pv.onerror=end; pv.muted=!soundOn; pv.volume=.65; pv.play().catch(()=>{ pv.muted=true; pv.play().catch(end); }); setTimeout(()=>{ if(!fin&&pv.paused) end(); },7000); }
   $("proDoorBtn").onclick=openDoor;
    window.__proDoorPush=lm=>{ if(!doorWait||!lm) { doorHold=0; if(doorWait) $("proDoorBar").style.width="0%"; return; }
     const sz=Math.hypot(lm[0].x-lm[9].x,lm[0].y-lm[9].y); if(doorBase===null||sz<doorBase) doorBase=Math.max(sz,.05);
      const p=Math.max(0,Math.min(1,(sz/doorBase-1)/.24)); $("proDoorBar").style.width=(p*100)+"%";
-     if(p>=1){ if(++doorHold>1) openDoor(); } else doorHold=0; };
+     DS.tp=Math.max(DS.tp,p*.95); if(p>=1){ if(++doorHold>1) openDoor(); } else doorHold=0; };   // 손바닥을 밀수록 문도 그만큼 열림
 })();
 </script>
 
@@ -4073,5 +4101,35 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .pro .ps[data-s="start"] .tt-sheen{display:none!important}
 .pro .ps[data-s="start"] .tt-foot{font-family:var(--serif)!important;font-size:max(10px,.8cqw)!important;letter-spacing:.12em!important;color:rgba(236,226,203,.38)!important}
 .pro .ps[data-s="start"] .tt-foot span::before{content:none!important}
+</style>
+<style>
+/* ===== 문 열기: 손잡이를 아래로 끌어 연다 ===== */
+.pro.doorgrab{cursor:grab}.pro.doorgrab.grip{cursor:grabbing}
+.pro .pdoor{bottom:8%!important;gap:1cqh!important;transition:opacity .2s}
+.pro .pdoor small{order:-1;font-family:var(--serif)!important;font-size:clamp(14px,1.5cqw,20px)!important;letter-spacing:.06em!important;color:#efe6d0!important}
+.pro .pdoor .pd-arrow{order:-2;width:2px;height:6cqh;background:linear-gradient(rgba(239,230,208,0),rgba(239,230,208,.8));position:relative;animation:pdarr 1.6s ease-in-out infinite}
+.pro .pdoor .pd-arrow::after{content:"";position:absolute;left:50%;bottom:-2px;width:10px;height:10px;border-right:2px solid rgba(239,230,208,.85);border-bottom:2px solid rgba(239,230,208,.85);transform:translateX(-50%) rotate(45deg)}
+@keyframes pdarr{0%{transform:translateY(-8px);opacity:0}30%{opacity:1}100%{transform:translateY(10px);opacity:0}}
+.pro .pdoor .pd-alt{background:none!important;border:0!important;animation:none!important;font-family:var(--sans)!important;font-weight:400!important;font-size:clamp(11px,.95cqw,13px)!important;letter-spacing:.1em!important;color:rgba(239,230,208,.5)!important;padding:.4cqh 1cqw!important;text-decoration:underline;text-underline-offset:3px}
+.pro .pdoor .pd-alt:hover{color:#efe6d0!important;background:none!important}
+</style>
+<style>
+/* ===== 플립 시계 v2 : 진짜 스플릿 플랩 ===== */
+.pro .cold-t .fl{background:none!important;perspective:300px;overflow:visible}
+.pro .cold-t .fl .h{position:absolute;left:0;right:0;height:50%;overflow:hidden;background:#1b1611;backface-visibility:hidden}
+.pro .cold-t .fl .h b{position:absolute;left:0;right:0;height:200%;display:grid;place-items:center;font-weight:600;line-height:1}
+.pro .cold-t .fl .t,.pro .cold-t .fl .ft{top:0;border-radius:6px 6px 0 0;background:linear-gradient(#211a14,#191410)}
+.pro .cold-t .fl .b,.pro .cold-t .fl .fb{bottom:0;border-radius:0 0 6px 6px;background:linear-gradient(#141009,#1a1510)}
+.pro .cold-t .fl .t b,.pro .cold-t .fl .ft b{top:0}.pro .cold-t .fl .b b,.pro .cold-t .fl .fb b{top:-100%}
+.pro .cold-t .fl .t::after,.pro .cold-t .fl .ft::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:#000}   /* 가운데 이음매 */
+.pro .cold-t .fl .ft{transform-origin:50% 100%;z-index:2;visibility:hidden}
+.pro .cold-t .fl .fb{transform-origin:50% 0;z-index:2;visibility:hidden}
+.pro .cold-t .fl.go .ft{visibility:visible;animation:flipT .07s ease-in forwards}
+.pro .cold-t .fl.go .fb{visibility:visible;animation:flipB .07s .07s ease-out both}
+@keyframes flipT{from{transform:rotateX(0);filter:brightness(1)}to{transform:rotateX(-90deg);filter:brightness(.5)}}
+@keyframes flipB{from{transform:rotateX(90deg);filter:brightness(1.4)}to{transform:rotateX(0);filter:brightness(1)}}
+.pro .cold-t .fl b{animation:none!important}
+.pro .cold-t.lock .fl{animation:fllock .5s ease-out}
+@keyframes fllock{0%{filter:brightness(1.8)}100%{filter:brightness(1)}}
 </style>
 </body></html>

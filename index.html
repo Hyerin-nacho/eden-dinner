@@ -1552,14 +1552,22 @@ function dollThud(){ try{ if(!soundOn||!audio()) return; const t=ac.currentTime,
     const n=ac.createBuffer(1,ac.sampleRate*.4,ac.sampleRate), d=n.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
     const ns=ac.createBufferSource(), lp=ac.createBiquadFilter(), ng=ac.createGain(); ns.buffer=n; lp.type="lowpass"; lp.frequency.value=420; ng.gain.value=.8; ns.connect(lp); lp.connect(ng); ng.connect(out); ns.start(t);
   }catch(e){} }
+function glassClink(){ try{ if(!soundOn||!audio()) return; const t0=ac.currentTime+.01, out=sfxBus||ac.destination;
+    [[0,1],[.045,.55]].forEach(([dt,v])=>{ const t=t0+dt;                        // 두 잔이 '챙' 하고 거의 동시에
+      [[2637,.5],[2649,.4],[4180,.22],[6050,.12],[7310,.06]].forEach(([f,a])=>{ const o=ac.createOscillator(), g=ac.createGain(); o.type="sine"; o.frequency.value=f*(1+(Math.random()-.5)*.004);
+        g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(a*v*.22,t+.003); g.gain.exponentialRampToValueAtTime(.0001,t+(f<3000?1.8:.7)); o.connect(g); g.connect(out); o.start(t); o.stop(t+1.9); });
+      const n=ac.createBuffer(1,ac.sampleRate*.02,ac.sampleRate), d=n.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);   // 부딪히는 순간 '딱'
+      const ns=ac.createBufferSource(), hp=ac.createBiquadFilter(), ng=ac.createGain(); ns.buffer=n; hp.type="highpass"; hp.frequency.value=3000; ng.gain.value=.25*v; ns.connect(hp); hp.connect(ng); ng.connect(out); ns.start(t); });
+  }catch(e){} }
 function dollPlayback(){ const s=CU.s, L=$("cuLayer"), ph=$("cuPh"); L.querySelector(".dpb")?.remove(); window.__recA?.pause();
   const SUB=[[.35,"21:41","“…대표님, 한 잔 더 드세요.”",0],[3.0,"21:44","(잔이 부딪히는 소리)",0],[3.5,"21:46","“…엘레나, 너 뭘……”",1],[5.7,"21:47","",1]];
   const o=document.createElement("div"); o.className="dpb";
-  o.innerHTML=`<div class="dpb-top"><i></i>MEMORY PLAYBACK · AI DOLL</div><div class="dpb-tc">21:41</div><div class="dpb-sub"></div><div class="dpb-black"><b>21:47</b><small>그리고 기록은 끊겼다</small></div>`;
+  o.innerHTML=`<div class="dpb-top"><i></i>MEMORY PLAYBACK</div><div class="dpb-sub"></div><div class="dpb-black"><small>그리고 기록은 끊겼다</small></div>`;
   L.appendChild(o); ph.classList.add("eyezoom"); $("cu").classList.add("pb"); $("cuTh").classList.remove("on"); requestAnimationFrame(()=>o.classList.add("on"));
-  const tc=o.querySelector(".dpb-tc"), sub=o.querySelector(".dpb-sub"), at=(ms,f)=>setTimeout(()=>{ if(o.isConnected) f(); },ms);
+  const sub=o.querySelector(".dpb-sub"), at=(ms,f)=>setTimeout(()=>{ if(o.isConnected) f(); },ms);
   at(900,()=>{ try{ if(soundOn){ if(!window.__recA){ window.__recA=new Audio("ev/doll_rec.mp3"); window.__recA.volume=.95; } window.__recA.currentTime=0; window.__recA.play().catch(()=>{}); } }catch(e){} });
-  SUB.forEach(([t,c,txt,red])=>at(900+t*1000,()=>{ tc.textContent=c; tc.classList.toggle("red",!!red); if(txt){ sub.innerHTML=txt; sub.classList.toggle("red",!!red); sub.classList.remove("in"); void sub.offsetWidth; sub.classList.add("in"); } else sub.classList.remove("in"); }));
+  at(900+3000,glassClink);                                                            // 21:44 잔 부딪히는 소리
+  SUB.forEach(([t,c,txt,red])=>at(900+t*1000,()=>{ if(txt){ sub.innerHTML=txt; sub.classList.toggle("red",!!red); sub.classList.remove("in"); void sub.offsetWidth; sub.classList.add("in"); } else sub.classList.remove("in"); }));
   at(900+5900,()=>{ dollThud(); o.classList.add("hit"); ph.classList.add("jolt"); });   // 둔탁한 소리
   at(900+6150,()=>o.classList.add("black"));
   at(900+8600,()=>{ o.classList.remove("on"); ph.classList.remove("eyezoom","jolt"); $("cu").classList.remove("pb"); if(!found.has(s.id)) miniFinish(s); else cuThink(s.th,3200);
@@ -4043,7 +4051,7 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .dpb-black{position:absolute;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;opacity:0;transition:opacity .08s}
 .dpb.black .dpb-black{opacity:1}
 .dpb-black b{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(34px,5.5vw,70px);letter-spacing:.25em;color:#c23a2c;opacity:0;transition:opacity .8s .5s}
-.dpb-black small{font-family:var(--serif);font-size:clamp(13px,1.4vw,17px);letter-spacing:.2em;color:rgba(239,230,208,.6);opacity:0;transition:opacity .8s 1.2s}
+.dpb-black small{font-family:var(--serif);font-size:clamp(15px,1.7vw,21px);letter-spacing:.24em;color:rgba(239,230,208,.7);opacity:0;transition:opacity 1s .6s}
 .dpb.black .dpb-black b,.dpb.black .dpb-black small{opacity:1}
 </style>
 </body></html>

@@ -913,7 +913,7 @@ button{font:inherit;cursor:pointer;color:inherit}
     <video id="proVid" playsinline preload="auto"></video>
     <button class="proskip" id="proVideoSkip" type="button" hidden>영상 넘기기 ›</button>
     <div class="ps on" data-s="start"><div class="bg"></div>
-      <video class="title-train" id="titleTrainV" src="pro/11_heroShot.mp4" muted playsinline preload="auto" aria-hidden="true"></video>
+      <video class="title-train" id="titleTrainV" src="pro/vip_loop.mp4" muted loop autoplay playsinline preload="auto" aria-hidden="true"></video>
       <div class="title-vignette" aria-hidden="true"></div>
       <div class="title-content">
         <img class="title-logo" src="pro/orpheus-title-warm.webp" alt="beyond the ORPHEUS · EDEN LINE COMPANY">
@@ -922,6 +922,7 @@ button{font:inherit;cursor:pointer;color:inherit}
       </div>
       <audio id="titleTrainSound" src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Steam_engine.ogg" preload="none"></audio>
     </div>
+    <div class="cold" id="proCold" aria-hidden="true"><div class="cold-t">21:47</div><div class="cold-s">ORPHEUS EXPRESS · EDEN LINE</div></div>
     <div class="ps" data-s="hand">
       <img class="hand" id="proHand" src="pro/hand.webp" alt="">
       <div class="hitz" id="proHit" role="button" aria-label="봉투 받기"></div>
@@ -2663,11 +2664,23 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   }
   const reveal=b=>{ b.style.transition="opacity 1s"; b.style.opacity=1; b.style.pointerEvents="auto"; };
 
-  /* 0. 시작 버튼 → 바로 다음 인트로 영상 */
+  /* 0-a. 콜드 오픈 — 검은 화면에 열차 소리만 2.8초, 시각 "21:47"이 떠오른 뒤 인트로로 컷 */
+  function coldOpen(next){
+    const c=$("proCold"); c.classList.add("on"); const tv=$("titleTrainV"); try{ tv.pause(); }catch(e){}
+    let stopN=()=>{};
+    try{ if(soundOn&&audio()){ const a=ac, len=a.sampleRate*3, buf=a.createBuffer(1,len,a.sampleRate), d=buf.getChannelData(0);
+        for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+        const src=a.createBufferSource(); src.buffer=buf; const lp=a.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=170; const g=a.createGain();
+        g.gain.setValueAtTime(0,a.currentTime); g.gain.linearRampToValueAtTime(.7,a.currentTime+.5); g.gain.linearRampToValueAtTime(.0,a.currentTime+2.9);
+        src.connect(lp); lp.connect(g); g.connect(sfxBus||a.destination); src.start(); stopN=()=>{ try{ src.stop(); }catch(e){} };
+        [.3,.62,1.2,1.52,2.1,2.42].forEach(t=>setTimeout(()=>sfx(70,.18,.12),t*1000)); } }catch(e){}
+    setTimeout(()=>{ c.classList.add("out"); setTimeout(()=>{ c.classList.remove("on","out"); stopN(); },450); next(); },2800);
+  }
+  /* 0. 시작 버튼 → 콜드 오픈 → 인트로 영상 */
   $("proStart").onclick=()=>{ $("proStart").disabled=true;
     try{ audio(); ac&&ac.resume(); }catch(e){}
     // 웹캠은 여기서 켜지 않는다: 초대장이 나온 뒤 '카메라로 체험'을 눌러 허락해야 켜진다
-    clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); },0,1.7);
+    coldOpen(()=>clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); },0,1.7));
   };
   /* 1. 영상 마지막 — 손에 든 봉투 */
   const hand=$("proHand"), hz=$("proHit");
@@ -3463,5 +3476,20 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .evp-hint{font-size:12.5px;letter-spacing:.06em;color:rgba(239,230,208,.7)}
 .evp-hint b{color:#d2ad63;font-weight:600}.evp-hint span{opacity:.7}
 @media(max-width:760px){.evp-row{justify-content:flex-start;scroll-snap-type:x proximity;padding:12px 10px 14px}.evc{flex-basis:104px;padding:5px 5px 7px;scroll-snap-align:center}.evc small{display:none}.evc .cap{font-size:15px}.evp-hint span{display:none}.evp-h{font-size:10px}}
+
+/* ---- 오프닝 연출 ---- */
+.pro .ps[data-s="start"] .title-train{filter:brightness(.5) saturate(.8) contrast(1.08)!important;opacity:1!important;animation:ttpush 28s ease-in-out infinite alternate}
+@keyframes ttpush{from{transform:scale(1.04)}to{transform:scale(1.14) translateX(-1.2%)}}
+.pro .ps[data-s="start"] .title-vignette{background:linear-gradient(0deg,rgba(3,5,4,.92),transparent 38%,rgba(3,5,4,.6)),radial-gradient(ellipse at 50% 45%,transparent 38%,rgba(0,0,0,.78) 100%)!important}
+.pro .ps[data-s="start"] .title-logo{animation:tlogo 2.6s .3s cubic-bezier(.2,.7,.2,1) both}
+.pro .ps[data-s="start"] .title-sub{animation:tlogo 2.6s 1.1s cubic-bezier(.2,.7,.2,1) both}
+.pro .ps[data-s="start"] .title-start{animation:tlogo 2.2s 1.9s cubic-bezier(.2,.7,.2,1) both}
+@keyframes tlogo{from{opacity:0;filter:blur(10px)}to{opacity:1;filter:none}}
+.pro .cold{position:absolute;inset:0;z-index:60;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:1.4cqh;opacity:0;transition:opacity .45s;pointer-events:none}
+.pro .cold.on{display:flex;opacity:1}.pro .cold.out{opacity:0}
+.pro .cold-t{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(40px,7cqw,110px);letter-spacing:.3em;color:#d9b26a;opacity:0;animation:coldin 1.6s .5s ease-out forwards;text-shadow:0 0 30px rgba(217,178,106,.4)}
+.pro .cold-s{font-size:clamp(11px,1.3cqw,18px);letter-spacing:.5em;color:#8f8467;opacity:0;animation:coldin 1.4s 1.2s ease-out forwards}
+@keyframes coldin{to{opacity:1}}
+.pro .vcap{bottom:6%;letter-spacing:.06em;padding:1.1em 0 1.3em;background:linear-gradient(0deg,rgba(0,0,0,.6),transparent)}
 </style>
 </body></html>

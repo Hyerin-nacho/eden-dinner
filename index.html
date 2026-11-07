@@ -2734,6 +2734,8 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   /* 테스트: 주소 끝에 #room 을 붙여 열면 프롤로그·문 열기 없이 조사 화면(VIP실)부터 */
   const ROOM_ONLY=false;  // true면 열자마자 VIP실 (조사 화면만 테스트할 때). 지금은 처음부터 전체 진행
   if((ROOM_ONLY&&location.hash!=="#tear")||location.hash==="#room"){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>enterExplore(),60); return; }
+  /* 테스트: 주소 끝에 #bottle 을 붙이면 바로 협탁 약병을 집어 든 화면 (알약 물리 확인용) */
+  if(location.hash==="#bottle"){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>{ enterExplore(); setTimeout(()=>{ const s=SPOTS.find(x=>x.id==="bedside"); if(s) inspect(s); },400); },60); return; }
   let done=false, tok=0;
   const scenes=[...pro.querySelectorAll(".ps")];
   const show=name=>{ scenes.forEach(s=>s.classList.toggle("on",s.dataset.s===name)); };

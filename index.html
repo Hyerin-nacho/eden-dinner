@@ -3173,11 +3173,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   function finishTear(){ sfx(2600,.12,.2,"bandpass"); sfx(700,.09,.15); tearSndStop();
     setTimeout(()=>{ spawnPieces(); fallT0=performance.now(); fallT=0; dirty=true; },40);
      setTimeout(()=>{ if(tearTest){ resetTear(); return; }
-       dip(()=>clip(PRO.memory,null,
-         ()=>dip(()=>{
-           clip("pro/locked_door.mp4",null,
-             ()=>dip(()=>clip("pro/story_door.mp4",null,()=>toRoom()),120),3.8);
-           },120),4.3),180);
+       dip(()=>clip("pro/story_cut.mp4",null,finish),180);
      },FALL_T*1000+80); }
   card.addEventListener("pointerdown",e=>{ drag=true; lx=e.clientX; lastMv=performance.now(); try{ card.setPointerCapture(e.pointerId); }catch(_){} });
   window.addEventListener("pointermove",e=>{ if(!drag||torn) return; const now=performance.now(), dt=Math.max(8,now-lastMv), dxs=e.clientX-lx, dx=Math.abs(dxs);
@@ -3278,7 +3274,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   }
   /* 5. 회상 : 시간 되감기 → 공방(Ada) → 붉은 복도 */
   function flashback(){ if(flash) return; flash=true;
-    dip(()=>clip(PRO.rewind,null,()=>clip(PRO.memory,null,()=>dip(()=>clip(PRO.corridor,null,()=>dip(()=>clip(PRO.news,null,()=>toRoom()),200)),200))),200); }   // 체험 시간 단축: 창에 비친 남자 장면은 뺐다
+    dip(()=>clip("pro/story_cut.mp4",null,finish),200); }   // 체험 시간 단축: 창에 비친 남자 장면은 뺐다
   /* 5-1. 탑승 히어로샷 — 드래그(또는 휠)한 만큼 영상이 진행되며 기차 안으로 줌인 (원본 P7-1 스크롤 스크럽) */
   const HERO_DRAG_PX=1400, HERO_ZOOM=1.35;   // 드래그 거리(px)만큼 가면 끝까지, 마지막 확대 배율
   function hero(next){

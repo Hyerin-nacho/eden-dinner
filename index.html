@@ -36,6 +36,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 .stage.explore{cursor:default}
 .world{position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:0 0;will-change:transform}
 .layer{position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat}
+.layer>.vloop{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none}
 .layer.soft{filter:blur(2.6px) brightness(.72) saturate(.85)}
 .layer.sharp{
   -webkit-mask-image:radial-gradient(ellipse var(--mr,20%) calc(var(--mr,20%) * 1.7) at var(--fx,50%) var(--fy,50%),#000 35%,transparent 100%);
@@ -826,8 +827,8 @@ button{font:inherit;cursor:pointer;color:inherit}
 
 <div class="stage" id="stage">
   <div class="world" id="world">
-    <div class="layer soft" id="lSoft"></div>
-    <div class="layer sharp" id="lSharp"></div>
+    <div class="layer soft" id="lSoft"><video class="vloop" src="pro/vip_loop.mp4" muted loop playsinline autoplay preload="auto"></video></div>
+    <div class="layer sharp" id="lSharp"><video class="vloop" src="pro/vip_loop.mp4" muted loop playsinline autoplay preload="auto"></video></div>
     <div class="curtain" id="curtain"></div>
     <div id="cuts"></div>
     <svg class="outl" id="outl" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
@@ -1136,7 +1137,7 @@ const SPOTS = [
  {id:"elena",x:74,y:60,npc:true,tier:0,loc:"VIP실",title:"엘레나 보로딘",short:"엘레나 보로딘"}
 ];
 /* 조사 지점 줄이기: 여기 적은 것은 방에서 빠진다 (내용은 위에 그대로 남겨 두었으니, 다시 넣으려면 목록에서 지우면 됨) */
-const CUT_SPOTS=["window","sofa","portrait","train","plates","shawl","crow","victim","books"];   // 남은 증거: 와인잔·조각상·인형(직접 만지기) + 전표·약병(클릭 확인)
+const CUT_SPOTS=["window","sofa","portrait","train","plates","shawl","crow","victim","books","glass","card"];   // 남은 증거: 와인잔·조각상·인형(직접 만지기) + 전표·약병(클릭 확인)
 for(let i=SPOTS.length-1;i>=0;i--) if(CUT_SPOTS.includes(SPOTS[i].id)) SPOTS.splice(i,1);
 const ICON={
  search:'<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/>',
@@ -2641,7 +2642,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   const sfx=(f,v,d,t)=>{ try{ if(soundOn&&audio()) hit(f,v,d,t); }catch(e){} };
   /* 소리 있는 자동재생이 막히면(브라우저 정책) 음소거로라도 재생 */
   function proPlay(v){ v.muted=!soundOn; v.volume=.65; return v.play().catch(e=>{ if(e&&e.name==="NotAllowedError"){ v.muted=true; return v.play(); } throw e; }); }
-   function clip(src,caps,onEnd,cutAt){
+   function clip(src,caps,onEnd,cutAt,rate){
     const my=++tok; show(""); cap.className="vcap"; cap.textContent="";
     pv.style.display="block";
     $("proVideoSkip").hidden=false;
@@ -2652,7 +2653,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     const arm=()=>{ clearTimeout(wd); wd=setTimeout(end,10000); };
      pv.onended=end; pv.onerror=end; pv.ontimeupdate=()=>{ arm(); if(cutAt&&pv.currentTime>=cutAt) end(); };
      pv.src=src; pv.load(); try{ pv.currentTime=0; }catch(e){} arm();
-     proPlay(pv).catch(end);
+     pv.playbackRate=rate||1; proPlay(pv).catch(end);
   }
   const hideVid=()=>{ tok++; pv.pause(); pv.onended=pv.onerror=pv.onclick=pv.ontimeupdate=null; pv.style.display="none"; cap.classList.remove("show"); $("proVideoSkip").hidden=true; };
   function lines(box,step,after){
@@ -2666,7 +2667,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   $("proStart").onclick=()=>{ $("proStart").disabled=true;
     try{ audio(); ac&&ac.resume(); }catch(e){}
     // 웹캠은 여기서 켜지 않는다: 초대장이 나온 뒤 '카메라로 체험'을 눌러 허락해야 켜진다
-    clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); });
+    clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); },0,1.7);
   };
   /* 1. 영상 마지막 — 손에 든 봉투 */
   const hand=$("proHand"), hz=$("proHit");
@@ -2819,8 +2820,8 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   function finishTear(){ sfx(2600,.12,.2,"bandpass"); sfx(700,.09,.15); tearSndStop();
     setTimeout(()=>{ spawnPieces(); fallT0=performance.now(); fallT=0; dirty=true; },40);
      setTimeout(()=>{ if(tearTest){ resetTear(); return; }
-       dip(()=>clip(PRO.memory,[[.2,"그날 아내는 열차에서 돌아오지 못했다.",null,3900]],
-         ()=>dip(()=>clip("pro/seated.mp4",[[.2,"나는 그 범인을 찾으러 이 열차에 타야만 한다.",null,3200]],()=>toRoom(),3.5),120)),180);
+       dip(()=>clip(PRO.memory,[[.2,"그날 아내는 열차에서 돌아오지 못했다.",null,2800]],
+         ()=>dip(()=>clip("pro/seated.mp4",[[.2,"나는 그 범인을 찾으러 이 열차에 타야만 한다.",null,2400]],()=>toRoom(),2.6),120),3.2),180);
      },FALL_T*1000+80); }
   card.addEventListener("pointerdown",e=>{ drag=true; lx=e.clientX; try{ card.setPointerCapture(e.pointerId); }catch(_){} });
   window.addEventListener("pointermove",e=>{ if(!drag||torn) return; setTear(goal+Math.abs(e.clientX-lx)/PRO_TEAR_PX); lx=e.clientX; });
@@ -2953,7 +2954,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
       raf=requestAnimationFrame(tick); })();
   }
    /* 탑승 컷 다음에는 실제 문 앞 컷을 보여 주고, 그 프레임 위에서 문을 열게 한다. */
-   function toRoom(){ dip(()=>clip("pro/bridge_door.mp4",null,finish,4.2),180); }
+   function toRoom(){ dip(()=>clip("pro/bridge_door.mp4",null,finish,2.8),180); }
   /* 7. VIP실 문 앞 — 영상 마지막 장면에서 "문을 연다" (클릭 / 카메라 앞으로 손 밀기) */
   let doorWait=false, doorBase=null, doorHold=0;
   function finish(){ if(done) return; done=true; doorWait=true; doorBase=null; doorHold=0;

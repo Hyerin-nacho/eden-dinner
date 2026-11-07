@@ -938,7 +938,7 @@ button{font:inherit;cursor:pointer;color:inherit}
           <i class="tk-hole" aria-hidden="true"></i>
         </button>
       </div>
-      <div class="tt-foot" aria-hidden="true"><span>ORPHEUS EXPRESS · 21:47 발</span><span>🎧 소리를 켜면 더 깊이 빠져듭니다</span></div>
+      <div class="tt-foot" aria-hidden="true"><span>소리를 켜고 플레이해 주세요</span></div>
       <audio id="titleTrainSound" src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Steam_engine.ogg" preload="none"></audio>
     </div>
     <div class="cold" id="proCold" aria-hidden="true">
@@ -3903,7 +3903,7 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
   const fit=()=>{ const r=sc.getBoundingClientRect(); D=Math.min(1.5,devicePixelRatio||1); W=r.width; H=r.height; cv.width=Math.round(W*D); cv.height=Math.round(H*D); };
   const steam=()=>({k:0,x:Math.random()*W,y:H+Math.random()*H*.2,r:(.08+Math.random()*.14)*H,vx:(Math.random()-.5)*.15,vy:-(.12+Math.random()*.22),a:0,life:0,max:900+Math.random()*900});
   const dust=()=>({k:1,x:Math.random()*W,y:Math.random()*H,r:.6+Math.random()*1.6,vx:(Math.random()-.5)*.08,vy:(Math.random()-.5)*.06,ph:Math.random()*6.28,a:.25+Math.random()*.55});
-  fit(); for(let i=0;i<9;i++){ const s=steam(); s.y=H*(.55+Math.random()*.5); s.life=Math.random()*s.max; P.push(s); } for(let i=0;i<70;i++) P.push(dust());
+  fit(); for(let i=0;i<9;i++){ const s=steam(); s.y=H*(.55+Math.random()*.5); s.life=Math.random()*s.max; P.push(s); } for(let i=0;i<35;i++) P.push(dust());
   addEventListener("resize",fit);
   sc.addEventListener("pointermove",e=>{ const r=sc.getBoundingClientRect(); sc.style.setProperty("--mx",((e.clientX-r.left)/r.width-.5).toFixed(3)); sc.style.setProperty("--my",((e.clientY-r.top)/r.height-.5).toFixed(3)); });
   let last=performance.now();
@@ -3919,7 +3919,7 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
         const q=g.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r); q.addColorStop(0,`rgba(240,214,170,${a})`); q.addColorStop(1,"rgba(240,214,170,0)"); g.fillStyle=q; g.fillRect(p.x-p.r,p.y-p.r,p.r*2,p.r*2); }
       else { p.ph+=dt*.0012; p.x+=(p.vx+Math.sin(p.ph)*.03)*dt*.06-mx*.02; p.y+=(p.vy+Math.cos(p.ph*.7)*.02)*dt*.06;
         if(p.x<-5) p.x=W+5; if(p.x>W+5) p.x=-5; if(p.y<-5) p.y=H+5; if(p.y>H+5) p.y=-5;
-        const tw=.55+.45*Math.sin(p.ph*3); g.fillStyle=`rgba(255,226,170,${(p.a*tw).toFixed(3)})`; g.beginPath(); g.arc(p.x,p.y,p.r,0,6.283); g.fill(); } } })(last);
+        g.fillStyle=`rgba(255,226,170,${(p.a*.45).toFixed(3)})`; g.beginPath(); g.arc(p.x,p.y,p.r,0,6.283); g.fill(); } } })(last);
 })();
 </script>
 <style>
@@ -4067,5 +4067,11 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .pro .ps[data-s="start"] .title-start{animation:tlogo 1.8s 3.8s cubic-bezier(.2,.7,.2,1) both!important}
 .pro .ps[data-s="start"] .tt-top,.pro .ps[data-s="start"] .tt-foot{animation:tlogo 2s 4.4s ease-out both!important}
 .pro .ps[data-s="start"] .title-content{animation:none!important}
+</style>
+<style>
+/* 타이틀 정리: 로고 반짝임 제거, 아래 문구는 작고 담백하게 */
+.pro .ps[data-s="start"] .tt-sheen{display:none!important}
+.pro .ps[data-s="start"] .tt-foot{font-family:var(--serif)!important;font-size:max(10px,.8cqw)!important;letter-spacing:.12em!important;color:rgba(236,226,203,.38)!important}
+.pro .ps[data-s="start"] .tt-foot span::before{content:none!important}
 </style>
 </body></html>

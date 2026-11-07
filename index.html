@@ -3325,7 +3325,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     hideVid(); const pv=$("proVid"); pv.onended=pv.onerror=pv.ontimeupdate=null; pv.src=INTRO_VIDEO; pv.muted=true; pv.style.display="block"; pv.pause(); try{ pv.currentTime=0; }catch(e){}
     Object.assign(DS,{p:0,tp:0,drag:false,latch:false,crk:false});
     const cam=handOn; $("proDoorPm").hidden=!cam; if(cam) camBox.classList.add("on");
-    $("proDoorHint").innerHTML=cam?"손잡이를 잡고 <b>아래로 끌어</b> 문을 열어라 · 카메라 앞으로 손바닥을 밀어도 된다":"손잡이를 잡고 <b>아래로 끌어</b> 문을 열어라";
+    $("proDoorHint").innerHTML=cam?"손을 들어 손잡이를 잡고, <b>아래로 내려</b> 문을 열어라":"손잡이를 잡고 <b>아래로 끌어</b> 문을 열어라";
     pro.classList.add("doorgrab"); $("proDoor").classList.add("on"); cancelAnimationFrame(DS.raf); DS.raf=requestAnimationFrame(doorTick); }
   function doorTick(){ if(!doorWait) return; const pv=$("proVid");
     if(!DS.drag&&DS.tp<.97) DS.tp=Math.max(0,DS.tp-.03);                              // 놓으면 문이 다시 닫힘
@@ -3347,10 +3347,13 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
      const pv=$("proVid"); let fin=false; const end=()=>{ if(fin) return; fin=true; pv.onended=null; hideVid(); pro.hidden=true; enterExplore(); };
      pv.onended=end; pv.onerror=end; pv.muted=!soundOn; pv.volume=.65; pv.play().catch(()=>{ pv.muted=true; pv.play().catch(end); }); setTimeout(()=>{ if(!fin&&pv.paused) end(); },7000); }
   $("proDoorBtn").onclick=openDoor;
-   window.__proDoorPush=lm=>{ if(!doorWait||!lm) { doorHold=0; if(doorWait) $("proDoorBar").style.width="0%"; return; }
-    const sz=Math.hypot(lm[0].x-lm[9].x,lm[0].y-lm[9].y); if(doorBase===null||sz<doorBase) doorBase=Math.max(sz,.05);
-     const p=Math.max(0,Math.min(1,(sz/doorBase-1)/.24)); $("proDoorBar").style.width=(p*100)+"%";
-     DS.tp=Math.max(DS.tp,p*.95); if(p>=1){ if(++doorHold>1) openDoor(); } else doorHold=0; };   // 손바닥을 밀수록 문도 그만큼 열림
+   /* 카메라: 손을 들어 올린 가장 높은 곳이 '손잡이를 잡은 위치'. 거기서 손을 아래로 내리는 만큼 손잡이가 내려가고 문이 열린다.
+      손이 화면에서 사라지면 손잡이를 놓은 것 → 문이 다시 닫힌다 */
+   window.__proDoorPush=lm=>{ if(!doorWait) return;
+     if(!lm){ DS.hy0=null; if(DS.cam){ DS.cam=false; DS.drag=false; } $("proDoorBar").style.width="0%"; return; }
+     const y=lm[9].y; if(DS.hy0==null||y<DS.hy0) DS.hy0=y;
+     const p=Math.max(0,Math.min(1,(y-DS.hy0)/.3)); DS.cam=true; DS.drag=true; DS.tp=p; $("proDoorBar").style.width=(p*100)+"%";
+     if(p>=1){ if(++doorHold>1) openDoor(); } else doorHold=0; };
 })();
 </script>
 

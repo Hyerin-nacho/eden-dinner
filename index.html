@@ -933,7 +933,13 @@ button{font:inherit;cursor:pointer;color:inherit}
       <div class="tt-foot" aria-hidden="true"><span>ORPHEUS EXPRESS · 21:47 발</span><span>🎧 소리를 켜면 더 깊이 빠져듭니다</span></div>
       <audio id="titleTrainSound" src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Steam_engine.ogg" preload="none"></audio>
     </div>
-    <div class="cold" id="proCold" aria-hidden="true"><div class="cold-t">21:47</div><div class="cold-s">ORPHEUS EXPRESS · EDEN LINE</div></div>
+    <div class="cold" id="proCold" aria-hidden="true">
+      <div class="cold-k">ORPHEUS EXPRESS · FIRST VOYAGE</div>
+      <div class="cold-t" id="coldT"><span class="fl"><b>2</b></span><span class="fl"><b>1</b></span><span class="cl">:</span><span class="fl"><b>4</b></span><span class="fl"><b>4</b></span></div>
+      <div class="cold-s">EDEN LINE · VIP CAR</div>
+      <div class="cold-line" id="coldL"></div>
+      <div class="cold-flash"></div>
+    </div>
     <div class="ps" data-s="hand">
       <img class="hand" id="proHand" src="pro/hand.webp" alt="">
       <div class="hitz" id="proHit" role="button" aria-label="봉투 받기"></div>
@@ -1015,16 +1021,9 @@ button{font:inherit;cursor:pointer;color:inherit}
     <div class="tk-por">
       <video class="tk-vid" id="tkVid" playsinline preload="auto"></video>
       <video class="tk-vid tk-react" id="tkReact" playsinline preload="auto"></video>
-      <span class="ph-note">캐릭터 이미지 자리 · ELENA BORODIN</span>
-      <svg viewBox="0 0 200 300" aria-hidden="true">
-        <defs><linearGradient id="sil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3530"/><stop offset="1" stop-color="#101512"/></linearGradient></defs>
-        <path fill="url(#sil)" d="M100 40c-22 0-36 16-36 38 0 14 5 25 13 32l-2 12c-26 6-47 22-53 48L12 300h176l-10-130c-6-26-27-42-53-48l-2-12c8-7 13-18 13-32 0-22-14-38-36-38z"/>
-        <path fill="#1a211d" d="M62 62c4-22 20-32 38-32s34 10 38 32c-10-8-24-12-38-12s-28 4-38 12z"/>
-        <rect x="58" y="44" width="84" height="12" rx="3" fill="#161c19"/><rect x="92" y="46" width="16" height="8" fill="#8d7440"/>
-        <path fill="#0c100e" d="M74 170l26 22 26-22-8 130H82z"/><circle cx="100" cy="210" r="3" fill="#8d7440"/><circle cx="100" cy="236" r="3" fill="#8d7440"/>
-        <rect x="120" y="182" width="22" height="6" fill="#8d7440" opacity=".8"/>
-      </svg>
+      <div class="tk-lamp" aria-hidden="true"></div>
     </div>
+    <div class="tk-slam" id="tkSlam" aria-hidden="true"><b>거짓말</b><small>모순 발견</small></div>
     <button class="x tk-x" id="tkClose" aria-label="심문 종료">✕</button>
     <div class="tk-case" id="tkCase" aria-label="엘레나의 진술"></div>
     <div class="tk-meter" id="tkMeter" aria-label="엘레나의 평정"><span>평정</span><i></i><em>침착</em></div>
@@ -1038,8 +1037,11 @@ button{font:inherit;cursor:pointer;color:inherit}
     </div>
   </section>
   <section class="ending" id="ending" hidden>
-    <div class="case">CASE CLOSED · ORPHEUS EXPRESS R.R.</div>
-    <h2 class="q">그를 죽인 범인이<br>정말 엘레나가 맞을까?</h2>
+    <div class="en-bars" aria-hidden="true"><i></i><i></i></div>
+    <div class="en-clock" id="endClock" aria-hidden="true">21:47</div>
+    <div class="en-stamp" aria-hidden="true"><b>CASE CLOSED</b><small>ORPHEUS EXPRESS R.R. · VIP</small></div>
+    <div class="case">사건 종결 · 범인 엘레나 보로딘</div>
+    <h2 class="q"><span>그를 죽인 범인이</span><br><span>정말 엘레나가 맞을까?</span></h2>
     <p class="nag" id="endNag">21:47 — 독이 먼저였을까, 그 소리가 먼저였을까.</p>
     <p class="en">The next scene begins <em>in the game</em>.</p>
     <div class="row"><button class="enter" id="ctaBtn" disabled aria-disabled="true">게임 다운로드 페이지 준비 중</button><button class="skip" style="position:static" id="againBtn">처음으로 돌아가기</button></div>
@@ -1942,18 +1944,49 @@ function exWoodMat(){ const c=document.createElement("canvas"); c.width=c.height
   for(let i=0;i<150;i++){ const y=Math.random()*512; g.strokeStyle=`rgba(${70+Math.random()*45|0},${36+Math.random()*22|0},16,${.2+Math.random()*.35})`; g.lineWidth=.5+Math.random()*2.5; g.beginPath(); g.moveTo(0,y); for(let x=0;x<=512;x+=32) g.lineTo(x,y+Math.sin(x/90+i)*4+Math.random()*1.5); g.stroke(); }
   const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.anisotropy=4; return new THREE.MeshStandardMaterial({map:t,roughness:.78,metalness:0}); }
 /* 먼지 쌓인 테이블 — 조각상 둘레만 동그랗게 깨끗하고, 들었다 놓은 손자국이 남아 있다 */
-function exDustPlane(pw=5,pd=1.6){ const W=1536,H=Math.round(W*pd/pw),u=W/pw,c=document.createElement("canvas"); c.width=W; c.height=H; const g=c.getContext("2d"), cx=W/2, cy=H/2, R=.3*u;
-  for(let i=0;i<50;i++){ const x=Math.random()*W, y=Math.random()*H, r=.15*u+Math.random()*.4*u, q=g.createRadialGradient(x,y,0,x,y,r); q.addColorStop(0,"rgba(190,180,162,.16)"); q.addColorStop(1,"rgba(190,180,162,0)"); g.fillStyle=q; g.fillRect(x-r,y-r,r*2,r*2); }
-  g.fillStyle="rgba(150,140,124,.2)"; g.fillRect(0,0,W,H);
-  const n=Math.round(W*H/22); for(let i=0;i<n;i++){ const s=Math.random()<.97?1+Math.random():2+Math.random()*2; g.fillStyle=`rgba(${200+Math.random()*40|0},${190+Math.random()*40|0},${170+Math.random()*40|0},${.08+Math.random()*.3})`; g.fillRect(Math.random()*W,Math.random()*H,s,s); }
+/* 먼지 쌓인 테이블 v2 — 조각상 둘레만 동그랗게 닦였고, 들었다 놓은 손가락 자국이 남아 있다
+   · 고르게 내려앉은 아주 고운 먼지(픽셀 단위) + 저주파 노이즈로 쌓인 양이 들쭉날쭉
+   · 굵은 먼지 덩어리 몇 개, 휘어진 섬유 보풀
+   · 닦인 자리는 가장자리가 부드럽고, 밀려난 먼지가 테두리에 살짝 쌓임 · 손가락 자국은 번진 줄 */
+function exDustPlane(pw=5,pd=1.6){ const W=2048,H=Math.max(256,Math.round(W*pd/pw)),u=W/pw,c=document.createElement("canvas"); c.width=W; c.height=H; const g=c.getContext("2d"), cx=W/2, cy=H/2, R=.3*u;
+  // 저주파 밀도 맵 (두 옥타브를 부드럽게 키워 겹침)
+  const den=document.createElement("canvas"); den.width=W/8|0; den.height=H/8|0; const dg=den.getContext("2d");
+  for(const [n,a] of [[10,.7],[34,.35]]){ const sm=document.createElement("canvas"); sm.width=n; sm.height=Math.max(2,Math.round(n*H/W)); const sg=sm.getContext("2d");
+    for(let y=0;y<sm.height;y++) for(let x=0;x<n;x++){ const v=Math.random()*255|0; sg.fillStyle=`rgb(${v},${v},${v})`; sg.fillRect(x,y,1,1); }
+    dg.globalAlpha=a; dg.imageSmoothingEnabled=true; dg.drawImage(sm,0,0,den.width,den.height); }
+  const DD=dg.getImageData(0,0,den.width,den.height).data, dAt=(x,y)=>DD[((Math.min(den.height-1,y/8|0))*den.width+Math.min(den.width-1,x/8|0))*4]/255;
+  // 1) 얇은 먼지 막: 밀도에 따라 옅게
+  const haze=g.createImageData(W,H), hd=haze.data;
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const i=(y*W+x)*4, d=dAt(x,y); hd[i]=178; hd[i+1]=170; hd[i+2]=156; hd[i+3]=(18+d*34)|0; }
+  // 2) 고운 먼지 알갱이: 한 픽셀씩, 밀도가 높은 곳에 더 많이
+  const n=Math.round(W*H*.22);
+  for(let k=0;k<n;k++){ const x=Math.random()*W|0, y=Math.random()*H|0; if(Math.random()>.25+dAt(x,y)*.9) continue;
+    const i=(y*W+x)*4, l=200+Math.random()*45|0; hd[i]=l; hd[i+1]=l-6; hd[i+2]=l-18; hd[i+3]=Math.min(255,hd[i+3]+40+Math.random()*90|0); }
+  g.putImageData(haze,0,0);
+  // 3) 굵은 먼지 덩어리 · 보풀 섬유
+  for(let k=0;k<Math.round(W*H/9000);k++){ const x=Math.random()*W, y=Math.random()*H, r=.6+Math.random()*1.6; g.fillStyle=`rgba(${205+Math.random()*30|0},${198+Math.random()*30|0},${184+Math.random()*25|0},${.35+Math.random()*.4})`; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); }
+  g.lineCap="round";
+  for(let k=0;k<Math.round(W*H/26000);k++){ const x=Math.random()*W, y=Math.random()*H, L=8+Math.random()*26, a=Math.random()*6.28, b=(Math.random()-.5)*2.4;
+    g.strokeStyle=`rgba(${215+Math.random()*25|0},${210+Math.random()*25|0},${200+Math.random()*25|0},${.22+Math.random()*.3})`; g.lineWidth=.5+Math.random()*.7;
+    g.beginPath(); g.moveTo(x,y); g.quadraticCurveTo(x+Math.cos(a+b)*L*.6,y+Math.sin(a+b)*L*.6,x+Math.cos(a)*L,y+Math.sin(a)*L); g.stroke(); }
+  // 4) 밀려난 먼지가 닦인 자리 테두리에 살짝 쌓임
+  g.save(); g.filter="blur(6px)"; g.strokeStyle="rgba(196,186,168,.28)"; g.lineWidth=R*.12; g.beginPath(); g.arc(cx,cy,R*1.2,0,7); g.stroke(); g.restore();
+  // 5) 닦인 자리: 가장자리가 부드럽고, 천으로 둥글게 훔친 결이 남음
   g.globalCompositeOperation="destination-out";
-  const q=g.createRadialGradient(cx,cy,R*.92,cx,cy,R*1.22); q.addColorStop(0,"rgba(0,0,0,1)"); q.addColorStop(1,"rgba(0,0,0,0)"); g.fillStyle=q; g.beginPath(); g.arc(cx,cy,R*1.25,0,7); g.fill();
-  for(const a of [-.2,Math.PI-.2]){ for(let f=0;f<4;f++){ const a2=a+f*.13, x0=cx+Math.cos(a2)*R*1.05, y0=cy+Math.sin(a2)*R*1.05, len=R*(.18+Math.random()*.15);
-    g.strokeStyle="rgba(0,0,0,.4)"; g.lineWidth=R*.05+Math.random()*R*.03; g.lineCap="round"; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x0+Math.cos(a2)*len,y0+Math.sin(a2)*len); g.stroke(); } }
+  const q=g.createRadialGradient(cx,cy,R*.85,cx,cy,R*1.18); q.addColorStop(0,"rgba(0,0,0,1)"); q.addColorStop(1,"rgba(0,0,0,0)"); g.fillStyle=q; g.beginPath(); g.arc(cx,cy,R*1.2,0,7); g.fill();
+  for(let k=0;k<22;k++){ const rr=R*(.95+Math.random()*.22), a0=Math.random()*6.28, len=.4+Math.random()*1.4;
+    g.strokeStyle=`rgba(0,0,0,${.12+Math.random()*.25})`; g.lineWidth=1+Math.random()*3; g.beginPath(); g.arc(cx,cy,rr,a0,a0+len); g.stroke(); }
+  // 6) 들었다 놓은 손가락 자국: 양쪽에 4줄씩, 끝으로 갈수록 옅어지고 살짝 번짐
+  g.save(); g.filter="blur(1.6px)";
+  for(const a of [-.2,Math.PI-.2]){ for(let f=0;f<4;f++){ const a2=a+f*.12+(Math.random()-.5)*.03, x0=cx+Math.cos(a2)*R*1.08, y0=cy+Math.sin(a2)*R*1.08, len=R*(.16+Math.random()*.14), w=R*(.045+Math.random()*.02);
+    const gr=g.createLinearGradient(x0,y0,x0+Math.cos(a2)*len,y0+Math.sin(a2)*len); gr.addColorStop(0,"rgba(0,0,0,.75)"); gr.addColorStop(1,"rgba(0,0,0,0)");
+    g.strokeStyle=gr; g.lineWidth=w; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x0+Math.cos(a2)*len,y0+Math.sin(a2)*len); g.stroke(); } }
+  g.restore();
+  // 7) 테이블 가장자리로 갈수록 자연스럽게 사라짐
   const e=Math.min(W,H)*.08; [[0,0,W,e,0,0,0,e],[0,H-e,W,e,0,H,0,H-e],[0,0,e,H,0,0,e,0],[W-e,0,e,H,W,0,W-e,0]].forEach(([x,y,w,hh,x1,y1,x2,y2])=>{ const l=g.createLinearGradient(x1,y1,x2,y2); l.addColorStop(0,"rgba(0,0,0,1)"); l.addColorStop(1,"rgba(0,0,0,0)"); g.fillStyle=l; g.fillRect(x,y,w,hh); });
   g.globalCompositeOperation="source-over";
   const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.anisotropy=8;
-  const m=new THREE.Mesh(new THREE.PlaneGeometry(pw,pd),new THREE.MeshStandardMaterial({map:t,transparent:true,roughness:1,depthWrite:false})); m.rotation.x=-Math.PI/2; m.position.y=.002; return m; }
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(pw,pd),new THREE.MeshStandardMaterial({map:t,transparent:true,roughness:1,metalness:0,depthWrite:false})); m.rotation.x=-Math.PI/2; m.position.y=.002; return m; }
 function mountStatue3D(s){ const CF=M3D[s.id];
   if(!window.THREE||!THREE.GLTFLoader) return;
   if(S3&&S3.s===s){ S3.sync(); return; } unmountStatue3D();
@@ -2372,13 +2405,19 @@ addEventListener("keydown",e=>{ if(mode==="closeup") return; if(mode==="inspect"
 /* ---------- 심문 ---------- */
 const STATE=[
  {q:"9시 이후의 일",st:"오픈식이 끝나고 9시에 와인을 가져다드렸어요. 대표님은 혼자 식사 중이셨고, 저는 바로 나왔어요.",
+  ask:"정말 바로 나왔나? 그 뒤로 이 방에 다시 온 적 없고?",
   press:"대표님은 원래 혼자 드시는 걸 좋아하세요. 방해받는 걸 싫어하셨고요.",ans:["plates","doll"],
+  hint:"혼자 식사했다면 식탁에 식기가 한 벌이어야 한다. 아니면… 이 방에서 무언가가 그 밤의 소리를 기억하고 있을지도.",where:"의자 밑 인형을",
    brk:[["R","9시에 바로 나갔다고? 9시 41분에도 당신은 이 방에서 와인을 따르고 있었어."],["E","……앉으라고 하셨어요. 그분 앞에서 싫다는 말은 해 본 적이 없어요."]]},
  {q:"로크의 약",st:"대표님 약은 주치의 선생님이 관리하세요. 저는 손댄 적도 없어요.",
+  ask:"손댄 적도 없다? 약병 근처에도 가 본 적 없나?",
   press:"저는 그냥 승무원이에요. 약 같은 건 잘 몰라요.",ans:"bedside",
+  hint:"협탁의 약병. 라벨 뒤쪽까지 돌려 봤었나?",where:"침대 옆 협탁의 약병을",
    brk:[["R","약병의 E.B.는 당신 필체지."],["E","……제가 적었어요. 와인도, 약도 제 손을 거쳤으니까요."]]},
  {q:"시신을 발견했을 때",st:"10시 반에 턴다운 서비스를 왔다가 발견했어요. 아무것도 만지지 않고 바로 사람을 불렀어요.",
+  ask:"아무것도 만지지 않았다고? 방 안 어떤 물건도?",
   press:"정말이에요. 너무 무서워서 문간에서 한 발짝도 못 움직였어요.",ans:"statue",
+  hint:"먼지 쌓인 조각상 둘레만 깨끗했다. 누군가 들었다 놓은 자국이다.",where:"먼지 쌓인 조각상을",
    brk:[["R","조각상 받침대 아래에 이 병이 있었어."],["E","……그 병은 제가……"]]}
 ];
 const SUSPECTS=[
@@ -2393,13 +2432,14 @@ const CONFESS=[["R","엘레나 보로딘. 로크 대표를 독살한 건 당신�
 let BROKEN=new Set(), comp=100, confessed=false, twistHinted=false, seq=null;
 const talkEl=$("talk"); talkEl.appendChild($("tkOpts"));   // 선택지는 화면 전체 기준으로 배치
 function setObj(a,b){ $("objText").textContent=a; if(b) $("objSub").textContent=b; }
-function gauge(){ $("tkGauge").style.setProperty("--g",comp+"%"); const M=$("tkMeter"); if(M){ M.style.setProperty("--g",comp+"%"); M.querySelector("em").textContent=comp>70?"침착":comp>40?"흔들림":comp>15?"동요":"무너짐"; M.classList.toggle("low",comp<=40); } }
+function gauge(){ talkEl.style.setProperty("--p",(BROKEN.size/STATE.length).toFixed(3)); $("tkGauge").style.setProperty("--g",comp+"%"); const M=$("tkMeter"); if(M){ M.style.setProperty("--g",comp+"%"); M.querySelector("em").textContent=comp>70?"침착":comp>40?"흔들림":comp>15?"동요":"무너짐"; M.classList.toggle("low",comp<=40); } }
 function say(who,text){
   const nm=$("tkName"), ln=$("tkLine");
   nm.classList.toggle("rock", who!=="E");
   nm.querySelector("b").textContent = who==="E"?"엘레나 보로딘":"Rock";
   nm.querySelector("small").textContent = who==="E"?"전담 승무원 · 최초 발견자":(who==="r"?"속마음":"초대받은 승객");
   ln.classList.toggle("inner", who==="r"); ln.innerHTML = sentBr(who==="r"?`(${text})`:text);
+  ln.classList.remove("in"); void ln.offsetWidth; ln.classList.add("in");   // 대사가 한 줄씩 떠오름
 }
 /* 심문 화면: 왼쪽엔 진술 카드, 아래엔 영화 자막처럼 대사, 증거는 사진 카드로 골라 던진다 */
 let curStmt=-1;
@@ -2437,7 +2477,7 @@ function evCarousel(O,list){
   if(head){ const h=document.createElement("div"); h.className="evp-h"; h.textContent=head.h; wrap.appendChild(h); }
   const row=document.createElement("div"); row.className="evp-row"; wrap.appendChild(row);
   const cards=items.map((o,i)=>{ const b=document.createElement("button"); b.type="button"; b.className="evc"+(o.e.id==="bedside"?" tall":""); b.style.setProperty("--r",[-1.6,1.1,-.7,1.4,-1.2,.8][i%6]+"deg");
-    b.innerHTML=`<span class="k">${o.k}</span><i class="evc-ph"></i><b class="cap">${SHORT[o.e.id]||o.e.title}</b><small>${o.t}</small>`;
+    b.innerHTML=`<span class="k">${o.k}</span><i class="evc-ph"></i><b class="cap">${SHORT[o.e.id]||o.e.title}</b><small>${o.t}</small>`; if(o.hint) b.classList.add("hint");
     evidencePhoto(b.querySelector(".evc-ph"),o.e); row.appendChild(b); return b; });
   const C={cur:Math.floor((items.length-1)/2),busy:false};
   const lay=()=>cards.forEach((b,i)=>b.classList.toggle("focus",i===C.cur));
@@ -2449,11 +2489,9 @@ function evCarousel(O,list){
   O._car={go:d=>go(C.cur+d),pick:()=>pick(),cards,quit:C.quit}; lay();
 }
 function caseCards(){ const C=$("tkCase"); if(!C) return;
-  C.innerHTML=`<div class="tc-h"><span>진술 기록</span><small>모순 ${BROKEN.size} / ${STATE.length}</small></div>`;
-  STATE.forEach((s,i)=>{ const b=document.createElement("button"); const done=BROKEN.has(i);
-    b.className="tcard paper"+(done?" done":"")+(curStmt===i?" cur":""); b.style.setProperty("--r",[-1.2,1,-.6][i%3]+"deg");
-    b.innerHTML=`<span class="k">${i+1}</span><b>${s.q}</b><em>${done?"모순 발견":curStmt===i?"질문 중":"미확인"}</em>${done?'<i class="tstamp">거짓</i>':""}`;
-    b.onclick=()=>statement(i); C.appendChild(b); tornClip(b,1.2,4,14); }); }
+  const cur=STATE[curStmt];
+  C.innerHTML=`<div class="tp-pips">${STATE.map((x,i)=>`<i class="${BROKEN.has(i)?"done":i===curStmt?"cur":""}"></i>`).join("")}</div>`+
+    `<div class="tp-t">${cur?`<small>진술 ${curStmt+1}</small><b>${cur.q}</b>`:`<small>모순</small><b>${BROKEN.size} / ${STATE.length}</b>`}</div>`; }
 function play(lines,done){
   let i=0;
   const step=()=>{ if(i>=lines.length){ done&&done(); return; }
@@ -2495,13 +2533,14 @@ function react(k){
 rv.addEventListener("ended",()=>{ rv.classList.remove("on"); vid.muted=!soundOn; });
 function reactStop(){ rv.pause(); rv.classList.remove("on"); }
 
+setTimeout(()=>{ try{ warmTalk(); }catch(e){} },6000);
 function openTalk(){
   if(mode==="inspect") $("insp").classList.remove("open");
   closeBook(); mode="talk"; stage.classList.remove("explore"); $("prompt").classList.remove("show");
   $("tabTalk").setAttribute("aria-selected",true); $("tabScene").setAttribute("aria-selected",false);
   const sp=SPOTS.find(x=>x.id==="elena"); ease=.06; tgt.fx=sp.x; tgt.fy=sp.y; tgt.s=1.8;
   talkEl.hidden=false; gauge(); steps(1); warmTalk(); vidStart();
-  if(!talkEl.dataset.met){ talkEl.dataset.met=1; play([["R","최초 발견자, 승무원 엘레나. 이 사람의 진술에서 거짓을 찾아내야 한다."],["E","……손님도 오셨군요. 제가 처음 발견했어요. 무엇이든 물어보세요."]],menu); }
+  if(!talkEl.dataset.met){ talkEl.dataset.met=1; play([["R","최초 발견자, 승무원 엘레나. 진술은 세 개. 거짓을 하나씩 증거로 깨뜨린다."],["E","……손님도 오셨군요. 제가 처음 발견했어요. 무엇이든 물어보세요."]],menu); }
   else menu();
 }
 function closeTalk(){
@@ -2516,22 +2555,34 @@ function menu(){
   if(i>=0){ statement(i); return; }
   accuse();
 }
-function statement(i){
+/* 진술 하나: 엘레나가 말하고 → [증거를 들이민다 / 더 추궁한다 / 물러난다] */
+const WRONG={};
+function statement(i,again){
   const s=STATE[i];
   if(BROKEN.has(i)){ menu(); return; }
-  curStmt=i; caseCards(); say("E",s.st); react("lie"); present(i);
+  curStmt=i; caseCards(); if(!again){ say("E",s.st); react("lie"); }
+  opts([{k:"1",t:"증거를 들이민다",cls:"main",f:()=>present(i)},
+        {k:"2",t:"더 추궁한다",f:()=>play([["R",s.ask],["E",s.press],["r",s.hint]],()=>statement(i,true))},
+        {k:"ESC",t:"잠시 물러난다",cls:"quiet",f:closeTalk}],"act");
 }
+/* 정답 증거를 들이밀면: 화면이 덜컹, 붉은 '거짓말' 도장이 쾅 */
+function slam(){ const S=$("tkSlam"); S.classList.remove("on"); void S.offsetWidth; S.classList.add("on");
+  talkEl.classList.remove("shake","hitf"); void talkEl.offsetWidth; talkEl.classList.add("shake","hitf");
+  hit(95,.4,.35); hit(1900,.1,.07,"bandpass"); setTimeout(()=>hit(140,.18,.2),90); }
 function present(i){
+  const s=STATE[i], need=[].concat(s.ans), have=EVID.filter(e=>found.has(e.id));
+  /* 쉽게: 이 진술을 깰 증거를 아직 못 찾았으면, 어디를 봐야 하는지 알려 주고 현장으로 */
+  if(!have.some(e=>need.includes(e.id))){
+    say("r",`이 진술을 깰 증거가 아직 없다. ${s.where} 더 살펴봐야 한다.`);
+    opts([{k:"1",t:"현장으로 돌아가 조사한다",cls:"main",f:closeTalk},{k:"2",t:"조금 더 추궁해 본다",f:()=>play([["R",s.ask],["E",s.press],["r",s.hint]],()=>statement(i,true))}],"act"); return; }
   const L=[{h:"이 진술을 깰 증거를 골라 들이밀어라"}];
-  const have=EVID.filter(e=>found.has(e.id));
-  if(!have.length) L.push({k:"–",t:"아직 모은 증거가 없다. 방을 먼저 조사하자.",f:closeTalk});
-  have.forEach((e,j)=>L.push({k:String(j+1),e,t:e.ev,cls:"ev",f:()=>{
-    if([].concat(STATE[i].ans).includes(e.id)){ react("startle"); BROKEN.add(i); comp=Math.max(8,comp-31); gauge(); hit(700,.3,.35); paper();
-      play(STATE[i].brk,()=>{ render(); if(BROKEN.size===3){ $("tabAcc").classList.remove("lock"); $("tabAcc").removeAttribute("aria-disabled"); $("tabAcc").innerHTML="지목"; setObj("범인을 지목하라","용의자 ▸ 지목"); } menu(); });
-    } else { comp=Math.min(100,comp+6); gauge(); hit(200,.2,.12);
-      say("r","아니다. 이 진술을 깰 증거는 따로 있다."); setTimeout(()=>present(i),900); }
+  have.forEach((e,j)=>L.push({k:String(j+1),e,t:e.ev,cls:"ev",hint:(WRONG[i]||0)>=1&&need.includes(e.id),f:()=>{
+    if(need.includes(e.id)){ slam(); react("startle"); BROKEN.add(i); comp=Math.max(8,comp-31); gauge(); paper();
+      setTimeout(()=>play(STATE[i].brk,()=>{ render(); caseCards(); if(BROKEN.size===3){ $("tabAcc").classList.remove("lock"); $("tabAcc").removeAttribute("aria-disabled"); $("tabAcc").innerHTML="지목"; setObj("범인을 지목하라","용의자 ▸ 지목"); } menu(); }),900);
+    } else { WRONG[i]=(WRONG[i]||0)+1; comp=Math.min(100,comp+4); gauge(); hit(200,.2,.12);
+      play([["E",s.press],["r",`아니다, 이걸로는 못 깬다. ${s.hint}`]],()=>present(i)); }   // 한 번 틀리면 정답 카드가 빛난다
   }}));
-  L.push({k:"ESC",t:"잠시 물러난다",cls:"quiet",f:closeTalk});
+  L.push({k:"ESC",t:"다시 듣는다",cls:"quiet",f:()=>statement(i,true)});
   opts(L,"ev");
 }
 function confess(){ confessed=true; $("objSub").textContent="사건 종결"; play(CONFESS,()=>{ render(); ending(); }); }
@@ -2545,7 +2596,21 @@ function accuse(){
   L.push({k:"ESC",t:"아직 아니다",cls:"quiet",f:closeTalk});
   opts(L,"act");
 }
-function ending(){ const ng=$("endNag"); if(ng){ ng.classList.remove("on"); setTimeout(()=>ng.classList.add("on"),3800); } vidStop(); mode="end"; $("ending").parentElement.classList.add("ended"); talkEl.hidden=true; $("ending").hidden=false; clearInterval(clockTimer); $("againBtn").focus({preventScroll:true}); }
+/* 엔딩: 자백이 끝나면 화면이 닫히고 → 'CASE CLOSED' 도장 쾅 → 정적 속 시계 소리 → 21:47이 21:48로 넘어가고
+   → 질문이 한 줄씩 → 마지막에야 버튼. 시간은 흘러가는데, 무언가 끝나지 않은 느낌으로 */
+function ending(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
+  vidStop(); mode="end"; E.parentElement.classList.add("ended"); talkEl.hidden=true; E.hidden=false; clearInterval(clockTimer);
+  E.className="ending"; ng&&ng.classList.remove("on"); ck.textContent="21:47";
+  const at=(ms,f)=>setTimeout(f,ms);
+  at(60,()=>E.classList.add("e1"));                                                  // 레터박스 닫힘 + 배경 천천히 다가옴
+  at(1300,()=>{ E.classList.add("e2"); hit(80,.45,.4); hit(1400,.08,.06,"bandpass"); });   // 도장 쾅
+  let tk=0; const tick=setInterval(()=>{ if(mode!=="end"){ clearInterval(tick); return; } hit(tk++%2?2900:3300,.018,.02,"highpass"); },1000);   // 회중시계 초침
+  at(3000,()=>E.classList.add("e3"));                                                // 사건 종결 문구
+  at(4600,()=>{ ck.classList.add("flip"); setTimeout(()=>ck.textContent="21:48",180); hit(1600,.05,.03,"bandpass"); });   // 시간은 흘러간다
+  at(5200,()=>E.classList.add("e4"));                                                // 질문 첫 줄
+  at(6600,()=>E.classList.add("e5"));                                                // 둘째 줄
+  at(8600,()=>{ ng&&ng.classList.add("on"); });
+  at(10200,()=>{ E.classList.add("e6"); $("againBtn").focus({preventScroll:true}); }); }
 $("tkClose").onclick=closeTalk;
 $("tabTalk").onclick=openTalk;
 $("againBtn").onclick=()=>location.reload();
@@ -2784,8 +2849,17 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
         const src=a.createBufferSource(); src.buffer=buf; const lp=a.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=170; const g=a.createGain();
         g.gain.setValueAtTime(0,a.currentTime); g.gain.linearRampToValueAtTime(.7,a.currentTime+.5); g.gain.linearRampToValueAtTime(.0,a.currentTime+2.9);
         src.connect(lp); lp.connect(g); g.connect(sfxBus||a.destination); src.start(); stopN=()=>{ try{ src.stop(); }catch(e){} };
-        [.3,.62,1.2,1.52,2.1,2.42].forEach(t=>setTimeout(()=>sfx(70,.18,.12),t*1000)); } }catch(e){}
-    setTimeout(()=>{ c.classList.add("out"); setTimeout(()=>{ c.classList.remove("on","out"); stopN(); },450); next(); },2800);
+        [.3,.62,1.2,1.52,2.1,2.42,3.0,3.32].forEach(t=>setTimeout(()=>sfx(70,.18,.12),t*1000)); } }catch(e){}
+    /* 플립 시계: 21:44 → 45 → 46 → 47. 넘어갈 때마다 '철컥', 21:47에서 묵직하게 멈추고 화면이 한 번 덜컹 */
+    const T=$("coldT"), L=$("coldL"), digs=[...T.querySelectorAll(".fl")];
+    const setD=(i,v,heavy)=>{ const f=digs[i]; f.classList.remove("flip"); void f.offsetWidth; f.querySelector("b").textContent=v; f.classList.add("flip");
+      sfx(heavy?1500:2300,heavy?.09:.05,.03,"bandpass"); sfx(heavy?85:140,heavy?.25:.08,heavy?.22:.05); };
+    digs[2].querySelector("b").textContent="4"; digs[3].querySelector("b").textContent="4"; T.classList.remove("lock"); L.textContent=""; c.classList.remove("jolt");
+    setTimeout(()=>setD(3,"5"),850); setTimeout(()=>setD(3,"6"),1250);
+    setTimeout(()=>{ setD(3,"7",true); T.classList.add("lock"); c.classList.add("jolt"); },1700);
+    const LINE="그날 밤, 오르페우스는 멈추지 않았다."; let k=0;   // 한 글자씩 타자 치듯
+    setTimeout(function ty(){ if(k>LINE.length) return; L.textContent=LINE.slice(0,k++); if(k%3===0) sfx(2600,.012,.02,"highpass"); setTimeout(ty,42); },2250);
+    setTimeout(()=>{ c.classList.add("out"); setTimeout(()=>{ c.classList.remove("on","out","jolt"); stopN(); },450); next(); },3900);
   }
   /* 0. 시작 버튼 → 콜드 오픈 → 인트로 영상 */
   $("proStart").onclick=()=>{ if($("proStart").disabled) return; $("proStart").disabled=true;
@@ -3755,4 +3829,86 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
         const tw=.55+.45*Math.sin(p.ph*3); g.fillStyle=`rgba(255,226,170,${(p.a*tw).toFixed(3)})`; g.beginPath(); g.arc(p.x,p.y,p.r,0,6.283); g.fill(); } } })(last);
 })();
 </script>
+<style>
+/* ===== 콜드 오픈 v2 : 플립 시계 ===== */
+.pro .cold{gap:2.2cqh}
+.pro .cold-k{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(10px,1.1cqw,15px);letter-spacing:.6em;color:#6f6450;opacity:0;animation:coldin 1s .2s ease-out forwards}
+.pro .cold-t{display:flex;align-items:center;gap:.5cqw;letter-spacing:0!important;opacity:1!important;animation:none!important;text-shadow:none!important;perspective:600px}
+.pro .cold-t .fl{position:relative;display:grid;place-items:center;width:clamp(48px,7.4cqw,112px);height:clamp(70px,11cqw,164px);border-radius:6px;
+  background:linear-gradient(#1b1611 0 49.5%,#000 49.5% 50.5%,#15110d 50.5%);box-shadow:0 1.2cqh 3cqh rgba(0,0,0,.8),inset 0 0 0 1px rgba(217,178,106,.12);
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(46px,7.8cqw,118px);color:#d9b26a;opacity:0;animation:coldin .5s .35s ease-out forwards}
+.pro .cold-t .fl b{font-weight:600;display:block;transform-origin:50% 50%}
+.pro .cold-t .fl.flip b{animation:flapb .32s cubic-bezier(.3,1.4,.5,1)}
+@keyframes flapb{0%{transform:rotateX(-90deg);filter:brightness(.4)}60%{transform:rotateX(12deg)}100%{transform:none;filter:none}}
+.pro .cold-t .cl{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(40px,6cqw,90px);color:#8f7a4e;opacity:0;animation:coldin .5s .35s ease-out forwards,clb 1s 1s steps(2) infinite}
+@keyframes clb{50%{opacity:.25}}
+.pro .cold-t.lock .fl{color:#f0c878;box-shadow:0 1.2cqh 3cqh rgba(0,0,0,.8),0 0 4cqw rgba(240,200,120,.25),inset 0 0 0 1px rgba(240,200,120,.4);transition:box-shadow .4s,color .4s}
+.pro .cold-s{opacity:0;animation:coldin 1s .7s ease-out forwards}
+.pro .cold-line{min-height:1.6em;font-family:var(--serif);font-size:clamp(15px,1.7cqw,24px);letter-spacing:.14em;color:#e9dcc0;margin-top:1.4cqh}
+.pro .cold.jolt{animation:cjolt .5s cubic-bezier(.3,.7,.3,1)}
+@keyframes cjolt{15%{transform:translateY(.9cqh)}35%{transform:translateY(-.4cqh)}60%{transform:translateY(.2cqh)}100%{transform:none}}
+.pro .cold .cold-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+.pro .cold.out .cold-flash{animation:cflash .45s ease-out}
+@keyframes cflash{0%{opacity:0}20%{opacity:.85}100%{opacity:0}}
+
+/* ===== 심문 v2 ===== */
+.talk .tk-por svg,.talk .ph-note{display:none!important}
+.talk:not(.hasvid) .tk-vid{opacity:0}.talk .tk-vid{transition:opacity .6s,transform 1.4s cubic-bezier(.2,.7,.2,1)}
+.talk .tk-vid:not(.tk-react){transform:scale(calc(1 + var(--p,0)*.14));transform-origin:50% 30%}   /* 모순이 깨질수록 엘레나에게 다가감 */
+.talk .tk-lamp{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 55% 70% at 50% 18%,rgba(255,214,150,.10),transparent 60%),radial-gradient(ellipse at 50% 50%,transparent calc(48% - var(--p,0)*16%),rgba(0,0,0,.85) 100%);animation:tklamp 6s infinite}
+@keyframes tklamp{0%,90%,100%{opacity:1}92%{opacity:.6}94%{opacity:1}96%{opacity:.75}}
+.talk .tk-line.in{animation:tkin .45s cubic-bezier(.2,.7,.2,1)}
+@keyframes tkin{from{opacity:0;transform:translateY(8px);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+/* 위쪽 진행 표시 (왼쪽 종이 카드 대신) */
+.tk-case{left:50%!important;top:4.5%!important;width:auto!important;transform:translateX(-50%);flex-direction:row!important;align-items:center;gap:14px!important;padding:8px 18px;background:rgba(8,6,4,.55);border:1px solid rgba(210,173,99,.28);border-radius:999px;backdrop-filter:blur(6px)}
+.tk-case .tp-pips{display:flex;gap:7px}
+.tk-case .tp-pips i{width:9px;height:9px;border-radius:50%;border:1px solid rgba(210,173,99,.7)}
+.tk-case .tp-pips i.cur{background:rgba(210,173,99,.35);box-shadow:0 0 8px rgba(210,173,99,.6)}
+.tk-case .tp-pips i.done{background:#b8352b;border-color:#b8352b}
+.tk-case .tp-t{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+.tk-case .tp-t small{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--brass)}
+.tk-case .tp-t b{font-family:var(--serif);font-size:15px;color:#efe6d0;letter-spacing:.04em}
+/* 선택지 */
+.talk .tk-opts.m-act{right:calc(3.5% + 64px)!important}   /* 오른쪽 평정 게이지와 겹치지 않게 */
+.tk-opts.m-act .opt.main{border-color:rgba(210,173,99,.8);background:rgba(210,173,99,.16)}
+/* '거짓말' 도장 */
+.tk-slam{position:absolute;left:50%;top:40%;z-index:20;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;transform:translate(-50%,-50%) rotate(-9deg) scale(2.4)}
+.tk-slam b{font-family:var(--serif);font-weight:900;font-size:clamp(46px,8vw,110px);letter-spacing:.12em;color:#c23a2c;padding:.05em .35em;border:.08em solid #c23a2c;border-radius:.12em;text-shadow:0 0 30px rgba(194,58,44,.35);mix-blend-mode:screen;
+  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='.8' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.6'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='.8' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.6'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.tk-slam small{font-family:var(--mono);font-size:12px;letter-spacing:.4em;color:#e6b0a6}
+.tk-slam.on{animation:tkslam 1.6s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes tkslam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-9deg) scale(2.4)}12%{opacity:1;transform:translate(-50%,-50%) rotate(-6deg) scale(.96)}20%{transform:translate(-50%,-50%) rotate(-6deg) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) rotate(-6deg) scale(1)}}
+.talk.hitf::after{content:"";position:absolute;inset:0;z-index:19;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(194,58,44,.35),transparent 70%);animation:tkhit .7s ease-out forwards}
+@keyframes tkhit{from{opacity:1}to{opacity:0}}
+.evc.hint{box-shadow:0 0 0 2px #d2ad63,0 0 22px rgba(210,173,99,.65)!important;animation:evhint 1.2s ease-in-out infinite}
+@keyframes evhint{50%{box-shadow:0 0 0 2px #d2ad63,0 0 34px rgba(210,173,99,.9)}}
+
+/* ===== 엔딩 v2 ===== */
+.ending{justify-content:center;background:#000!important;overflow:hidden;animation:none}
+.ending::before{content:"";position:absolute;inset:-4%;z-index:-1;background:radial-gradient(ellipse at 50% 45%,rgba(14,10,6,.6),rgba(0,0,0,.95) 75%),url(pro/relic_bg.jpg) 70% 40%/cover no-repeat;opacity:0;transform:scale(1.12);transition:opacity 2.4s,transform 14s cubic-bezier(.2,.6,.2,1)}
+.ending.e1::before{opacity:1;transform:scale(1)}
+.ending .en-bars i{position:absolute;left:0;right:0;height:8%;background:#000;z-index:3;transform:scaleY(0);transition:transform 1.2s cubic-bezier(.6,0,.2,1)}
+.ending .en-bars i:first-child{top:0;transform-origin:top}.ending .en-bars i:last-child{bottom:0;transform-origin:bottom}
+.ending.e1 .en-bars i{transform:scaleY(1)}
+.ending .en-clock{position:absolute;right:4%;top:calc(8% + 12px);z-index:4;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(13px,1.4vw,18px);letter-spacing:.3em;color:rgba(217,178,106,.7);opacity:0;transition:opacity 1.2s}
+.ending.e3 .en-clock{opacity:1}.ending .en-clock.flip{animation:flapb .35s}
+.ending .en-stamp{display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;transform:rotate(-7deg) scale(2.6)}
+.ending .en-stamp b{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5.2vw,72px);letter-spacing:.14em;color:#c23a2c;border:.07em solid #c23a2c;padding:.04em .4em;border-radius:.1em;mix-blend-mode:screen;
+  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='.8' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.6'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='.8' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.6'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.ending .en-stamp small{font-family:var(--mono);font-size:11px;letter-spacing:.4em;color:rgba(230,176,166,.75)}
+.ending.e2 .en-stamp{animation:enstamp .7s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes enstamp{0%{opacity:0;transform:rotate(-7deg) scale(2.6)}60%{opacity:1;transform:rotate(-5deg) scale(.95)}100%{opacity:.92;transform:rotate(-5deg) scale(1)}}
+.ending.e2{animation:cjolt .5s cubic-bezier(.3,.7,.3,1)}
+.ending .case{opacity:0;transition:opacity 1.4s;margin-top:1.4vh}.ending.e3 .case{opacity:.85}
+.ending h2.q span{display:inline-block;opacity:0;transform:translateY(10px);filter:blur(6px);transition:opacity 1.8s,transform 1.8s cubic-bezier(.2,.7,.2,1),filter 1.8s}
+.ending.e4 h2.q span:first-child,.ending.e5 h2.q span:last-child{opacity:1;transform:none;filter:none}
+.ending p.en,.ending .row{opacity:0;transition:opacity 1.6s;pointer-events:none}
+.ending.e6 p.en,.ending.e6 .row{opacity:1;pointer-events:auto}
+.ending>*:not(.en-bars):not(.en-clock){position:relative;z-index:2}
+.ending{gap:min(12px,1.6vh)!important;padding:9% 24px!important}
+.ending .en-stamp b{font-size:clamp(22px,4vw,64px)!important}
+.ending h2.q{font-size:clamp(20px,3.6vw,48px)!important}
+.ending .nag{margin:.1em 0 .4em!important}
+.ending .row{margin-top:6px!important}
+</style>
 </body></html>

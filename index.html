@@ -473,7 +473,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 .outl polygon{fill:rgba(255,226,160,0);stroke:rgba(255,226,160,0);stroke-width:1.6;vector-effect:non-scaling-stroke;transition:fill .25s,stroke .25s;filter:drop-shadow(0 0 4px rgba(255,210,130,.8))}
 .outl polygon.on{fill:rgba(255,226,160,0);stroke:rgba(255,226,160,0)}
 .outl{display:none}
-.v3d{position:absolute;inset:0;cursor:grab;touch-action:none;background:radial-gradient(ellipse at 50% 60%,rgba(40,30,18,.35),rgba(8,6,4,.8));-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+.v3d{position:absolute;inset:0;cursor:grab;touch-action:none;background:radial-gradient(ellipse 60% 55% at 30% 18%,rgba(255,196,120,.16),transparent 70%),radial-gradient(ellipse 80% 60% at 50% 62%,rgba(40,28,16,.28),rgba(6,4,3,.86) 100%),linear-gradient(180deg,rgba(0,0,0,.25),transparent 30%,transparent 70%,rgba(0,0,0,.55));-webkit-backdrop-filter:blur(18px) brightness(.62) saturate(.8);backdrop-filter:blur(18px) brightness(.62) saturate(.8)}
 .v3d.grab{cursor:grabbing}
 .v3d canvas{width:100%!important;height:100%!important;display:block}
 .v3hint{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);background:rgba(20,17,16,.85);color:#e8dfc9;font-size:.72em;padding:.3em .9em;white-space:nowrap;pointer-events:none}
@@ -2007,6 +2007,13 @@ function mountStatue3D(s){ const CF=M3D[s.id];
   const ck=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,.04,16),new THREE.MeshStandardMaterial({color:0x6b4a2a})); ck.position.y=.1; vial.add(gl,pw,ck); vial.position.set(.05,.08,.02); vial.visible=false; S.add(vial);
   if(CF.lift) m3dLoad("bottle.json",g=>{ if(!S3||S3.s!==s) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
     m.position.set(-c.x,-b.min.y,-c.z); const p=new THREE.Group(); p.add(m); p.scale.setScalar(.2/sz.y); p.rotation.y=.5; vial.clear(); vial.add(p); vial.position.set(0,0,0); });   // 받침대 속에 숨겨진 초록 병
+  /* 먼지 퍼프: 조각상이 테이블에서 떨어지는 순간·내려앉는 순간 받침 둘레에서 먼지가 피어오른다 */
+  const PN=90, pg=new THREE.BufferGeometry(), pp=new Float32Array(PN*3), pv=new Float32Array(PN*3); pg.setAttribute("position",new THREE.BufferAttribute(pp,3));
+  const pdc=document.createElement("canvas"); pdc.width=pdc.height=32; { const x=pdc.getContext("2d"), q=x.createRadialGradient(16,16,0,16,16,16); q.addColorStop(0,"rgba(230,220,200,1)"); q.addColorStop(1,"rgba(230,220,200,0)"); x.fillStyle=q; x.fillRect(0,0,32,32); }
+  const puff=new THREE.Points(pg,new THREE.PointsMaterial({size:.022,map:new THREE.CanvasTexture(pdc),transparent:true,depthWrite:false,opacity:0,color:0xd8cdb8})); puff.visible=false; S.add(puff);
+  const burst=(n,str)=>{ for(let i=0;i<PN;i++){ const a=Math.random()*6.28, r=.1+Math.random()*.1; pp[i*3]=Math.cos(a)*r; pp[i*3+1]=.006+Math.random()*.01; pp[i*3+2]=Math.sin(a)*r;
+      const v=(.08+Math.random()*.22)*str; pv[i*3]=Math.cos(a)*v; pv[i*3+1]=(.03+Math.random()*.12)*str; pv[i*3+2]=Math.sin(a)*v; }
+    pg.attributes.position.needsUpdate=true; puff.visible=true; puff.userData.age=0; puff.userData.str=str; };
   const hint=document.createElement("div"); hint.className="v3hint"; if(CF.lift) hint.innerHTML=`<small>${s.text}</small><b>좌우로 끌어 돌려 보고, 위로 끌어 들어 올려 보자.</b>`; else hint.textContent=CF.hint||"끌어서 돌려 보기"; wrap.appendChild(hint);
   const bar=document.createElement("div"); bar.className="v3bar"; bar.innerHTML="<i></i>"; wrap.appendChild(bar);
   S3={s,R,S,C,wrap,raf:0,zoom:1,model:null,yaw:.6,ry:.6,vy:0,lift:0,lv:0,liftT:0,drag:null,done:opened.has(s.id),pt:0,lm:0,landed:true};
@@ -2015,7 +2022,11 @@ function mountStatue3D(s){ const CF=M3D[s.id];
   m3dLoad(CF.file,g=>{ if(!S3||S3.s!==s) return; const m=g.scene.clone();
     m.traverse(o=>{ if(!o.isMesh) return; if(CF.cloth) splitBiggest(o,0x6a2330,0xe6d8bc); else if(CF.tint){ o.material=o.material.clone(); CF.tint(o,o.material); } }); const b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
     const k=.9/Math.max(sz.x,sz.y,sz.z); const pivot=new THREE.Group(); m.position.sub(c); pivot.add(m); pivot.scale.setScalar(k);
-    const b2=new THREE.Box3().setFromObject(pivot); pivot.position.y=-b2.min.y; S3.model=pivot; S.add(pivot); ph.classList.remove("veiled"); });
+    const b2=new THREE.Box3().setFromObject(pivot); pivot.position.y=-b2.min.y; S3.model=pivot; S.add(pivot); ph.classList.remove("veiled");
+    { const sc=document.createElement("canvas"); sc.width=sc.height=128; const sg=sc.getContext("2d"), q=sg.createRadialGradient(64,64,0,64,64,64);
+      q.addColorStop(0,"rgba(0,0,0,.85)"); q.addColorStop(.45,"rgba(0,0,0,.45)"); q.addColorStop(1,"rgba(0,0,0,0)"); sg.fillStyle=q; sg.fillRect(0,0,128,128);
+      const fp=Math.max(sz.x,sz.z)*k, sh=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(sc),transparent:true,depthWrite:false,opacity:.6}));
+      sh.rotation.x=-Math.PI/2; sh.position.y=.004; sh.scale.setScalar(fp*1.25); sh.userData.s0=fp*1.25; sh.renderOrder=1; S.add(sh); S3.shadow=sh; } });
 
   const el=R.domElement;
   el.onpointerdown=e=>{ S3.drag={x:e.clientX,y:e.clientY,yaw:S3.yaw,lift:S3.liftT}; S3.vy=0; S3.lm=performance.now(); wrap.classList.add("grab"); try{el.setPointerCapture(e.pointerId)}catch(_){} };
@@ -2036,8 +2047,19 @@ function mountStatue3D(s){ const CF=M3D[s.id];
       if(S3.liftT>=S3.lift&&!up) { S3.lift+=(S3.liftT-S3.lift)*.2; S3.lv*=.6; } }
     if(!S3.drag&&Math.abs(S3.vy)>.01){ S3.yaw+=S3.vy*dt0; S3.vy*=Math.pow(.08,dt0); }   // 던진 회전이 서서히 멈춤
     const pry=S3.ry; S3.ry+=(S3.yaw-S3.ry)*(1-Math.pow(.001,dt0)); const spin=dt0?(S3.ry-pry)/dt0:0;
-    if(S3.model){ S3.model.rotation.y=S3.ry; S3.model.rotation.x=S3.tilt||0; S3.model.position.y=(S3.model.userData.y0??(S3.model.userData.y0=S3.model.position.y))+S3.lift*.45;
-      S3.model.rotation.z=Math.sin(t/300)*.02*S3.lift+Math.max(-.1,Math.min(.1,S3.lv*.04))*S3.lift-Math.max(-.06,Math.min(.06,spin*.02))*S3.lift; }   // 들고 있을 때 흔들림
+    /* 손으로 드는 느낌: 처음엔 받침이 테이블에 붙어 버티며 파르르 떨리다가(무게), 떨어지는 순간 먼지가 피고,
+       들려 올라가면서 손잡은 쪽으로 살짝 기울고, 공중에선 진자처럼 천천히 흔들린다 */
+    const H=S3.lift<.05?S3.lift*.3:S3.lift-.035;                                     // 처음 5%는 거의 안 뜸 (무게)
+    if(CF.lift){ if(S3.lift>.05&&!S3.off){ S3.off=true; burst(PN,1); try{ hit(260,.06,.09); hit(1800,.02,.05,"highpass"); }catch(e){} }
+      if(S3.lift<.02&&S3.off){ S3.off=false; burst(PN,.7); } }
+    const strain=CF.lift&&S3.drag&&S3.liftT>.01&&S3.lift<.06?(Math.random()-.5)*.014:0;   // 들어 올리려 힘줄 때 파르르
+    if(S3.model){ S3.model.rotation.y=S3.ry; S3.model.position.y=(S3.model.userData.y0??(S3.model.userData.y0=S3.model.position.y))+Math.max(0,H)*.45;
+      const sw=Math.min(1,S3.lift*3);
+      S3.model.rotation.x=(S3.tilt||0)-.11*sw+Math.sin(t/640+1)*.018*sw;                // 손잡은 쪽(앞)으로 살짝 기울고 앞뒤로 흔들림
+      S3.model.rotation.z=Math.sin(t/520)*.03*sw+Math.max(-.1,Math.min(.1,S3.lv*.05))*sw-Math.max(-.06,Math.min(.06,spin*.02))*sw+strain; }
+    if(S3.shadow){ const hh=Math.max(0,H); S3.shadow.material.opacity=.6*(1-Math.min(1,hh*1.4)); S3.shadow.scale.setScalar(S3.shadow.userData.s0*(1+hh*.9)); }   // 들수록 그림자가 옅고 넓게
+    if(puff.visible){ const A=puff.userData.age+=dt0; for(let i=0;i<PN;i++){ pp[i*3]+=pv[i*3]*dt0; pp[i*3+1]+=pv[i*3+1]*dt0; pp[i*3+2]+=pv[i*3+2]*dt0; pv[i*3]*=.95; pv[i*3+2]*=.95; pv[i*3+1]=pv[i*3+1]*.95-.004; if(pp[i*3+1]<.004) pp[i*3+1]=.004; }
+      pg.attributes.position.needsUpdate=true; puff.material.opacity=.55*puff.userData.str*Math.max(0,1-A/1.8)*Math.min(1,A*8); if(A>1.8) puff.visible=false; }
     vial.visible=CF.lift&&S3.lift>.15; bar.style.opacity=(S3.done||!CF.lift)?0:1;
     const cp=CF.cam, kz=$("insp").classList.contains("exam")?1.45:1; C.position.set(cp[0],cp[1]+S3.lift*.15,cp[2]*S3.zoom*kz); C.lookAt(0,CF.look+S3.lift*.12,0); R.render(S,C); S3.raf=requestAnimationFrame(loop); };
   S3.raf=requestAnimationFrame(loop);
@@ -2810,6 +2832,20 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   /* 테스트: 주소 끝에 #room 을 붙여 열면 프롤로그·문 열기 없이 조사 화면(VIP실)부터 */
   const ROOM_ONLY=false;  // true면 열자마자 VIP실 (조사 화면만 테스트할 때). 지금은 처음부터 전체 진행
   if((ROOM_ONLY&&location.hash!=="#tear")||location.hash==="#room"){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>enterExplore(),60); return; }
+  /* ---- 테스트 바로가기 (#test 로 열면 메뉴) ----
+     #cold 21:47 오프닝 · #tear 초대장 찢기 · #bottle 약병 · #statue 조각상·먼지 · #talk 엘레나 심문 · #ending 엔딩 */
+  const TESTS=[["","타이틀 화면","탑승권 버튼 · 불빛·먼지 연출"],["#cold","21:47 오프닝","플립 시계 → 인트로"],["#tear","초대장 찢기","당기는 힘·바스락·종이 낙엽"],["#bottle","약병","실사 갈색병 · 돌리면 알약이 굴러감"],["#statue","조각상 · 테이블 먼지","들어 올리기 무게감 · 먼지"],["#talk","엘레나 심문","증거 3개 모두 가진 상태"],["#ending","엔딩","CASE CLOSED → 21:48 → 질문"]];
+  const goTest=h=>{ location.hash=h||""; location.reload(); };
+  if(location.hash==="#test"){ const m=document.createElement("div"); m.className="testmenu";
+    m.innerHTML=`<div class="tm-in"><small>BEYOND THE ORPHEUS · 테스트 바로가기</small><h3>어디부터 볼까요?</h3>${TESTS.map(([h,t,d],i)=>`<button data-h="${h}"><b>${i+1}</b><span>${t}<em>${d}</em></span></button>`).join("")}<p>보던 화면에서 <kbd>\`</kbd> 키를 누르면 이 메뉴로 돌아와요</p></div>`;
+    document.body.appendChild(m); m.querySelectorAll("button").forEach(b=>b.onclick=()=>goTest(b.dataset.h)); }
+  addEventListener("keydown",e=>{ if(e.key==="`"&&!/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) goTest("#test"); });
+  if(location.hash==="#cold"){ setTimeout(()=>$("proStart").click(),400); }
+  if(location.hash==="#talk"||location.hash==="#ending"||location.hash==="#statue"){ pro.hidden=true; $("title").classList.add("gone");
+    setTimeout(()=>{ enterExplore(); const h=location.hash;
+      if(h==="#talk"){ EVID.forEach(e=>found.add(e.id)); warmTalk(); setTimeout(openTalk,900); }
+      if(h==="#ending"){ confessed=true; setTimeout(ending,500); }
+      if(h==="#statue"){ setTimeout(()=>{ const s=SPOTS.find(x=>x.id==="statue"); if(s) inspect(s); },400); } },60); return; }
   /* 테스트: 주소 끝에 #bottle 을 붙이면 바로 협탁 약병을 집어 든 화면 (알약 물리 확인용) */
   if(location.hash==="#bottle"){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>{ enterExplore(); setTimeout(()=>{ const s=SPOTS.find(x=>x.id==="bedside"); if(s) inspect(s); },400); },60); return; }
   let done=false, tok=0;
@@ -3910,5 +3946,18 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .ending h2.q{font-size:clamp(20px,3.6vw,48px)!important}
 .ending .nag{margin:.1em 0 .4em!important}
 .ending .row{margin-top:6px!important}
+</style>
+<style>
+.testmenu{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:rgba(4,3,2,.82);backdrop-filter:blur(6px)}
+.testmenu .tm-in{width:min(460px,92vw);background:#120d09;border:1px solid rgba(210,173,99,.4);padding:22px 22px 16px;box-shadow:0 20px 60px rgba(0,0,0,.7)}
+.testmenu small{font-family:var(--mono);font-size:10.5px;letter-spacing:.25em;color:var(--brass)}
+.testmenu h3{margin:6px 0 14px;font-family:var(--serif);font-size:22px;color:#efe6d0}
+.testmenu button{display:flex;align-items:center;gap:14px;width:100%;text-align:left;margin:0 0 8px;padding:10px 12px;background:rgba(210,173,99,.06);border:1px solid rgba(210,173,99,.22);color:#efe6d0;font:inherit;cursor:pointer}
+.testmenu button:hover{background:rgba(210,173,99,.18);border-color:var(--brass)}
+.testmenu button b{width:26px;height:26px;flex:none;display:grid;place-items:center;border-radius:50%;background:#2a1f15;color:var(--brass);font-family:var(--mono);font-size:12px}
+.testmenu button span{display:flex;flex-direction:column;font-family:var(--serif);font-size:15px}
+.testmenu button em{font-style:normal;font-size:12px;color:rgba(239,230,208,.55);margin-top:2px}
+.testmenu p{margin:8px 0 0;font-size:12px;color:rgba(239,230,208,.5)}
+.testmenu kbd{font-family:var(--mono);border:1px solid rgba(239,230,208,.35);padding:0 5px}
 </style>
 </body></html>

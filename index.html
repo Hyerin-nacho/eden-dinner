@@ -1984,9 +1984,8 @@ function exDustPlane(pw=5,pd=1.6,opt={}){ const W=2048,H=Math.max(256,Math.round
   g.restore();
   // 7) 테이블 윗면 모양(양끝이 둥근 타원형)대로 끝까지 덮고, 맨 가장자리만 아주 살짝 흐리게.
   //    가장자리 몰딩 쪽엔 먼지가 조금 더 끼어 있다
-  if(opt.stadium){ g.globalCompositeOperation="source-over"; const r0=H/2, ins=H*.012;
+  if(opt.stadium){ g.globalCompositeOperation="source-over"; const r0=H/2, ins=H*.02;
     const stad=(x,i)=>{ x.beginPath(); x.moveTo(r0,i); x.lineTo(W-r0,i); x.arc(W-r0,H/2,r0-i,-Math.PI/2,Math.PI/2); x.lineTo(r0,H-i); x.arc(r0,H/2,r0-i,Math.PI/2,Math.PI*1.5); x.closePath(); };
-    g.save(); g.filter="blur(5px)"; g.strokeStyle="rgba(190,180,162,.32)"; g.lineWidth=H*.05; stad(g,H*.04); g.stroke(); g.restore();
     g.globalCompositeOperation="destination-in"; g.save(); g.filter="blur(3px)"; g.fillStyle="#000"; stad(g,ins); g.fill(); g.restore(); g.globalCompositeOperation="source-over"; }
   else { const e=Math.min(W,H)*.08; [[0,0,W,e,0,0,0,e],[0,H-e,W,e,0,H,0,H-e],[0,0,e,H,0,0,e,0],[W-e,0,e,H,W,0,W-e,0]].forEach(([x,y,w,hh,x1,y1,x2,y2])=>{ const l=g.createLinearGradient(x1,y1,x2,y2); l.addColorStop(0,"rgba(0,0,0,1)"); l.addColorStop(1,"rgba(0,0,0,0)"); g.fillStyle=l; g.fillRect(x,y,w,hh); });
   g.globalCompositeOperation="source-over"; }
@@ -2006,7 +2005,11 @@ function mountStatue3D(s){ const CF=M3D[s.id];
   const dust=new THREE.Mesh(new THREE.RingGeometry(.2,.62,48),new THREE.MeshStandardMaterial({color:0x120a05,roughness:.3,transparent:true,opacity:.35})); dust.rotation.x=-Math.PI/2; dust.position.y=.002; if(CF.lift){ const dp=exDustPlane(); S.add(dp);
     m3dLoad("table3d.json",g=>{ if(!S3||S3.s!==s) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3()), k=2.4/Math.max(sz.x,sz.z);
       m.position.set(-c.x,-b.max.y,-c.z); const p=new THREE.Group(); p.add(m); p.scale.setScalar(k); p.position.y=-.004; p.rotation.y=Math.PI/2; S.add(p); if(top) top.visible=false; S.remove(dp);
-      const d2=exDustPlane(sz.z*k*.97,sz.x*k*.97,{stadium:true}); /* 테이블 윗면 끝까지, 둥근 양끝 모양 그대로 */ d2.position.y=.003; S.add(d2); }); }   // 받은 사이드 테이블 모델
+      /* 테이블 '윗면'만 재서 먼지를 딱 그 크기로 깐다 (아래쪽 장식까지 포함한 전체 크기로 깔면 테두리 밖으로 떠 보임) */
+      p.updateMatrixWorld(true); const v=new THREE.Vector3(); let topY=-1e9; const pts=[];
+      p.traverse(o=>{ if(!o.isMesh) return; const pa=o.geometry.attributes.position; for(let i=0;i<pa.count;i+=1){ v.fromBufferAttribute(pa,i).applyMatrix4(o.matrixWorld); pts.push(v.x,v.y,v.z); if(v.y>topY) topY=v.y; } });
+      let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9; for(let i=0;i<pts.length;i+=3){ if(pts[i+1]<topY-.012) continue; x0=Math.min(x0,pts[i]); x1=Math.max(x1,pts[i]); z0=Math.min(z0,pts[i+2]); z1=Math.max(z1,pts[i+2]); }
+      const d2=exDustPlane((x1-x0)*.985,(z1-z0)*.985,{stadium:true}); d2.position.set((x0+x1)/2,topY+.0015,(z0+z1)/2); S.add(d2); }); }   // 받은 사이드 테이블 모델   // 받은 사이드 테이블 모델
   const vial=new THREE.Group(); const gl=new THREE.Mesh(new THREE.CylinderGeometry(.035,.04,.16,24),new THREE.MeshStandardMaterial({color:0xcfe3ea,roughness:.12,metalness:.1,transparent:true,opacity:.7,emissive:0x1a262a}));
   const pw=new THREE.Mesh(new THREE.CylinderGeometry(.033,.038,.035,24),new THREE.MeshStandardMaterial({color:0xffffff,roughness:1})); pw.position.y=-.06;
   const ck=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,.04,16),new THREE.MeshStandardMaterial({color:0x6b4a2a})); ck.position.y=.1; vial.add(gl,pw,ck); vial.position.set(.05,.08,.02); vial.visible=false; S.add(vial);

@@ -2671,7 +2671,24 @@ function opts(list,m="act"){
 }
 /* 증거 고르기: 어두운 화면 위에 사진 카드를 한 줄로 늘어놓고 좌우로 넘겨 가운데 카드를 들이민다 */
  const evidenceRoomImage=new Image(); evidenceRoomImage.src=IMG;
+ /* 증거 카드 사진: 약병·초록 병도 인형처럼 게임 속 실제 3D 모델을 같은 어두운 배경에서 찍어 쓴다 */
+ const EVTH={}, EVTHP={};
+ function evThumb(id){ if(EVTHP[id]) return EVTHP[id]; if(!window.THREE||!THREE.GLTFLoader) return Promise.reject();
+   return EVTHP[id]=new Promise((ok,no)=>{ try{
+     const W=640,H=400, R=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true}); R.setSize(W,H,false); R.outputEncoding=THREE.sRGBEncoding; R.physicallyCorrectLights=true; R.toneMapping=THREE.ACESFilmicToneMapping; R.toneMappingExposure=1.05;
+     const S=new THREE.Scene(), C=new THREE.PerspectiveCamera(30,W/H,.01,20); S.background=darkBackdrop(); S.environment=exEnv(R);
+     S.add(new THREE.HemisphereLight(0xffe7c4,0x16241a,.6)); const key=new THREE.PointLight(0xffc98a,22,8,1.6); key.position.set(1.1,1.5,1.6); S.add(key); const rim=new THREE.PointLight(0x9ec4ae,6,8,1.6); rim.position.set(-1.4,1.2,-1.4); S.add(rim);
+     const shadow=(w,y)=>{ const c=document.createElement("canvas"); c.width=c.height=128; const g=c.getContext("2d"), q=g.createRadialGradient(64,64,0,64,64,64); q.addColorStop(0,"rgba(0,0,0,.85)"); q.addColorStop(.5,"rgba(0,0,0,.4)"); q.addColorStop(1,"rgba(0,0,0,0)"); g.fillStyle=q; g.fillRect(0,0,128,128);
+       const m=new THREE.Mesh(new THREE.PlaneGeometry(w,w*.6),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false})); m.rotation.x=-Math.PI/2; m.position.y=y; S.add(m); };
+     const shot=()=>{ R.render(S,C); const u=R.domElement.toDataURL("image/jpeg",.88); try{ R.dispose(); R.forceContextLoss(); }catch(e){} EVTH[id]=u; ok(u); };
+     if(id==="bedside"){ const o=exBottle(); o.rotation.y=Math.PI+.35; S.add(o); shadow(.42,-.262); C.position.set(.02,.05,1.42); C.lookAt(0,.005,0); requestAnimationFrame(shot); }   // 라벨 뒤 손글씨가 보이게
+     else if(id==="statue"){ m3dLoad("bottle.json",g=>{ const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
+         m.position.set(-c.x,-b.min.y,-c.z); const p=new THREE.Group(); p.add(m); p.scale.setScalar(.2/sz.y); p.rotation.y=.5; S.add(p); shadow(.2,.001); C.position.set(0,.13,.58); C.lookAt(0,.095,0); requestAnimationFrame(shot); }); }
+     else no(); }catch(e){ no(e); } });
+ }
  function evidencePhoto(el,s){
+   if(EVTH[s.id]){ el.style.backgroundImage=`url(${EVTH[s.id]})`; el.style.backgroundSize="cover"; el.style.backgroundPosition="center"; return; }
+   if(s.id==="bedside"||s.id==="statue"){ evThumb(s.id).then(u=>{ el.style.backgroundImage=`url(${u})`; el.style.backgroundSize="cover"; el.style.backgroundPosition="center"; }).catch(()=>{}); }
    if(s.id==="doll"){ el.style.backgroundImage='url("ev/doll.jpg")'; el.style.backgroundSize="cover"; el.style.backgroundPosition="center 62%"; return; }
    if(EVIMG[s.id]){ el.style.backgroundImage=`url(${EVIMG[s.id]})`; el.style.backgroundSize=s.id==="doll"?"cover":"contain"; el.style.backgroundPosition=s.id==="doll"?"center 62%":"center"; return; }
    const draw=()=>{
@@ -2723,7 +2740,7 @@ const ELENA_IDLE="elena-idle.mp4";
 const vid=$("tkVid"); let vRaf=0, vLast=0, vidOK=false;
 vid.addEventListener("loadeddata",()=>{ vidOK=true; talkEl.classList.add("hasvid"); if(!talkEl.hidden&&mode==="talk") vidStart(); });
 vid.addEventListener("error",()=>{ vidOK=false; talkEl.classList.remove("hasvid"); });
-function warmTalk(){ if(vid.getAttribute("src")) return; vid.src=ELENA_IDLE;
+function warmTalk(){ ["bedside","statue"].forEach(id=>{ try{ evThumb(id).catch(()=>{}); }catch(e){} }); if(vid.getAttribute("src")) return; vid.src=ELENA_IDLE;
   Object.entries(REACT).forEach(([k,list])=>{ reactOK[k]=[]; list.forEach(src=>{ const v=document.createElement("video"); v.preload="auto"; v.muted=true; v.src=src;
     v.addEventListener("loadeddata",()=>{ if(!reactOK[k].includes(src)) reactOK[k].push(src); }); pre[src]=v; }); }); }
 function vidStart(){

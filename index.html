@@ -191,7 +191,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 .talk.hasvid .tk-por{position:static}
 .tk-box{position:relative;z-index:1}
 .tk-x{z-index:2}
-.talk.hasvid .tk-por::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(5,8,6,.9));pointer-events:none}
+.talk.hasvid .tk-por::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,4,3,.96) 0,rgba(2,4,3,.55) 9%,transparent 24%,transparent 52%,rgba(2,4,3,.94) 100%);pointer-events:none}
 .talk.shake .tk-vid{animation:shake .45s}
 .tk-por svg{height:92%;max-height:520px;width:auto;filter:drop-shadow(0 0 30px rgba(0,0,0,.8));transition:transform .3s}
 .tk-por .ph-note{position:absolute;left:3%;top:4%;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:rgba(255,255,255,.45);border:1px dashed rgba(255,255,255,.25);padding:4px 8px}
@@ -1766,8 +1766,10 @@ function exBottle(){ const G=new THREE.Group(), r=.1;
   // 바닥에 남은 알약: 가운데 금이 그어진 둥근 정제, 서로 기대어 쌓여 있다
   const pt=exTex(128,128,(x,w,h)=>{ x.fillStyle="#efe9dd"; x.fillRect(0,0,w,h); for(let i=0;i<400;i++){ x.fillStyle=`rgba(150,140,120,${Math.random()*.12})`; x.fillRect(Math.random()*w,Math.random()*h,2,2); }
     x.strokeStyle="rgba(120,110,95,.55)"; x.lineWidth=5; x.beginPath(); x.moveTo(w*.12,h/2); x.lineTo(w*.88,h/2); x.stroke(); });
-  const pm=[new THREE.MeshStandardMaterial({color:0xeee8dc,roughness:.55}),new THREE.MeshStandardMaterial({map:pt,roughness:.55}),new THREE.MeshStandardMaterial({map:pt,roughness:.55})];
-  const pg=new THREE.CylinderGeometry(.019,.019,.009,24); pg.translate(0,0,0);
+  /* 정제: 가장자리가 둥글고 양면이 살짝 볼록한 알약. 가운데 홈(분할선)은 범프로 파였고, 하얀 분필 가루 같은 질감 */
+  const pm=new THREE.MeshStandardMaterial({color:0xf1ece0,map:pt,bumpMap:pt,bumpScale:-1.6,roughness:.7,metalness:0});
+  const pg=new THREE.LatheGeometry([[0,-.0057],[.008,-.0055],[.0135,-.0049],[.0165,-.0042],[.0182,-.003],[.0189,-.0015],[.019,0],[.0189,.0015],[.0182,.003],[.0165,.0042],[.0135,.0049],[.008,.0055],[0,.0057]].map(([a,b])=>new THREE.Vector2(a,b)),40);
+  { const ps=pg.attributes.position, uv=pg.attributes.uv; for(let i=0;i<ps.count;i++) uv.setXY(i,ps.getX(i)/.038+.5,ps.getZ(i)/.038+.5); uv.needsUpdate=true; }
   /* 알약 물리: 병의 기울기를 병 기준 중력으로 바꿔 알약이 바닥·벽을 따라 미끄러지고 서로 밀어낸다.
      빨리 돌리면 흔들려 달그락거리고, 벽·바닥에 세게 부딪히면 유리에 닿는 '딸깍' 소리가 난다 */
   const PILLS=[], PR=.019, IN=.0915, Y=new THREE.Vector3(0,1,0);
@@ -2129,7 +2131,8 @@ function renderInspect(s){
   $("iPhoto").classList.toggle("veiled", s.tier===3 && !opened.has(s.id));
   const B=$("iBody"); B.innerHTML=""; B.classList.remove("rise");
   { const I=$("insp"), was=I.classList.contains("exam"), ex=!!(window.THREE&&((EXAM[s.id]&&!found.has(s.id))||(M3D[s.id]&&M3D[s.id].lift&&!opened.has(s.id))));
-    I.classList.toggle("exam",ex); if(was&&!ex){ I.classList.add("unexam"); setTimeout(()=>I.classList.remove("unexam"),1000); } }
+    I.classList.toggle("exam",ex); if(ex&&!was){ try{ hit(220,.07,.12); setTimeout(()=>hit(3100,.03,.04,"bandpass"),90); [140,230,330].forEach(t=>setTimeout(()=>hit(2600+Math.random()*1800,.02,.03,"bandpass"),t+120)); }catch(e){} }   /* 집어 드는 소리: 협탁 스치는 둔한 소리 + 유리 딸깍 + 알약 달그락 */
+    if(was&&!ex){ I.classList.add("unexam"); setTimeout(()=>I.classList.remove("unexam"),1000); } }
   const add=(tag,cls,html)=>{const e=document.createElement(tag); if(cls)e.className=cls; e.innerHTML=html; B.appendChild(e); return e;};
   $("iNew").hidden=true;
   if(M3D[s.id]&&!EXAM[s.id]) mountStatue3D(s); else unmountStatue3D();
@@ -3547,7 +3550,7 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
 /* ===== 심문 화면 v2 ===== */
 .talk{display:block;background:#050302}
 .talk .tk-por{position:absolute;inset:0}
-.talk.hasvid .tk-por::after{background:linear-gradient(180deg,rgba(5,3,2,.55),transparent 18%,transparent 55%,rgba(5,3,2,.92) 92%),linear-gradient(90deg,rgba(5,3,2,.75),transparent 28%,transparent 80%,rgba(5,3,2,.55))}
+.talk.hasvid .tk-por::after{background:linear-gradient(180deg,rgba(2,3,2,.97) 0,rgba(2,3,2,.6) 9%,transparent 26%,transparent 52%,rgba(5,3,2,.94) 92%),linear-gradient(90deg,rgba(5,3,2,.75),transparent 28%,transparent 80%,rgba(5,3,2,.55))}
 .talk .tk-por::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;box-shadow:inset 0 0 160px rgba(0,0,0,.8)}
 .tk-tag{position:absolute;left:3%;top:4%;z-index:2;display:flex;flex-direction:column;gap:2px;text-shadow:0 1px 4px #000}
 .tk-tag small{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--brass)}
@@ -4136,5 +4139,30 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .pro .cold-t .fl b{animation:none!important}
 .pro .cold-t.lock .fl{animation:fllock .5s ease-out}
 @keyframes fllock{0%{filter:brightness(1.8)}100%{filter:brightness(1)}}
+</style>
+<style>
+/* 증거 획득 화면 다듬기: 글자 키움 · 도장이 글자를 덮지 않게 · 잠긴 단서는 서류 칸처럼 */
+.b-body .txt{font-size:1.07em;line-height:1.8;letter-spacing:.005em}
+.b-body .hand{font-size:1.25em;line-height:1.5;margin:.2em 0 0;color:#8f2a22;padding-right:0}
+.b-body .note{font-size:1.02em;border-left:3px solid #b8352b;transform:rotate(-.4deg)}
+.b-body .stamp2{position:relative;right:auto;bottom:auto;align-self:flex-end;margin:-.2em .4em 0 0;transform:rotate(-6deg);font-size:.85em}
+.board:not(.exam) .b-card .photo{aspect-ratio:2.25/1!important}
+.b-body{gap:.5em!important}
+.b-body .txt{font-size:1.02em!important;line-height:1.7!important}
+.b-body .hand{font-size:1.12em!important}
+.b-body .stamp2.hit{animation:stampIn .5s cubic-bezier(.2,1.5,.4,1) .3s both}
+.b-body{padding-bottom:1.6em!important}
+.b-card .strip h3{letter-spacing:.02em}
+.b-rlabel{font-size:.74em;padding-left:.2em;display:flex;align-items:center;gap:.7em}
+.b-rlabel::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(210,173,99,.6),transparent)}
+.hcard:disabled{background:linear-gradient(160deg,rgba(30,24,18,.86),rgba(14,11,8,.9))}
+.hcard:disabled::after{content:"";position:absolute;inset:9px;border:1px dashed rgba(210,173,99,.38);pointer-events:none}
+.hcard:disabled .hstrip{background:none;color:rgba(210,173,99,.8);font-family:var(--mono);letter-spacing:.35em;font-size:.8em;box-shadow:none}
+.hcard:disabled .lock{stroke:rgba(210,173,99,.75);margin-top:.2em}
+.hcard:disabled .hsub{color:rgba(232,223,201,.78);font-size:.82em;padding:0 1.2em;line-height:1.5}
+.hcard.got{box-shadow:0 0 0 2px rgba(159,211,174,.55),0 8px 22px rgba(0,0,0,.5)}
+.hcard.half .hsub{color:#ecc9a0}
+.newtag{font-size:.8em;padding:.25em .95em;box-shadow:0 3px 10px rgba(0,0,0,.45)}
+.ov-hints{opacity:.9}.ov-hints .kc{border-color:rgba(210,173,99,.7);color:#f0e4cb}
 </style>
 </body></html>

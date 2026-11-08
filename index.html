@@ -1061,7 +1061,7 @@ button{font:inherit;cursor:pointer;color:inherit}
     <div class="en-clock" id="endClock" aria-hidden="true">21:47</div>
     <div class="case">사건 종결 · 범인 엘레나 보로딘</div>
     <ul class="en-ev" id="endEv" aria-label="밝혀낸 증거"></ul>
-    <h2 class="q"><span>그를 죽인 범인이</span><br><span>정말 엘레나가 맞을까?</span></h2>
+    <h2 class="q"><span>Was the one who killed him</span><br><span>really Elena?</span><em class="kr">그를 죽인 범인이 정말 엘레나가 맞을까?</em></h2>
     <p class="nag" id="endNag">21:47 — 독이 먼저였을까, 그 소리가 먼저였을까.</p>
     <p class="en">The next scene begins <em>in the game</em>.</p>
     <div class="row"><button class="enter" id="ctaBtn" disabled aria-disabled="true">게임 다운로드 페이지 준비 중</button><button class="skip" style="position:static" id="againBtn">처음으로 돌아가기</button></div>
@@ -4693,6 +4693,12 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .ending h2.q{font-family:"Noto Serif KR","Nanum Myeongjo","Batang",serif!important;font-weight:300!important;letter-spacing:.06em!important;line-height:1.7!important;font-size:clamp(30px,3.4vw,62px)!important}
 .ending h2.q span:last-child{font-weight:400!important}
 .ending .case,.ending .en-ev b,.ending .en-ev::before{font-family:"Noto Serif KR","Nanum Myeongjo","Batang",serif!important;font-weight:400!important}
+.ending h2.q{font-family:"Cormorant Garamond","Noto Serif KR",serif!important;font-weight:400!important;font-style:italic;letter-spacing:.02em!important;line-height:1.3!important;font-size:clamp(34px,4vw,72px)!important}
+.ending h2.q span:first-child{font-size:.78em}
+.ending h2.q span:nth-of-type(2){font-weight:500!important}
+.ending.e5 h2.q span:nth-of-type(2){opacity:1;transform:none;filter:none}
+.ending h2.q .kr{display:block;margin-top:1.8em;font-style:normal;font-family:"Noto Serif KR","Nanum Myeongjo",serif;font-weight:300;font-size:clamp(13px,1.05vw,20px);letter-spacing:.08em;color:rgba(239,230,210,.62);opacity:0;transition:opacity 1.8s .6s}
+.ending.e5 h2.q .kr{opacity:1}
 </style>
 <script>
 /* 손글씨(증거 쪽지·붉은 펜 메모)를 누르면 종이째로 크게 보여 준다. 아무 데나 누르거나 ESC로 닫힘 */

@@ -1415,7 +1415,7 @@ stage.addEventListener("click",e=>{ if(e.target.closest("button,.panel,.ov,.talk
 
 /* ---------- 속마음 자막 / 알림 ---------- */
 /* 대사·생각은 문장 단위로 줄을 바꿔 보여 준다 (문장 중간에서 어색하게 끊기지 않게) */
-function sentBr(t){ const esc=String(t??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); return esc.replace(/([.?!…]+["”’)]?)\s+(?=\S)/g,"$1<br>"); }
+function sentBr(t){ const esc=String(t??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); return esc.replace(/([.?!…]+["”’)]?)\s+(?=\S)/g,"$1<br>").replace(/<br>([^<]{1,6}…)<br>/g," $1<br>"); }
 let thT; function think(t,ms=3200){ const el=$("thought"); el.innerHTML=sentBr(t); el.classList.toggle("show",!!t); clearTimeout(thT); if(t) thT=setTimeout(()=>el.classList.remove("show"),ms); }
 let nT; function notify(t){ $("notifyT").textContent=t; const n=$("notify"); n.classList.add("show"); clearTimeout(nT); nT=setTimeout(()=>n.classList.remove("show"),2400); }
 
@@ -1428,7 +1428,7 @@ function audio(){ if(!ac){ try{
 }catch(e){} } return ac; }
 function noiseBuf(){ const b=ac.createBuffer(1,ac.sampleRate*.4,ac.sampleRate), d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; return b; }
 const SFXF={}; function SFX(n,v){ try{ if(!soundOn) return; let a=SFXF[n]; if(!a){ a=SFXF[n]=new Audio("sfx/"+n+".mp3"); a.preload="auto"; } const c=a.cloneNode(); c.volume=Math.min(1,v||.6); c.play().catch(()=>{}); }catch(e){} }
-['door','gasp','tick','horn','squeak','hit','steps','tear','tear2','rustle','lock','cup'].forEach(n=>{ try{ const a=new Audio("sfx/"+n+".mp3"); a.preload="auto"; SFXF[n]=a; }catch(e){} });
+['flip','door','gasp','tick','horn','squeak','hit','steps','tear','tear2','rustle','lock','cup'].forEach(n=>{ try{ const a=new Audio("sfx/"+n+".mp3"); a.preload="auto"; SFXF[n]=a; }catch(e){} });
 function creak(){ if(!soundOn) return; SFX("door",.6); return; if(!audio()) return; const t=ac.currentTime;
   const o=ac.createOscillator(), f=ac.createBiquadFilter(), g=ac.createGain(), l=ac.createOscillator(), lg=ac.createGain();
   o.type="sawtooth"; o.frequency.setValueAtTime(70,t); o.frequency.linearRampToValueAtTime(115,t+.9); o.frequency.linearRampToValueAtTime(82,t+2);
@@ -1440,7 +1440,7 @@ function hit(freq,vol,dur,type="lowpass"){ if(!soundOn||!audio()) return; const 
   s.buffer=noiseBuf(); f.type=type; f.frequency.value=freq; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   s.connect(f); f.connect(g); g.connect(sfxBus||ac.destination); s.start(t); s.stop(t+dur+.05); }
 function steps(n=2){ SFX("steps",.35); }
-function startClock(){ clearInterval(clockTimer); clockTimer=setInterval(()=>SFX("tick",.22),1000); }
+function startClock(){ clearInterval(clockTimer); }   // 초침 소리는 뺐다(거슬림)
 let watchTimer=0, watchStopTimer=0;
 function stopWatchTick(){ clearInterval(watchTimer); clearTimeout(watchStopTimer); watchTimer=0; }
 function startWatchTick(){ stopWatchTick(); if(!soundOn||!audio()) return; let n=0;
@@ -1566,16 +1566,17 @@ function glassClink(){ if(soundOn){ SFX("cup",.5); return; } try{ if(!soundOn||!
 function dollPlayback(){ const s=CU.s, L=$("cuLayer"), ph=$("cuPh"); L.querySelector(".dpb")?.remove(); window.__recA?.pause();
   const SUB=[[.35,"21:41","“…대표님, 한 잔 더 드세요.”",0],[3.0,"21:44","(잔이 부딪히는 소리)",0],[3.5,"21:46","“…엘레나, 너 뭘……”",1],[5.7,"21:47","",1]];
   const o=document.createElement("div"); o.className="dpb";
-  o.innerHTML=`<div class="dpb-top"><i></i>MEMORY PLAYBACK</div><div class="dpb-sub"></div><div class="dpb-black"><small>그리고 기록은 끊겼다</small></div>`;
+  o.innerHTML=`<div class="dpb-top"><i></i>녹음 파일 재생 · 인형 내장 레코더</div><div class="dpb-sub"></div><div class="dpb-rec"><div class="rf"><b>REC_0224.wav</b><span class="rt">00:00</span></div><div class="bars">${Array.from({length:44},(_,i)=>`<u style="--h:${18+Math.round(Math.abs(Math.sin(i*1.7)*Math.cos(i*.6))*70)}%;--d:${(i%7)*.09}s"></u>`).join("")}</div><div class="pg"><i></i></div></div>`;
   L.appendChild(o); ph.classList.add("eyezoom"); $("cu").classList.add("pb"); $("cuTh").classList.remove("on"); requestAnimationFrame(()=>o.classList.add("on"));
   const sub=o.querySelector(".dpb-sub"), at=(ms,f)=>setTimeout(()=>{ if(o.isConnected) f(); },ms);
   at(900,()=>{ try{ if(soundOn){ if(!window.__recA){ window.__recA=new Audio("ev/doll_rec.mp3"); window.__recA.volume=.95; } window.__recA.currentTime=0; window.__recA.play().catch(()=>{}); } }catch(e){} });
   at(900+3000,glassClink);                                                            // 21:44 잔 부딪히는 소리
   SUB.forEach(([t,c,txt,red])=>at(900+t*1000,()=>{ if(txt){ sub.innerHTML=txt; sub.classList.toggle("red",!!red); sub.classList.remove("in"); void sub.offsetWidth; sub.classList.add("in"); } else sub.classList.remove("in"); }));
   at(900+5900,()=>{ dollThud(); o.classList.add("hit"); ph.classList.add("jolt"); });   // 둔탁한 소리
-  at(900+6150,()=>o.classList.add("black"));
-  at(900+8600,()=>{ o.classList.remove("on"); ph.classList.remove("eyezoom","jolt"); $("cu").classList.remove("pb"); if(!found.has(s.id)) miniFinish(s); else cuThink(s.th,3200);
-    setTimeout(()=>{ o.remove(); drawHots(); },900); });   // 끝나면 다시 볼 수 있게
+  { const rt=o.querySelector(".rt"), pgi=o.querySelector(".pg i"), t0=Date.now(); const iv=setInterval(()=>{ if(!o.isConnected){ clearInterval(iv); return; } const el=Math.max(0,Math.min(6.2,(Date.now()-t0-900)/1000)); rt.textContent="00:0"+Math.floor(el)+" / 00:06"; pgi.style.width=(el/6.2*100)+"%"; if(el>=6.2){ o.classList.add("done"); clearInterval(iv); } },100); }
+  at(900+6150,()=>o.classList.add("done"));
+  at(900+7400,()=>{ o.classList.remove("on"); ph.classList.remove("eyezoom","jolt"); $("cu").classList.remove("pb"); if(!found.has(s.id)) miniFinish(s); else cuThink(s.th,3200);
+    setTimeout(()=>{ o.remove(); drawHots(); },1000); });   // 끝나면 원래 장면으로
 }
 /* (이전 방식: 인형을 3D로 돌려 스피커를 찾던 단계 — 지금은 쓰지 않음) */
 let DV=null;
@@ -2697,7 +2698,7 @@ function endSeq(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
   const at=(ms,f)=>setTimeout(f,ms);
   at(60,()=>E.classList.add("e1"));                                                  // 레터박스 닫힘 + 배경 천천히 다가옴
   at(1300,()=>{ E.classList.add("e2"); SFX("hit",.5); });   // 도장 쾅
-  let tk=0; const tick=setInterval(()=>{ if(mode!=="end"){ clearInterval(tick); return; } SFX("tick",.16); },1000);   // 회중시계 초침
+  let tk=0; const tick=setInterval(()=>{ if(mode!=="end"){ clearInterval(tick); return; } void 0; },1000);
   at(3000,()=>E.classList.add("e3"));                                                // 사건 종결 문구
   at(4600,()=>{ ck.classList.add("flip"); setTimeout(()=>ck.textContent="21:48",180); hit(1600,.05,.03,"bandpass"); });   // 시간은 흘러간다
   at(5200,()=>E.classList.add("e4"));                                                // 질문 첫 줄
@@ -2981,7 +2982,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   /* 0. 시작 버튼 → 콜드 오픈 → 인트로 영상 */
   $("proStart").onclick=()=>{ if($("proStart").disabled) return; $("proStart").disabled=true;
     try{ audio(); ac&&ac.resume(); }catch(e){}
-    $("proStart").classList.add("punched"); sfx(1600,.09,.04,"bandpass"); sfx(240,.1,.07);   // 검표 펀치 '찰칵'
+    $("proStart").classList.add("punched"); SFX("flip",.5); setTimeout(()=>SFX("tear",.28),90);   // 표를 뜯는 소리
     setTimeout(()=>{
     // 웹캠은 여기서 켜지 않는다: 초대장이 나온 뒤 '카메라로 체험'을 눌러 허락해야 켜진다
     camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camTag.textContent="";   // 웹캠 자리는 처음부터 보이게(영상 속 로고 가림). 카메라는 허락 뒤에만 켜진다
@@ -2989,7 +2990,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     },560); };
   /* 1. 영상 마지막 — 손에 든 봉투 */
   const hand=$("proHand"), hz=$("proHit");
-  hz.onmouseenter=()=>hand.classList.add("hover"); hz.onmouseleave=()=>hand.classList.remove("hover");
+  hz.onmouseenter=()=>{ hand.classList.add("hover"); SFX("rustle",.3); }; hz.onmouseleave=()=>hand.classList.remove("hover");
   hz.onclick=()=>dip(()=>{ hideVid(); show("env"); setTimeout(()=>$("proEnv").onclick.call($("proEnv")),250); });   // 봉투를 받으면 바로 검문 창
   /* 2. 봉투 개봉 */
   $("proEnv").onclick=function(){ if(this.classList.contains("opening")) return;
@@ -3644,7 +3645,7 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
 /* 봉투 장면 · 초대장 장면: 인트로 영상 마지막 방을 흐리게 깔기, 안내 문구는 손 아래로 */
 .pro .ps[data-s="hand"],.pro .ps[data-s="env"] .bg{background:linear-gradient(180deg,rgba(6,4,3,.25),rgba(6,4,3,.55)),url(pro/room_blur.jpg) center/cover no-repeat}
 .pro .ps[data-s="env"] .bg{filter:none}
-.pro .ps[data-s="hand"] .cta{top:auto!important;bottom:4.5%}
+.pro .ps[data-s="hand"] .cta{top:auto!important;bottom:10%}
 .pro .ps[data-s="env"] .cap2{color:rgba(236,226,203,.75)}
 </style>
 <script>
@@ -4210,4 +4211,28 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .pro .ps[data-s="start"] .tt-ticket:hover{transform:translateY(-.4cqh);box-shadow:0 1.8cqh 3.4cqh rgba(0,0,0,.7),0 0 3cqh rgba(217,178,106,.18)}
 </style>
 <style>.pro .ps.behind>:not(.consent){filter:blur(9px) brightness(.62) saturate(1.05)}</style>
+<style>
+/* 심문 메뉴/선택지가 대사 상자와 겹치지 않게: 대사를 왼쪽으로 비킨다 */
+.talk[data-m="menu"] .tk-box,.talk[data-m="act"] .tk-box{left:4%;transform:none;width:min(780px,56%)}
+.talk .tk-line{min-height:4.9em}
+</style>
+<script>
+/* 조사 화면 잔상 제거: 흐린/선명 두 영상이 서로 다른 프레임이면 겹쳐 보인다 → 항상 같은 시점으로 맞춘다 */
+(function(){ const a=document.querySelector("#lSoft video"), b=document.querySelector("#lSharp video"); if(!a||!b) return;
+  setInterval(()=>{ try{ if(a.readyState<2||b.readyState<2) return; const d=b.currentTime-a.currentTime;
+    if(Math.abs(d)>.05&&Math.abs(d)<a.duration-.3){ b.currentTime=a.currentTime+.02; } }catch(e){} },250); })();
+</script>
+<style>
+/* 녹음 파일 확인 연출: 검은 화면 대신 녹음기 패널 → 끝나면 원래 장면으로 */
+.dpb-rec{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);width:min(520px,70%);padding:10px 16px 12px;background:rgba(8,6,5,.66);border:1px solid rgba(226,56,42,.35);backdrop-filter:blur(4px);font-family:ui-monospace,Menlo,Consolas,monospace;color:#f1d9a8}
+.dpb-rec .rf{display:flex;justify-content:space-between;font-size:clamp(10px,1vw,12px);letter-spacing:.18em;margin-bottom:6px}
+.dpb-rec .rf b{font-weight:400;color:#e9cfa0}.dpb-rec .rt{color:#ff8a7c}
+.dpb-rec .bars{display:flex;align-items:center;gap:3px;height:26px}
+.dpb-rec .bars u{flex:1;height:var(--h);background:#c9473a;opacity:.85;animation:dpbbar .5s ease-in-out infinite alternate;animation-delay:var(--d)}
+@keyframes dpbbar{to{transform:scaleY(.35)}}
+.dpb.done .dpb-rec .bars u{animation:none;transform:scaleY(.12);opacity:.4;transition:all .4s}
+.dpb-rec .pg{height:2px;background:rgba(255,255,255,.14);margin-top:8px}.dpb-rec .pg i{display:block;height:100%;width:0;background:#e2382a}
+.dpb-sub{bottom:22%!important}
+.dpb.done::before{opacity:.5;transition:opacity .6s}
+</style>
 </body></html>

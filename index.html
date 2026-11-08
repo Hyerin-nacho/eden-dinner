@@ -1567,17 +1567,17 @@ function glassClink(){ if(soundOn){ SFX("cup",.5); return; } try{ if(!soundOn||!
 function dollPlayback(){ const s=CU.s, L=$("cuLayer"), ph=$("cuPh"); L.querySelector(".dpb")?.remove(); window.__recA?.pause();
   const SUB=[[.35,"21:41","“…대표님, 한 잔 더 드세요.”",0],[3.0,"21:44","(잔이 부딪히는 소리)",0],[3.5,"21:46","“…엘레나, 너 뭘……”",1],[5.7,"21:47","",1]];
   const o=document.createElement("div"); o.className="dpb";
-  o.innerHTML=`<div class="dpb-top"><i></i>녹음 파일 재생 · 인형 내장 레코더</div><div class="dpb-sub"></div><div class="dpb-rec"><div class="rf"><b>REC_0224.wav</b><span class="rt">00:00</span></div><div class="bars">${Array.from({length:44},(_,i)=>`<u style="--h:${18+Math.round(Math.abs(Math.sin(i*1.7)*Math.cos(i*.6))*70)}%;--d:${(i%7)*.09}s"></u>`).join("")}</div><div class="pg"><i></i></div></div>`;
+  o.innerHTML=`<div class="dpb-top"><i></i>VOICE RECORDER<span>음성 녹음기</span></div><div class="dpb-sub"></div><div class="dpb-rec"><div class="rh"><b>PLAYBACK</b><span>재생</span><em class="st">● PLAYING · 재생 중</em></div><div class="rf"><b>REC_0224.wav</b><span class="rt">00:00 / 00:06</span></div><div class="bars">${Array.from({length:48},(_,i)=>`<u style="--h:${16+Math.round(Math.abs(Math.sin(i*1.7)*Math.cos(i*.6))*74)}%;--d:${(i%7)*.09}s"></u>`).join("")}</div><div class="pg"><i></i></div><div class="rl"><span>INTERNAL RECORDER · 인형 내장 녹음기</span></div></div>`;
   L.appendChild(o); ph.classList.add("eyezoom"); $("cu").classList.add("pb"); $("cuTh").classList.remove("on"); requestAnimationFrame(()=>o.classList.add("on"));
   const sub=o.querySelector(".dpb-sub"), at=(ms,f)=>setTimeout(()=>{ if(o.isConnected) f(); },ms);
   at(900,()=>{ try{ if(soundOn){ if(!window.__recA){ window.__recA=new Audio("ev/doll_rec.mp3"); window.__recA.volume=.95; } window.__recA.currentTime=0; window.__recA.play().catch(()=>{}); } }catch(e){} });
   at(900+3000,glassClink);                                                            // 21:44 잔 부딪히는 소리
   SUB.forEach(([t,c,txt,red])=>at(900+t*1000,()=>{ if(txt){ sub.innerHTML=txt; sub.classList.toggle("red",!!red); sub.classList.remove("in"); void sub.offsetWidth; sub.classList.add("in"); } else sub.classList.remove("in"); }));
   at(900+5900,()=>{ dollThud(); o.classList.add("hit"); ph.classList.add("jolt"); });   // 둔탁한 소리
-  { const rt=o.querySelector(".rt"), pgi=o.querySelector(".pg i"), t0=Date.now(); const iv=setInterval(()=>{ if(!o.isConnected){ clearInterval(iv); return; } const el=Math.max(0,Math.min(6.2,(Date.now()-t0-900)/1000)); rt.textContent="00:0"+Math.floor(el)+" / 00:06"; pgi.style.width=(el/6.2*100)+"%"; if(el>=6.2){ o.classList.add("done"); clearInterval(iv); } },100); }
+  { const rt=o.querySelector(".rt"), pgi=o.querySelector(".pg i"), t0=Date.now(); const iv=setInterval(()=>{ if(!o.isConnected){ clearInterval(iv); return; } const el=Math.max(0,Math.min(6.2,(Date.now()-t0-900)/1000)); rt.textContent="00:0"+Math.floor(el)+" / 00:06";  pgi.style.width=(el/6.2*100)+"%"; if(el>=6.2){ o.classList.add("done"); o.querySelector(".st").textContent="■ END OF RECORDING · 녹음 끝"; clearInterval(iv); } },100); }
   at(900+6150,()=>o.classList.add("done"));
-  at(900+7400,()=>{ o.classList.remove("on"); ph.classList.remove("eyezoom","jolt"); $("cu").classList.remove("pb"); if(!found.has(s.id)) miniFinish(s); else cuThink(s.th,3200);
-    setTimeout(()=>{ o.remove(); if(mode==="closeup"&&CU&&CU.s===s&&s.id==="doll"&&window.THREE){ ph.style.backgroundImage="none"; dollPick(); } else drawHots(); },1000); });   // 끝나면 인형을 든 원래 장면으로
+  at(900+7400,()=>{ o.classList.remove("on"); ph.classList.remove("eyezoom","jolt"); $("cu").classList.remove("pb");
+    setTimeout(()=>{ o.remove(); if(!found.has(s.id)){ miniDone.add(s.id); collect(s); } closeCloseup(); setTimeout(()=>inspectBoard(s),120); },900); });   // 끝나면 다른 증거처럼 증거 확인 화면으로
 }
 /* (이전 방식: 인형을 3D로 돌려 스피커를 찾던 단계 — 지금은 쓰지 않음) */
 let DV=null;
@@ -1724,6 +1724,11 @@ function playEvClip(s){ const w=$("evClip"), v=$("evClipV"); evSeen.add(s.id); m
   let done=false; const end=()=>{ if(done) return; done=true; v.pause(); w.classList.remove("on"); v.onended=v.onerror=w.onclick=null; mode="explore"; inspect(s); };
   w.classList.add("on"); v.src=EVCLIP[s.id]; v.currentTime=0; v.muted=!soundOn; v.volume=.65; v.onended=end; v.onerror=end;
   v.play().catch(()=>{ v.muted=true; v.play().catch(end); }); setTimeout(()=>{ if(!done&&v.currentTime<.1) end(); },9000); }
+function inspectBoard(s){
+  activeSpot=s; $("prompt").classList.remove("show"); mode="inspect"; stage.classList.remove("explore"); stage.classList.add("inspect");
+  closeBook(false); ease=.07; tgt.s=2.4; tgt.fx=s.x; tgt.fy=s.y; steps(1);
+  renderInspect(s); renderSide(); $("insp").classList.add("open"); setTimeout(()=>$("iClose").focus({preventScroll:true}),50);
+}
 function inspect(s){
   if(s.npc){ openTalk(); return; }
   if(FIND[s.id] && !evSeen.has(s.id) && !found.has(s.id) && mode==="explore"){ openFind(s); return; }
@@ -4297,5 +4302,20 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 /* 의자 밑만 보이는 어두운 구도: 가장자리를 짙게 가려 틈 안쪽만 보이게 */
 .dollv.chair::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;background:radial-gradient(ellipse 46% 40% at 50% 56%,transparent 0,rgba(0,0,0,.35) 55%,rgba(0,0,0,.92) 100%);transition:opacity 1.2s}
 .dollv.chair canvas{cursor:grab}.dollv.chair.grab canvas{cursor:grabbing}
+</style>
+<style>
+/* 녹음기 화면(한·영 표기) */
+.dpb-top{letter-spacing:.3em}.dpb-top span{margin-left:12px;letter-spacing:.12em;opacity:.75;font-family:var(--serif)}
+.dpb-rec{width:min(560px,78%);padding:12px 18px 12px;background:rgba(10,7,5,.78);border:1px solid rgba(210,173,99,.5);box-shadow:0 8px 30px rgba(0,0,0,.6)}
+.dpb-rec .rh{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;font-size:clamp(11px,1.1vw,13px);letter-spacing:.2em}
+.dpb-rec .rh b{font-weight:500;color:#f1d9a8}.dpb-rec .rh span{font-family:var(--serif);letter-spacing:.1em;color:rgba(241,217,168,.7)}
+.dpb-rec .rh .st{margin-left:auto;font-style:normal;color:#ff8a7c;font-size:clamp(10px,1vw,12px);letter-spacing:.12em}
+.dpb.done .dpb-rec .rh .st{color:#d2ad63}
+.dpb-rec .rf{display:flex;justify-content:space-between;margin-bottom:6px;font-size:clamp(11px,1.05vw,13px);letter-spacing:.14em;color:#e9cfa0}
+.dpb-rec .rf b{font-weight:400}.dpb-rec .rt{color:#ffb3a6}
+.dpb-rec .bars{height:34px}
+.dpb-rec .rl{margin-top:8px;font-size:clamp(9px,.9vw,11px);letter-spacing:.2em;color:rgba(241,217,168,.55)}
+.dollv.chair .v3bg{opacity:.06}
+.dollv.chair{background:#000}
 </style>
 </body></html>

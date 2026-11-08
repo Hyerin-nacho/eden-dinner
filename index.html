@@ -4505,6 +4505,8 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 @keyframes tkpunch{0%{opacity:0;transform:scale(1.32);filter:blur(5px)}55%{opacity:1;transform:scale(.97);filter:none}100%{transform:none}}
 .talk .tk-meter.hitm{animation:tkmeter .5s ease}
 @keyframes tkmeter{0%,100%{transform:none}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+/* 심문 대사: 선택지가 떠 있을 때도 왼쪽으로 비키지 않고 화면 아래 가운데 */
+.talk:not([data-m="ev"]) .tk-box{left:50%!important;transform:translateX(-50%)!important;bottom:5%!important;width:min(880px,56%)!important}
 /* 손글씨 확대 보기 */
 .b-body .note,.b-body .hand,.page .slip,.page .hand:not(.big){cursor:zoom-in}
 .hwz{position:fixed;inset:0;z-index:300;display:grid;place-items:center;background:rgba(6,4,3,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .25s;cursor:zoom-out}

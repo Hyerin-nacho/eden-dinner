@@ -2170,10 +2170,14 @@ function collect(s){ found.add(s.id); freshId=s.id; lastFound=s.id; paper(); not
 /* 단서 5개를 모두 모으면 잠시 뒤 자동으로 엘레나 심문으로 넘어간다 */
 let invAuto=false;
 function invDone(s){ if(invAuto||!EVID.every(e=>found.has(e.id))) return; invAuto=true;
-  const wait=(s&&s.id==="doll")?6800:3000;   // 인형 녹음이 끝까지 재생되게 기다린다
-  setTimeout(()=>notify("조사 끝 — 엘레나를 심문한다"),wait-1400);
-  setTimeout(()=>{ try{ if(mode==="inspect") closeInspect(); else if(mode==="closeup") closeCloseup(); }catch(e){} try{ closeBook(); }catch(e){}
-    const go=()=>{ if(mode==="explore") openTalk(); else if(mode!=="talk"&&mode!=="end"&&mode!=="board") setTimeout(go,300); }; setTimeout(go,450); },wait); }
+  const wait=(s&&s.id==="doll")?5200:1700;   // 인형 녹음은 거의 끝까지 재생, 그 외엔 짧게. F·Enter·스페이스로 바로 넘어갈 수 있다
+  let fired=false, T1, T2;
+  const run=()=>{ if(fired) return; fired=true; clearTimeout(T1); clearTimeout(T2); removeEventListener("keydown",kd,true);
+    try{ if(mode==="inspect") closeInspect(); else if(mode==="closeup") closeCloseup(); }catch(e){} try{ closeBook(); }catch(e){}
+    const go=()=>{ if(mode==="explore") openTalk(); else if(mode!=="talk"&&mode!=="end"&&mode!=="board") setTimeout(go,300); }; setTimeout(go,250); };
+  const kd=e=>{ const k=(e.key||"").toLowerCase(); if(k==="enter"||k==="f"||k===" "){ e.stopImmediatePropagation(); e.preventDefault(); run(); } };
+  T1=setTimeout(()=>{ notify("조사 끝 — 엘레나를 심문한다 (F 바로 가기)"); addEventListener("keydown",kd,true); },Math.max(300,wait-1300));
+  T2=setTimeout(run,wait); }
 function closeInspect(){
   unmountStatue3D();
   $("insp").classList.remove("open"); activeSpot=null; freshId=null;
@@ -2610,7 +2614,7 @@ function react(k){
   const ok=reactOK[k]||[]; if(!vidOK||!ok.length) return;
   const pool=ok.length>1?ok.filter(x=>x!==reactLast[k]):ok; const src=pool[Math.random()*pool.length|0]; reactLast[k]=src;
   rv.src=src; rv.muted=!soundOn; rv.volume=.65; rv.currentTime=0;
-  rv.play().then(()=>{ rv.classList.add("on"); vid.muted=true; }).catch(()=>{});
+  rv.play().then(()=>{ rv.classList.add("on"); vid.muted=true; const my=rv.src; setTimeout(()=>{ if(rv.src===my&&rv.classList.contains("on")){ rv.pause(); rv.classList.remove("on"); vid.muted=!soundOn; } },k==="startle"?2300:2600); }).catch(()=>{});
 }
 rv.addEventListener("ended",()=>{ rv.classList.remove("on"); vid.muted=!soundOn; });
 function reactStop(){ rv.pause(); rv.classList.remove("on"); }
@@ -4164,5 +4168,18 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .hcard.half .hsub{color:#ecc9a0}
 .newtag{font-size:.8em;padding:.25em .95em;box-shadow:0 3px 10px rgba(0,0,0,.45)}
 .ov-hints{opacity:.9}.ov-hints .kc{border-color:rgba(210,173,99,.7);color:#f0e4cb}
+</style>
+<style>
+/* 알림·확인창 정돈 */
+.notify{top:11%;padding:10px 22px 10px 18px;font-family:var(--serif);font-size:15px;letter-spacing:.04em;background:linear-gradient(90deg,rgba(10,8,6,.94),rgba(18,13,9,.9));border:1px solid rgba(210,173,99,.55);border-left:4px solid var(--brass);box-shadow:0 10px 30px rgba(0,0,0,.55);color:#f0e4cb}
+.notify small{font-size:11px;padding:2px 8px;border:1px solid rgba(210,173,99,.55);color:var(--brass)}
+.sb-msg{width:min(520px,78%);padding:2em 2.2em 1.6em;border:1px solid rgba(210,173,99,.55);background:linear-gradient(180deg,rgba(22,17,12,.98),rgba(10,8,6,.98));font-size:1.04em;line-height:1.85;word-break:keep-all}
+.sb-msg::before{content:"NOTICE";display:block;font-family:var(--mono);font-size:.62em;letter-spacing:.35em;color:rgba(210,173,99,.8);margin-bottom:.9em;padding-bottom:.8em;border-bottom:1px solid rgba(210,173,99,.25)}
+.sb-msg button{margin-top:1.3em;min-width:8em;padding:.55em 1.6em;background:var(--brass);color:#14100a;border:0;font-weight:700;letter-spacing:.12em;cursor:pointer}
+.sb-msg button:hover{filter:brightness(1.12)}
+.sb-ded .ft{border-top:1px dashed rgba(59,47,37,.4);padding-top:1em}
+.sb-ded .ft button{min-width:7em;padding:.6em 1.3em;letter-spacing:.06em}
+.sb-ded .ft button.go{background:var(--red-ink);color:#fff4e8;border-color:var(--red-ink);font-weight:700}
+.sb-ded .ft button.go:disabled{opacity:.4;filter:grayscale(.4)}
 </style>
 </body></html>

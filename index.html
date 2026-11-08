@@ -1682,7 +1682,7 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
   const NP=90, pg=new THREE.BufferGeometry(), pa=new Float32Array(NP*3), pv=[]; for(let i=0;i<NP;i++){ pa[i*3]=(Math.random()-.5)*1.6; pa[i*3+1]=Math.random()*1.8; pa[i*3+2]=(Math.random()-.5)*1.4; pv.push(.01+Math.random()*.02); }
   pg.setAttribute("position",new THREE.BufferAttribute(pa,3)); const dc=document.createElement("canvas"); dc.width=dc.height=32; { const g3=dc.getContext("2d"), q3=g3.createRadialGradient(16,16,0,16,16,16); q3.addColorStop(0,"rgba(255,230,190,1)"); q3.addColorStop(1,"rgba(255,230,190,0)"); g3.fillStyle=q3; g3.fillRect(0,0,32,32); }
   const dust=new THREE.Points(pg,new THREE.PointsMaterial({map:new THREE.CanvasTexture(dc),size:.018,transparent:true,opacity:.5,depthWrite:false,blending:THREE.AdditiveBlending}));   // 흰 먼지 입자는 쓰지 않음
-  const hint=document.createElement("div"); hint.className="v3hint"; hint.innerHTML="<small>의자 밑 어둠 속에서 붉은 빛이 깜빡인다.</small><b>손을 뻗어 아래로 끌어 꺼내 보자.</b>"; wrap.appendChild(hint);
+  const hint=document.createElement("div"); hint.className="v3hint"; hint.innerHTML="<small>의자 밑 어둠 속에서 붉은 빛이 깜빡인다.</small><b>손을 뻗어 아래로 끌어 꺼내 보자. (클릭만 해도 됩니다)</b>"; wrap.appendChild(hint);
   const bar=document.createElement("div"); bar.className="v3bar"; bar.innerHTML="<i></i>"; wrap.appendChild(bar);
   const x=document.createElement("button"); x.className="dollx"; x.innerHTML="물러나기"; x.onclick=()=>{ dollClose(); closeCloseup(); }; wrap.appendChild(x);
   const dollG=new THREE.Group(); S.add(dollG);
@@ -1698,16 +1698,16 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
   m3dLoad("doll3d.glb",g=>{ if(!DV||DV.wrap!==wrap) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
     m.position.set(-c.x,-c.y,-c.z); const k=.3/sz.y; const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(k); m.traverse(o=>{ if(o.isMesh){ o.receiveShadow=true; o.castShadow=true; if(o.material){ o.material=o.material.clone(); o.material.envMapIntensity=.08; } } }); dollG.add(gp); DV.ready=true; });   // 그림자가 못 막는 환경광을 줄여 의자 밑에선 어둠에 묻힘
   const el=R.domElement; let ly=0;
-  el.onpointerdown=e=>{ if(!DV||DV.done) return; DV.drag=true; ly=e.clientY; wrap.classList.add("grab"); try{ el.setPointerCapture(e.pointerId); }catch(_){} };
-  el.onpointermove=e=>{ if(!DV||!DV.drag||DV.done) return; const r=el.getBoundingClientRect(); const dy=(e.clientY-ly)/Math.max(220,r.height*.55); ly=e.clientY; DV.p=Math.max(0,Math.min(1,DV.p+dy)); { const n=performance.now(); if(dy>.004&&n-(DV.sl||0)>900){ DV.sl=n; SFX("slide",Math.min(.5,.18+dy*5)); } } };
-  el.onpointerup=()=>{ if(!DV) return; DV.drag=false; wrap.classList.remove("grab"); };
+  el.onpointerdown=e=>{ if(!DV||DV.done) return; DV.drag=true; ly=e.clientY; DV.y0=ly; DV.mv=0; wrap.classList.add("grab"); try{ el.setPointerCapture(e.pointerId); }catch(_){} };
+  el.onpointermove=e=>{ if(!DV||!DV.drag||DV.done) return; const r=el.getBoundingClientRect(); const dy=(e.clientY-ly)/Math.max(120,r.height*.26); if(Math.abs(e.clientY-(DV.y0||ly))>6) DV.mv=1; ly=e.clientY; DV.p=Math.max(0,Math.min(1,DV.p+dy)); { const n=performance.now(); if(dy>.004&&n-(DV.sl||0)>900){ DV.sl=n; SFX("slide",Math.min(.5,.18+dy*5)); } } };
+  el.onpointerup=()=>{ if(!DV) return; DV.drag=false; wrap.classList.remove("grab"); if(!DV.mv) DV.p=Math.min(1,DV.p+.2); if(DV.p>.4) DV.auto=1; };   // 짧게 눌러도 조금씩, 어느 정도 당기면 알아서 끝까지
   const sm=t=>t*t*(3-2*t);
   const loop=t=>{ if(!DV||DV.wrap!==wrap) return; if(mode!=="closeup"){ dollClose(); return; }
     const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&R.domElement.width!==Math.round(w*R.getPixelRatio())){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); if(comp) comp.setSize(w,h); }
     const dt=Math.min(.05,(t-(DV.pt||t))/1000); DV.pt=t;
-    if(!DV.drag&&!DV.done&&DV.p>0) DV.p=Math.max(0,DV.p-dt*.08);   // 놓으면 아주 천천히 도로 미끄러져 들어감
+    if(DV.auto&&!DV.drag&&!DV.done) DV.p=Math.min(1,DV.p+dt*.45);   // 놓아도 되돌아가지 않고 끝까지 나온다
     /* 손을 바로 따라오지 않고 바닥 마찰만큼 살짝 늦게 끌려온다. 의자 밖으로 나온 뒤(60%~)에야 일으켜 들어 올림 */
-    const pv=DV.vp||0; DV.vp=pv+(DV.p-pv)*(1-Math.pow(.004,dt)); const vel=dt?(DV.vp-pv)/dt:0;
+    const pv=DV.vp||0; DV.vp=pv+(DV.p-pv)*(1-Math.pow(.0004,dt)); const vel=dt?(DV.vp-pv)/dt:0;
     const p=DV.vp, u=sm(Math.max(0,Math.min(1,(p-.6)/.4))), drag=Math.max(-1,Math.min(1,vel*2.2));
     dollG.position.set(Math.sin(p*9)*.006*(1-u),.06+u*.1+Math.abs(drag)*.004*(1-u),-.18+p*.42);
     dollG.rotation.set(-Math.PI/2*(1-u)+drag*.06*(1-u),Math.sin(p*7)*.05*(1-u),drag*.05);
@@ -2639,10 +2639,10 @@ function renderMini(s,B,add,replay){
       if(talk&&soundOn&&audio()&&Math.random()<.3) hit(900+Math.random()*1600,.04,.05,"bandpass");
       if(el<6.5) raf=requestAnimationFrame(draw);
       else if(!found.has(s.id)){ think("로크가 마지막으로 부른 이름. 엘레나.",2600); miniFinish(s); } };
-    const play=()=>{ cancelAnimationFrame(raf); if(!replay) ls.forEach(d=>d.classList.remove("on")); t0=performance.now(); raf=requestAnimationFrame(draw); hit(2400,.08,.05,"highpass");
+    const play=()=>{ try{ box.scrollIntoView({block:"nearest",behavior:"smooth"}); }catch(e){} cancelAnimationFrame(raf); if(!replay) ls.forEach(d=>d.classList.remove("on")); t0=performance.now(); raf=requestAnimationFrame(draw); hit(2400,.08,.05,"highpass");
       try{ if(soundOn){ if(!window.__recA){ window.__recA=new Audio("ev/doll_rec.mp3"); window.__recA.volume=.9; } window.__recA.currentTime=0; window.__recA.play().catch(()=>{}); } }catch(e){}   // 녹음 파일(ev/doll_rec.mp3)이 있으면 재생
       if(!found.has(s.id)) setTimeout(()=>{ if(!found.has(s.id)&&mode==="closeup") miniFinish(s); },1200); };
-    box.querySelector("#mPlay").onclick=play; MINIF=play; tornClip(box.querySelector("#mPlay"),1.5,7,14); return;
+    box.querySelector("#mPlay").onclick=play; MINIF=play; tornClip(box.querySelector("#mPlay"),1.5,7,14); setTimeout(()=>{ try{ box.scrollIntoView({block:"nearest"}); }catch(e){} },80); return;
   }
 }
 addEventListener("keydown",e=>{ if(mode==="closeup") return; if(mode==="inspect" && e.key.toLowerCase()==="f" && S3 && activeSpot && activeSpot.id==="statue"){ S3.step(.34); return; } if(mode==="inspect" && e.key.toLowerCase()==="f" && activeSpot && activeSpot.mini && MINIF && !(activeSpot.action&&!opened.has(activeSpot.id))){ MINIF(); } });
@@ -4747,6 +4747,15 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .talk .tk-opts.m-next{left:auto!important;right:3.5%!important;bottom:3%!important;transform:none!important}
 .talk .tk-line{padding-bottom:.4em}
 .talk .tk-box{margin-bottom:clamp(36px,7vh,64px)}
+
+/* 녹음 재생 칸이 잘리지 않게: 사진은 낮추고, 칸이 열리면 그 칸이 보이도록 스크롤 */
+.board:not(.exam) .b-card:has(.rec) .photo{aspect-ratio:4.2/1!important}
+.rec .lines{min-height:0}
+
+/* 증거 고르기 화면: 깜빡이던 정답 힌트 테두리를 잔잔하게(천천히, 변화 작게) */
+.evc.hint{animation:evhint2 3.2s ease-in-out infinite!important;box-shadow:0 0 0 2px rgba(210,173,99,.85),0 0 18px rgba(210,173,99,.45)!important}
+@keyframes evhint2{50%{box-shadow:0 0 0 2px rgba(210,173,99,.85),0 0 26px rgba(210,173,99,.6)}}
+.talk[data-m="ev"] .evc.hint{animation:evhint2 3.2s ease-in-out infinite!important}
 </style>
 <script>
 /* 손글씨(증거 쪽지·붉은 펜 메모)를 누르면 종이째로 크게 보여 준다. 아무 데나 누르거나 ESC로 닫힘 */

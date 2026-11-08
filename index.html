@@ -2880,15 +2880,15 @@ function endSeq(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
   E.className="ending"; ng&&ng.classList.remove("on"); ck.textContent="21:47";
   const at=(ms,f)=>setTimeout(f,ms);
   { const ul=$("endEv"); if(ul){ ul.innerHTML=STATE.map((st,i)=>{ const id=USEDBY[i], e=id&&EVID.find(x=>x.id===id); return e?`<li style="--d:${i*.28}s"><b>${SHORT[e.id]||e.ev}</b></li>`:""; }).join(""); } }
-  at(60,()=>E.classList.add("e1"));                                                  // 레터박스 닫힘 + 배경 천천히 다가옴
-  at(800,()=>{ E.classList.add("e2"); SFX("hit",.5); });   // 도장 쾅
+  at(40,()=>E.classList.add("e1"));                                                  // 레터박스 닫힘 + 배경 천천히 다가옴
+  at(350,()=>{ E.classList.add("e2"); SFX("hit",.5); });   // 도장 쾅
   let tk=0; const tick=setInterval(()=>{ if(mode!=="end"){ clearInterval(tick); return; } void 0; },1000);
-  at(1800,()=>E.classList.add("e3"));                                                // 사건 종결 문구
-  at(2800,()=>{ ck.classList.add("flip"); setTimeout(()=>ck.textContent="21:48",180); hit(1600,.05,.03,"bandpass"); });   // 시간은 흘러간다
-  at(3200,()=>E.classList.add("e4"));                                                // 질문 첫 줄
-  at(4100,()=>E.classList.add("e5"));                                                // 둘째 줄
-  at(5400,()=>{ ng&&ng.classList.add("on"); });
-  at(6400,()=>{ E.classList.add("e6"); $("againBtn").focus({preventScroll:true}); }); }
+  at(800,()=>E.classList.add("e3"));                                                // 사건 종결 문구
+  at(1200,()=>{ ck.classList.add("flip"); setTimeout(()=>ck.textContent="21:48",180); hit(1600,.05,.03,"bandpass"); });   // 시간은 흘러간다
+  at(1500,()=>E.classList.add("e4"));                                                // 질문 첫 줄
+  at(2100,()=>E.classList.add("e5"));                                                // 둘째 줄
+  at(2700,()=>{ ng&&ng.classList.add("on"); });
+  at(3100,()=>{ E.classList.add("e6"); $("againBtn").focus({preventScroll:true}); }); }
 $("tkClose").onclick=closeTalk;
 $("tabTalk").onclick=openTalk;
 $("againBtn").onclick=()=>location.reload();
@@ -4706,6 +4706,8 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .ending .en-ev{margin-bottom:clamp(28px,5vh,64px)!important}
 .ending .row{margin-top:clamp(28px,5vh,60px)!important}
 .en-file.en-file{align-self:center!important;justify-self:end!important}
+.ending .case,.ending .en-ev li,.ending h2.q span,.ending h2.q .kr,.ending .row,.ending .en-file{transition-duration:.7s!important;transition-delay:0s!important}
+.ending .en-ev li{animation-duration:.6s!important}
 </style>
 <script>
 /* 손글씨(증거 쪽지·붉은 펜 메모)를 누르면 종이째로 크게 보여 준다. 아무 데나 누르거나 ESC로 닫힘 */

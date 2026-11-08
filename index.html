@@ -4193,4 +4193,21 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 @keyframes exTxt{from{opacity:0;letter-spacing:.3em;filter:blur(6px)}to{opacity:1;letter-spacing:.06em;filter:none}}
 @keyframes exFound2{0%{opacity:0}12%{opacity:1}78%{opacity:1}100%{opacity:0}}
 </style>
+<style>
+/* 타이틀 자연스럽게: 번쩍이는 빛줄기·밝기 플래시 제거, 은은한 램프 숨결 + 담백한 탑승권 */
+.pro .ps[data-s="start"] .tt-slats{display:none!important}
+.pro .ps[data-s="start"] .tt-fx{opacity:.45}
+@keyframes ttlogo{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.pro .ps[data-s="start"] .title-logo{animation:ttlogo 2.4s 1.9s ease-out both!important;filter:drop-shadow(0 .6cqh 1.6cqh rgba(0,0,0,.7))}
+.pro .ps[data-s="start"] .title-sub{color:rgba(236,226,203,.78);font-weight:400;text-shadow:0 1px 8px rgba(0,0,0,.8)}
+.pro .ps[data-s="start"] .tt-ticket{background:linear-gradient(180deg,#e9dcc0,#d8c7a3 60%,#cdb98f);border-radius:3px;
+  box-shadow:0 1.4cqh 3cqh rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,248,225,.55),inset 0 0 2cqh rgba(120,85,40,.28)}
+.pro .ps[data-s="start"] .tt-ticket .tk-m b{font-family:"Nanum Myeongjo",var(--serif);font-weight:800;font-size:max(20px,2.2cqw);letter-spacing:.5em;margin-right:-.5em;color:#1d130a;text-shadow:0 1px 0 rgba(255,248,225,.55)}
+.pro .ps[data-s="start"] .tt-ticket .tk-m small{font-size:max(10px,.85cqw);letter-spacing:.1em;color:rgba(50,34,18,.78)}
+.pro .ps[data-s="start"] .tt-ticket:hover{transform:translateY(-.4cqh);box-shadow:0 1.8cqh 3.4cqh rgba(0,0,0,.7),0 0 3cqh rgba(217,178,106,.18)}
+</style>
+<style>
+/* 생체 검문 창이 떠 있을 땐 'CAMERA OFF' 상자를 숨긴다 (카메라를 켠 경우만 보임) */
+.pro:has(.ps.behind.on) .cam:not(:has(video[srcObject])){opacity:0;transition:opacity .3s}
+</style>
 </body></html>

@@ -2815,7 +2815,7 @@ function pressOn(i){ const s=STATE[i]; PRESS[i]=Math.min(3,(PRESS[i]||0)+1);
 /* 들킨 진술: 엘레나가 했던 말이 화면에 다시 떠오르고 그 위로 붉은 줄이 쭉 그어진다 */
 function lieCut(text){ talkEl.querySelector(".tk-lie")?.remove(); const L=document.createElement("div"); L.className="tk-lie"; L.setAttribute("aria-hidden","true");
   const p=document.createElement("p"); p.textContent="“"+text+"”"; L.appendChild(p); talkEl.appendChild(L);
-  requestAnimationFrame(()=>L.classList.add("on")); setTimeout(()=>{ L.classList.add("cut"); try{ SFX("tear",.35); }catch(e){} },380);
+  setTimeout(()=>L.classList.add("on"),20); setTimeout(()=>{ L.classList.add("cut"); try{ SFX("tear",.35); }catch(e){} },380);
   setTimeout(()=>{ L.classList.add("out"); setTimeout(()=>L.remove(),700); },2300); }
 /* 증거로 거짓을 깨는 순간: '거짓말' 도장 없이, 카메라가 엘레나 얼굴로 확 튀어 들어가고 화면이 번쩍 — 흠칫 놀라는 느낌 */
 function slam(){ talkEl.classList.remove("shake","startle"); void talkEl.offsetWidth; talkEl.classList.add("shake","startle");

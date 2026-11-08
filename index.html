@@ -1836,7 +1836,7 @@ function exBottle(){ const G=new THREE.Group(), r=.1;
     x.fillStyle="rgba(26,20,16,.5)"; x.beginPath(); x.arc(w/2-30,182,2.2,0,7); x.fill(); });   // 펜이 멈춘 잉크 점
   const lab=(tex,start,len,hgt,y)=>{ const m=new THREE.Mesh(new THREE.CylinderGeometry(r+.0016,r+.0016,hgt,64,1,true,start,len),
       new THREE.MeshStandardMaterial({map:tex,roughness:.94,alphaTest:.5,side:THREE.DoubleSide})); m.position.y=y; m.renderOrder=3; return m; };
-  G.add(lab(lf,-.98,1.96,.2*420/640*(1.96*(r+.0016))/.2,-.035), lab(lb,Math.PI-.78,1.56,(1.56*(r+.0016))*340/512,-.03));
+  G.add(lab(lf,-1.28,2.56,(2.56*(r+.0016))*420/640,-.035), lab(lb,Math.PI-1.0,2.0,(2.0*(r+.0016))*340/512,-.03));
   return G; }
 /* 더러움 맵: 지문 · 먼지 · 마른 와인 자국 (선반 회전체 UV: u=둘레, v=단면 위치) */
 function exDirt(opt={}){ const W=1024,H=512,c=document.createElement("canvas"); c.width=W; c.height=H; const g=c.getContext("2d");

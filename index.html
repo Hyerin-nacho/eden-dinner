@@ -1894,6 +1894,7 @@ function exBottle(){ const G=new THREE.Group(), r=.1;
   let plt=0, pFirst=true, clinkT=0, pillT=0;
   /* 유리병 속 알약 소리: 녹음 루프 대신, 부딪힐 때마다 아주 짧은 '딸깍'(3ms 마찰음 + 유리 울림)을 세기만큼 1~3번 흩어 낸다 */
   const clink=sp=>{ const n=performance.now(); if(n-clinkT<38) return; clinkT=n; pillT=n;
+    return;   /* 알약 소리 제거 */
     try{ if(!soundOn||!audio()) return; const out=sfxBus||ac.destination, t0=ac.currentTime+.002, k=Math.min(1,sp*1.6), cnt=1+(sp>.25?1:0)+(sp>.6?1:0);
       if(!clink.nb){ const b=ac.createBuffer(1,Math.round(ac.sampleRate*.006),ac.sampleRate), d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,4); clink.nb=b; }
       for(let j=0;j<cnt;j++){ const t=t0+j*(.009+Math.random()*.02), v=(.05+k*.16)*(j?.55:1)*(.75+Math.random()*.5);

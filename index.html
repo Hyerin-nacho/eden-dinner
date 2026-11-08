@@ -1354,8 +1354,9 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const cam={fx:50,fy:48,s:1.12}, tgt={fx:50,fy:48,s:1.12};
 let ease=.04, ptr={x:.5,y:.5,in:false}, focusPt={x:50,y:50}, nearId=null, jolt=0;
 let _fs=-1,_fx=-1,_fy=-1;
+function talkOpen(){ try{ return !talkEl.hidden; }catch(e){ return false; } }
 function frame(t){
-  if(document.hidden||(mode==="title"&&$("pro")&&!$("pro").hidden)){ setTimeout(()=>requestAnimationFrame(frame),160); return; }   // 프롤로그 영상 중엔 방 화면을 그리지 않는다
+  if(document.hidden||mode==="talk"||mode==="end"||talkOpen()||(mode==="title"&&$("pro")&&!$("pro").hidden)){ setTimeout(()=>requestAnimationFrame(frame),160); return; }   // 프롤로그 영상 중엔 방 화면을 그리지 않는다
   cam.fx+=(tgt.fx-cam.fx)*ease; cam.fy+=(tgt.fy-cam.fy)*ease; cam.s+=(tgt.s-cam.s)*ease;
   const W=stage.clientWidth, H=stage.clientHeight, s=cam.s;
   let tx=W/2-cam.fx/100*W*s, ty=H/2-cam.fy/100*H*s;
@@ -1405,7 +1406,7 @@ requestAnimationFrame(frame);
       vx:(Math.random()-.5)*.00004, vy:.000015+Math.random()*.00004, a:0, life:0, max:6000+Math.random()*9000, lamp:L}; }
   let last=performance.now();
   function tick(t){
-    if(document.hidden||(mode==="title"&&$("pro")&&!$("pro").hidden)){ last=t; setTimeout(()=>requestAnimationFrame(tick),160); return; }
+    if(document.hidden||mode==="talk"||mode==="end"||talkOpen()||(mode==="title"&&$("pro")&&!$("pro").hidden)){ last=t; setTimeout(()=>requestAnimationFrame(tick),160); return; }
     const dt=Math.min(50,t-last); last=t;
     let tot=0;
     lamps.forEach((L,i)=>{

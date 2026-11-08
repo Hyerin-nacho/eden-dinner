@@ -3023,7 +3023,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
 (function(){
   const pro=$("pro"), pv=$("proVid"), cap=$("proCap"), black=$("proBlack");
   if(!pro) return;
-  if(!PRO_ON){ pro.hidden=true; return; }   // 프롤로그 끔 → 바로 VIP실 "문을 연다" 화면
+  if(!PRO_ON){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>enterExplore(),60); return; }   // 프롤로그 끔 → 바로 방 조사
   /* 테스트: 주소 끝에 #room 을 붙여 열면 프롤로그·문 열기 없이 조사 화면(VIP실)부터 */
   const ROOM_ONLY=false;  // true면 열자마자 VIP실 (조사 화면만 테스트할 때). 지금은 처음부터 전체 진행
   if((ROOM_ONLY&&location.hash!=="#tear")||location.hash==="#room"){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>enterExplore(),60); return; }
@@ -3052,7 +3052,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   const sfx=(f,v,d,t)=>{ try{ if(soundOn&&audio()) hit(f,v,d,t); }catch(e){} };
   /* 소리 있는 자동재생이 막히면(브라우저 정책) 음소거로라도 재생 */
   function proPlay(v){ v.muted=!soundOn; v.volume=.65; return v.play().catch(e=>{ if(e&&e.name==="NotAllowedError"){ v.muted=true; return v.play(); } throw e; }); }
-   function clip(src,caps,onEnd,cutAt,rate){
+   function clip(src,caps,onEnd,cutAt,rate,from){
     const my=++tok; show(""); cap.className="vcap"; cap.textContent="";
     pv.style.display="block";
     $("proVideoSkip").hidden=false;
@@ -3062,7 +3062,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     /* 멈춤 감시: 재생 위치가 10초 동안 전혀 안 움직이면(로딩 멈춤) 다음으로 넘어감 */
     const arm=()=>{ clearTimeout(wd); wd=setTimeout(end,10000); };
      pv.onended=end; pv.onerror=end; pv.ontimeupdate=()=>{ arm(); if(cutAt&&pv.currentTime>=cutAt) end(); };
-     pv.src=src; pv.load(); try{ pv.currentTime=0; }catch(e){} arm();
+     pv.src=src; pv.load(); try{ pv.currentTime=0; }catch(e){} if(from) pv.addEventListener("loadedmetadata",()=>{ try{ pv.currentTime=from; }catch(e){} },{once:true}); arm();
      pv.playbackRate=rate||1; proPlay(pv).catch(end);
   }
   const hideVid=()=>{ tok++; pv.pause(); pv.onended=pv.onerror=pv.onclick=pv.ontimeupdate=null; pv.style.display="none"; cap.classList.remove("show"); $("proVideoSkip").hidden=true; };
@@ -3109,7 +3109,8 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     setTimeout(()=>{
     // 웹캠은 여기서 켜지 않는다: 초대장이 나온 뒤 '카메라로 체험'을 눌러 허락해야 켜진다
     camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camBox.classList.add("idle"); camTag.textContent="";   // 웹캠 자리는 처음부터 보이게(영상 속 로고 가림). 카메라는 허락 뒤에만 켜진다
-    coldOpen(()=>clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); }));
+    { const pre=document.createElement("video"); pre.preload="auto"; pre.muted=true; pre.src=PRO.intro; window.__introPre=pre; }   // 시계 장면 동안 인트로를 미리 받아 둠
+    coldOpen(()=>clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); },0,1,.9));   // 영상 앞 0.9초는 거의 검은 화면이라 건너뜀
     },560); };
   /* 1. 영상 마지막 — 손에 든 봉투 */
   const hand=$("proHand"), hz=$("proHit");
@@ -3635,7 +3636,7 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
    if(n){ idle=0; if(!wasNeed&&!CAMHUB.on&&!CAMHUB.blocked) CAMHUB.start(true); }
    else if(CAMHUB.on){ if(!idle) idle=performance.now(); else if(performance.now()-idle>1500){ CAMHUB.stop(true); idle=0; } }
    wasNeed=n;
-   const show=n&&(CAMHUB.on||CAMHUB.state==="connecting");   // 카메라가 없으면(nocam) 빈 'NO CAMERA' 상자는 띄우지 않음 — 마우스 안내는 가운데 문구에 있음
+   const show=n&&(CAMHUB.on||CAMHUB.state==="connecting"||CAMHUB.state==="nocam");
    if(show!==shown){ shown=show; box.classList.toggle("on",show); base=null; } };
  window.__excam=sync; new MutationObserver(sync).observe(I,{attributes:true,attributeFilter:["class"]}); setInterval(sync,300);
  (function pre(){ if(mode==="title"||mode==="intro"){ setTimeout(pre,1500); return; } if(window.THREE&&THREE.GLTFLoader){ m3dLoad(M3D.statue.file,()=>{}); m3dLoad("bottle.json",()=>{}); m3dLoad("chair3d.glb",()=>{}); m3dLoad("rug3d.glb",()=>{}); ["pill","clock","rumble","slide","thud"].forEach(n=>{ try{ new Audio("sfx/"+n+".mp3").preload="auto"; }catch(e){} }); m3dLoad("doll3d.glb",()=>{}); m3dLoad("table3d.json",()=>{}); } else setTimeout(pre,800); })();   // 동상 모델 미리 받아 두기
@@ -4474,6 +4475,10 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 @media (orientation:portrait) and (max-width:700px){
   body::after{content:"↻  화면을 가로로 돌리면 더 크게 볼 수 있어요";position:fixed;left:0;right:0;bottom:calc(14% + env(safe-area-inset-bottom,0px));text-align:center;font:13px/1.5 var(--sans,sans-serif);letter-spacing:.06em;color:rgba(217,178,106,.75);pointer-events:none;z-index:1}
 }
+/* 옛 'VIP실 · 문을 연다' 판: 문은 프롤로그 영상에서 여니 화면에 나오지 않게 */
+#title,#door{display:none!important}
+/* 상단 '지목' 탭 없음 (지목은 용의자 보드에서) */
+#tabAcc{display:none!important}
 /* 손글씨 확대 보기 */
 .b-body .note,.b-body .hand,.page .slip,.page .hand:not(.big){cursor:zoom-in}
 .hwz{position:fixed;inset:0;z-index:300;display:grid;place-items:center;background:rgba(6,4,3,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .25s;cursor:zoom-out}

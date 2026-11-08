@@ -3108,7 +3108,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     $("proStart").classList.add("punched"); SFX("flip",.5); setTimeout(()=>SFX("tear",.28),90);   // 표를 뜯는 소리
     setTimeout(()=>{
     // 웹캠은 여기서 켜지 않는다: 초대장이 나온 뒤 '카메라로 체험'을 눌러 허락해야 켜진다
-    camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camTag.textContent="";   // 웹캠 자리는 처음부터 보이게(영상 속 로고 가림). 카메라는 허락 뒤에만 켜진다
+    camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camBox.classList.add("idle"); camTag.textContent="";   // 웹캠 자리는 처음부터 보이게(영상 속 로고 가림). 카메라는 허락 뒤에만 켜진다
     coldOpen(()=>clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); }));
     },560); };
   /* 1. 영상 마지막 — 손에 든 봉투 */
@@ -3373,13 +3373,13 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   function camOn(){ camBox.classList.add("on"); camTag.textContent="● REC"; }
   function stopCam(){ camBox.classList.remove("on"); }   // 화면에서만 숨긴다. 카메라는 조사 화면에서 계속 쓴다
   CAMHUB.onState(st=>{
-    if(st==="connecting"){ camOff.style.display="flex"; camOff.textContent="CONNECTING…"; }
-    else if(st==="cam"){ camOff.style.display="none"; setH("손 인식 준비 중…"); }
-    else if(st==="hands"){ camOff.style.display="none"; handOn=true; setH("손바닥을 카메라에 보여주세요"); }
-    else if(st==="nohands"){ handOn=false; camOff.style.display="none"; setH("손 인식 로딩 실패 · 마우스로 진행"); }
-    else if(st==="nocam"){ handOn=false; camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; hTag.textContent=""; }
+    if(st==="connecting"){ camOff.style.display="flex"; camOff.textContent="CONNECTING…"; camBox.classList.remove("idle"); }
+    else if(st==="cam"){ camOff.style.display="none"; camBox.classList.remove("idle"); setH("손 인식 준비 중…"); }
+    else if(st==="hands"){ camOff.style.display="none"; camBox.classList.remove("idle"); handOn=true; setH("손바닥을 카메라에 보여주세요"); }
+    else if(st==="nohands"){ handOn=false; camOff.style.display="none"; camBox.classList.remove("idle"); setH("손 인식 로딩 실패 · 마우스로 진행"); }
+    else if(st==="nocam"){ handOn=false; camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camBox.classList.add("idle"); hTag.textContent=""; }
     else { handOn=false; } });
-  function denied(msg){ CAMHUB.stop(); camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camTag.textContent=""; hTag.textContent="";
+  function denied(msg){ CAMHUB.stop(); camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camBox.classList.add("idle"); camTag.textContent=""; hTag.textContent="";
     $("proTearHint").innerHTML=msg; dip(()=>show("tear"),200); }
   $("proDeny").onclick=()=>denied('초대장을 <b>좌우로 드래그</b>해 찢으세요');
   let camConnecting=false;
@@ -3387,7 +3387,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     if(camConnecting) return; camConnecting=true; $("proAllow").disabled=true;
     camFine.textContent="카메라 연결을 확인하는 중…"; camFine.classList.remove("error");
     camOn(); const ok=await CAMHUB.start(true);
-    if(!ok){ camOff.style.display="flex"; camOff.textContent="CAMERA OFF";
+    if(!ok){ camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camBox.classList.add("idle");
       camFine.textContent=camError(CAMHUB.err)+` [${CAMHUB.err?.name||CAMHUB.err?.message||"unknown"}]`; camFine.classList.add("error"); camConnecting=false; $("proAllow").disabled=false; return; }
     if(!handOn){ camFine.textContent="손 인식을 불러오지 못했습니다. 마우스로 진행할 수 있습니다."; camFine.classList.add("error"); }
     $("proTearHint").innerHTML=handOn?'손바닥을 보여주고 편지 <b>가운데 선을 따라 아래로</b> 내리세요<br><span style="opacity:.6">마우스로 좌우 드래그해도 됩니다</span>':'손 인식 실패 — 초대장을 <b>좌우로 드래그</b>해 찢으세요';
@@ -3477,7 +3477,9 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
    function openDoor(){ if(!doorWait) return; doorWait=false; cancelAnimationFrame(DS.raf); $("proDoor").classList.remove("on"); $("proDoor").style.opacity=""; pro.classList.remove("doorgrab","grip"); stopCam();
      if(!DS.crk) try{ creak&&creak(); }catch(e){}
      $("door").classList.add("open");
-     const pv=$("proVid"); let fin=false; const end=()=>{ if(fin) return; fin=true; pv.onended=null; hideVid(); pro.classList.remove("doorvid"); pro.hidden=true; enterExplore(); };
+     const pv=$("proVid"); let fin=false; const end=()=>{ if(fin) return; fin=true; pv.onended=null; hideVid(); pro.classList.remove("doorvid");
+       ["door","title"].forEach(id=>{ const el=$(id); el.style.transition="none"; el.classList.add(id==="door"?"open":"gone"); });   // 영상으로 이미 문을 열었으니 옛 '문을 연다' 판은 바로 사라지게
+       pro.hidden=true; enterExplore(); };
      pv.onended=end; pv.onerror=end; pv.muted=!soundOn; pv.volume=.65; pv.play().catch(()=>{ pv.muted=true; pv.play().catch(end); }); setTimeout(()=>{ if(!fin&&pv.paused) end(); },7000); }
   $("proDoorBtn").onclick=openDoor;
    /* 카메라: 손을 들어 올린 가장 높은 곳이 '손잡이를 잡은 위치'. 거기서 손을 아래로 내리는 만큼 손잡이가 내려가고 문이 열린다.
@@ -3633,7 +3635,7 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
    if(n){ idle=0; if(!wasNeed&&!CAMHUB.on&&!CAMHUB.blocked) CAMHUB.start(true); }
    else if(CAMHUB.on){ if(!idle) idle=performance.now(); else if(performance.now()-idle>1500){ CAMHUB.stop(true); idle=0; } }
    wasNeed=n;
-   const show=n&&(CAMHUB.on||CAMHUB.state==="connecting"||CAMHUB.state==="nocam");
+   const show=n&&(CAMHUB.on||CAMHUB.state==="connecting");   // 카메라가 없으면(nocam) 빈 'NO CAMERA' 상자는 띄우지 않음 — 마우스 안내는 가운데 문구에 있음
    if(show!==shown){ shown=show; box.classList.toggle("on",show); base=null; } };
  window.__excam=sync; new MutationObserver(sync).observe(I,{attributes:true,attributeFilter:["class"]}); setInterval(sync,300);
  (function pre(){ if(mode==="title"||mode==="intro"){ setTimeout(pre,1500); return; } if(window.THREE&&THREE.GLTFLoader){ m3dLoad(M3D.statue.file,()=>{}); m3dLoad("bottle.json",()=>{}); m3dLoad("chair3d.glb",()=>{}); m3dLoad("rug3d.glb",()=>{}); ["pill","clock","rumble","slide","thud"].forEach(n=>{ try{ new Audio("sfx/"+n+".mp3").preload="auto"; }catch(e){} }); m3dLoad("doll3d.glb",()=>{}); m3dLoad("table3d.json",()=>{}); } else setTimeout(pre,800); })();   // 동상 모델 미리 받아 두기
@@ -4457,6 +4459,21 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .pro.doorvid #proVid{filter:sepia(.2) saturate(.8) brightness(.86) contrast(1.06)}
 .pro.doorvid::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;
   background:linear-gradient(180deg,rgba(6,4,3,.92) 0%,rgba(6,4,3,.45) 14%,transparent 30%,transparent 68%,rgba(6,4,3,.5) 84%,rgba(6,4,3,.95) 100%),radial-gradient(ellipse 80% 75% at 50% 50%,transparent 55%,rgba(6,4,3,.55) 100%)}
+/* 카메라를 켜기 전엔 'CAMERA OFF' 상자 대신, 영상 구석 워터마크 자리만 어둡고 흐리게 덮는다 */
+.pro .cam.idle{border-color:transparent;background:transparent;box-shadow:none;
+  -webkit-backdrop-filter:blur(10px) brightness(.45);backdrop-filter:blur(10px) brightness(.45);
+  -webkit-mask-image:radial-gradient(ellipse 34% 40% at 65% 52%,#000 45%,transparent 100%);mask-image:radial-gradient(ellipse 34% 40% at 65% 52%,#000 45%,transparent 100%)}
+.pro .cam.idle .off{opacity:0}
+.pro:not(:has(#proVid[style*="block"])) .cam.idle{visibility:hidden}   /* 영상이 없을 땐 덮을 것도 없음 */
+/* 단서 표시: 이름표가 단서(손글씨 등)를 덮지 않게 옆으로 비켜 세우고 가는 선으로 잇는다 */
+.exspot span{left:calc(100% + 56px)!important}
+.exspot span::before{content:"";position:absolute;right:100%;top:50%;width:66px;height:1px;background:linear-gradient(90deg,transparent,rgba(210,173,99,.8))}
+/* 엔딩 사건 파일: 도장이 사진 위·카드 밖에 걸려 거의 안 보이던 것을 아래쪽 종이 위로 */
+.ending .en-file .en-stamp{right:7%!important;top:auto!important;bottom:13%!important}
+/* 휴대폰 세로: 게임이 가운데 얇은 띠로만 보이니 아래 빈 곳에 가로 보기 안내 */
+@media (orientation:portrait) and (max-width:700px){
+  body::after{content:"↻  화면을 가로로 돌리면 더 크게 볼 수 있어요";position:fixed;left:0;right:0;bottom:calc(14% + env(safe-area-inset-bottom,0px));text-align:center;font:13px/1.5 var(--sans,sans-serif);letter-spacing:.06em;color:rgba(217,178,106,.75);pointer-events:none;z-index:1}
+}
 /* 손글씨 확대 보기 */
 .b-body .note,.b-body .hand,.page .slip,.page .hand:not(.big){cursor:zoom-in}
 .hwz{position:fixed;inset:0;z-index:300;display:grid;place-items:center;background:rgba(6,4,3,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .25s;cursor:zoom-out}

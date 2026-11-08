@@ -1601,7 +1601,7 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
   DV={s,R,S,C,wrap,obj,raf:0,yaw:.35,pitch:0,zoom:1,drag:null,face:0,done:false,cf:{pitch:[-.5,.5]}};
   const eye=new THREE.PointLight(0xff2a1a,0,.6,2); const eyeDot=new THREE.Mesh(new THREE.SphereGeometry(.011,14,14),new THREE.MeshBasicMaterial({color:0xff2a14,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
   const spk=new THREE.Group(); let spkP=null;
-  m3dLoad("doll3d.json",g=>{ if(!DV) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
+  m3dLoad("doll3d.glb",g=>{ if(!DV) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
     m.position.set(-c.x,-c.y,-c.z); const k=.9/sz.y; const p=new THREE.Group(); p.add(m); p.scale.setScalar(k); obj.add(p); p.updateMatrixWorld(true);
     const rc=new THREE.Raycaster(), hitAt=(x,y,z,dz)=>{ rc.set(new THREE.Vector3(x,y,z),new THREE.Vector3(0,0,dz)); const r=rc.intersectObject(p,true)[0]; return r&&r.point; };
     const H=.45, ey=H*.685, ex=.031;   // 오른쪽 눈(화면 기준)
@@ -3514,7 +3514,7 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
    const show=n&&(CAMHUB.on||CAMHUB.state==="connecting"||CAMHUB.state==="nocam");
    if(show!==shown){ shown=show; box.classList.toggle("on",show); base=null; } };
  window.__excam=sync; new MutationObserver(sync).observe(I,{attributes:true,attributeFilter:["class"]}); setInterval(sync,300);
- (function pre(){ if(mode==="title"||mode==="intro"){ setTimeout(pre,1500); return; } if(window.THREE&&THREE.GLTFLoader){ m3dLoad(M3D.statue.file,()=>{}); m3dLoad("bottle.json",()=>{}); m3dLoad("doll3d.json",()=>{}); m3dLoad("table3d.json",()=>{}); } else setTimeout(pre,800); })();   // 동상 모델 미리 받아 두기
+ (function pre(){ if(mode==="title"||mode==="intro"){ setTimeout(pre,1500); return; } if(window.THREE&&THREE.GLTFLoader){ m3dLoad(M3D.statue.file,()=>{}); m3dLoad("bottle.json",()=>{}); m3dLoad("doll3d.glb",()=>{}); m3dLoad("table3d.json",()=>{}); } else setTimeout(pre,800); })();   // 동상 모델 미리 받아 두기
 })();
 </script>
 

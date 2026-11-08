@@ -1031,7 +1031,7 @@ button{font:inherit;cursor:pointer;color:inherit}
       <video class="tk-vid tk-react" id="tkReact" playsinline preload="auto"></video>
       <div class="tk-lamp" aria-hidden="true"></div>
     </div>
-    <div class="tk-slam" id="tkSlam" aria-hidden="true"><b>거짓말</b><small>모순 발견</small></div>
+    <div class="tk-slam" id="tkSlam" aria-hidden="true"><div class="sl"><span class="t">CONTRADICTION</span><b>거짓말</b><span class="u">LIE DETECTED · 모순 발견</span></div></div>
     <button class="x tk-x" id="tkClose" aria-label="심문 종료">✕</button>
     <div class="tk-case" id="tkCase" aria-label="엘레나의 진술"></div>
     <div class="tk-meter" id="tkMeter" aria-label="엘레나의 평정"><span>평정</span><i></i><em>침착</em></div>
@@ -4357,5 +4357,18 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .dpb.on3d::before{opacity:.3}.dpb.on3d::after{display:none}
 .dpb.on3d .dpb-top{top:4%}
 .dollv.shk{animation:shake .45s}
+</style>
+<style>
+/* '거짓말' 도장 v2: 고무도장 느낌의 이중 테두리, 잉크 번짐 */
+.tk-slam{gap:0!important}
+.tk-slam .sl{position:relative;display:flex;flex-direction:column;align-items:center;padding:.42em 1.1em .5em;font-size:clamp(16px,2.6vw,38px);color:#d93a2e;background:rgba(34,6,5,.62);border:.16em solid #c8332a;border-radius:.22em;box-shadow:0 0 0 .07em rgba(8,3,3,.55),0 .5em 1.6em rgba(0,0,0,.65),inset 0 0 1.2em rgba(200,51,42,.28);
+  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.6 2.35'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.6 2.35'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.tk-slam .sl::before{content:"";position:absolute;inset:.2em;border:.04em solid rgba(217,58,46,.75);border-radius:.12em;pointer-events:none}
+.tk-slam .sl .t{font-family:var(--mono);font-size:.4em;letter-spacing:.62em;margin-right:-.62em;color:#e8665b}
+.tk-slam .sl b{all:unset;display:block;font-family:var(--serif);font-weight:900;font-size:3.7em;line-height:1.05;letter-spacing:.14em;margin-right:-.14em;color:#e2402f;text-shadow:0 .025em 0 #4a0f0b,0 0 .5em rgba(226,64,47,.35)}
+.tk-slam .sl .u{align-self:stretch;margin-top:.32em;padding-top:.34em;border-top:.09em solid #c8332a;text-align:center;font-family:var(--mono);font-size:.42em;letter-spacing:.34em;margin-right:-.34em;color:#ee8478}
+.tk-slam::after{content:"";position:absolute;left:50%;top:50%;width:60%;aspect-ratio:1;border:2px solid rgba(226,64,47,.7);border-radius:50%;transform:translate(-50%,-50%) scale(.4);opacity:0;pointer-events:none}
+.tk-slam.on::after{animation:slring .7s ease-out .12s both}
+@keyframes slring{0%{opacity:.9;transform:translate(-50%,-50%) scale(.5)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.4)}}
 </style>
 </body></html>

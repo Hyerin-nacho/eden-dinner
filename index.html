@@ -1440,7 +1440,8 @@ function hit(freq,vol,dur,type="lowpass"){ if(!soundOn||!audio()) return; const 
   s.buffer=noiseBuf(); f.type=type; f.frequency.value=freq; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   s.connect(f); f.connect(g); g.connect(sfxBus||ac.destination); s.start(t); s.stop(t+dur+.05); }
 function steps(n=2){ SFX("steps",.35); }
-function startClock(){ clearInterval(clockTimer); }   // 초침 소리는 뺐다(거슬림)
+const AMB={}; function ambStop(){ Object.values(AMB).forEach(a=>{ try{ a.pause(); }catch(e){} }); }
+function startClock(){ if(!soundOn) return; [["rumble",.30],["clock",.10]].forEach(([n,v])=>{ let a=AMB[n]; if(!a){ a=AMB[n]=new Audio("sfx/"+n+".mp3"); a.loop=true; } a.volume=v; a.play().catch(()=>{}); }); }   // 조사 중 은은한 시계 소리 + 낮은 열차 진동음
 let watchTimer=0, watchStopTimer=0;
 function stopWatchTick(){ clearInterval(watchTimer); clearTimeout(watchStopTimer); watchTimer=0; }
 function startWatchTick(){ stopWatchTick(); if(!soundOn||!audio()) return; let n=0;
@@ -1448,7 +1449,7 @@ function startWatchTick(){ stopWatchTick(); if(!soundOn||!audio()) return; let n
   pulse(); watchTimer=setInterval(pulse,480); watchStopTimer=setTimeout(stopWatchTick,3800);
 }
 function paper(){ SFX("rustle",.3); }
-$("soundBtn").onclick=e=>{ soundOn=!soundOn; $("soundT").textContent=soundOn?"소리":"음소거"; $("soundBtn").setAttribute("aria-pressed",soundOn); if(soundOn){audio(); ac&&ac.resume(); startClock();} else clearInterval(clockTimer); if(sfxLevel) sfxLevel.gain.setTargetAtTime(soundOn ? .6 : 0,ac.currentTime,.02); document.querySelectorAll("#proVid,#evClipV,#tkVid,#tkReact,#sbVidV,.cuv,.stage>video").forEach(v=>v.muted=!soundOn); };
+$("soundBtn").onclick=e=>{ soundOn=!soundOn; $("soundT").textContent=soundOn?"소리":"음소거"; $("soundBtn").setAttribute("aria-pressed",soundOn); if(soundOn){audio(); ac&&ac.resume(); startClock();} else ambStop(); if(sfxLevel) sfxLevel.gain.setTargetAtTime(soundOn ? .6 : 0,ac.currentTime,.02); document.querySelectorAll("#proVid,#evClipV,#tkVid,#tkReact,#sbVidV,.cuv,.stage>video").forEach(v=>v.muted=!soundOn); };
 
 /* ---------- 인트로 (영상 기반 카메라 연출) ---------- */
 let introId=0; const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -1859,8 +1860,8 @@ function exBottle(){ const G=new THREE.Group(), r=.1;
     p.position.set(Math.cos(a)*d,-.226+(i>6?.012:0)+(i>11?.012:0)+Math.random()*.004,Math.sin(a)*d); p.quaternion.setFromEuler(new THREE.Euler((Math.random()-.5)*.3,Math.random()*6,(Math.random()-.5)*.3));
     p.userData={v:new THREE.Vector3(),c:0,sa:Math.random()*6}; G.add(p); PILLS.push(p); }
   const gL=new THREE.Vector3(), qW=new THREE.Quaternion(), qPrev=new THREE.Quaternion(), up=new THREE.Vector3(), tq=new THREE.Quaternion(), sq=new THREE.Quaternion(), tmp=new THREE.Vector3();
-  let plt=0, pFirst=true, clinkT=0;
-  const clink=sp=>{ const n=performance.now(); if(n-clinkT<55) return; clinkT=n; try{ hit(2400+Math.random()*2200,Math.min(.045,.01+sp*.05),.045,"bandpass"); }catch(e){} };
+  let plt=0, pFirst=true, clinkT=0, pillT=0;
+  const clink=sp=>{ const n=performance.now(); if(n-clinkT<55) return; clinkT=n; try{ hit(2400+Math.random()*2200,Math.min(.03,.008+sp*.035),.04,"bandpass"); if(n-pillT>380&&sp>.18){ pillT=n; SFX("pill",Math.min(.55,.15+sp*.35)); } }catch(e){} };
   const simPills=()=>{ const now=performance.now(), dt=Math.min(.033,(now-(plt||now))/1000); plt=now; if(dt<.001) return;
     G.updateWorldMatrix(true,false); G.getWorldQuaternion(qW);
     const ang=pFirst?0:2*Math.acos(Math.min(1,Math.abs(qW.dot(qPrev))))/dt; qPrev.copy(qW); pFirst=false;   // 병이 얼마나 빨리 돌고 있나
@@ -2767,7 +2768,7 @@ function accuse(){
 /* 엔딩: 자백이 끝나면 화면이 닫히고 → 'CASE CLOSED' 도장 쾅 → 정적 속 시계 소리 → 21:47이 21:48로 넘어가고
    → 질문이 한 줄씩 → 마지막에야 버튼. 시간은 흘러가는데, 무언가 끝나지 않은 느낌으로 */
 function ending(){ const E=$("ending"), V=$("endVid");
-  vidStop(); mode="end"; E.parentElement.classList.add("ended"); talkEl.hidden=true; E.hidden=false; clearInterval(clockTimer);
+  vidStop(); mode="end"; E.parentElement.classList.add("ended"); talkEl.hidden=true; E.hidden=false; ambStop();
   /* 엔딩 컷: 엘레나가 끌려가고 → 세 용의자의 안도 → 록의 깨달음. 쿵 소리에서 끝나면 바로 CASE CLOSED */
   let went=false; const go=()=>{ if(went) return; went=true; V.onended=V.onerror=V.onclick=null; V.pause(); V.hidden=true; endSeq(); };
   V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4"; V.onended=go; V.onerror=go; V.onclick=go;
@@ -2960,7 +2961,7 @@ function accMiss(html,before){
   if(accLeft<=0) return setTimeout(badEnd,300);
   sbMsg(html+`<br><br><span style="color:#d65a5a;font-size:.9em">남은 지목 기회 ${accLeft}</span>`);
 }
-function badEnd(){ closeBoard(); vidStop&&vidStop(); talkEl.hidden=true; mode="end"; clearInterval(clockTimer);
+function badEnd(){ closeBoard(); vidStop&&vidStop(); talkEl.hidden=true; mode="end"; ambStop();
   const d=document.createElement("section"); d.className="badend";
   d.innerHTML=`<div class="case">CASE UNSOLVED · ORPHEUS EXPRESS R.R.</div><h2>열차는 다음 역에 멈췄다</h2>
     <p>세 번의 지목은 모두 빗나갔다. 승객들은 하나둘 플랫폼으로 내렸고, 엘레나 보로딘도 그 사이에 섞여 사라졌다.<br>Ada의 이름은, 이번에도 사고 기록 속에 묻혔다.</p>
@@ -3592,7 +3593,7 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
    const show=n&&(CAMHUB.on||CAMHUB.state==="connecting"||CAMHUB.state==="nocam");
    if(show!==shown){ shown=show; box.classList.toggle("on",show); base=null; } };
  window.__excam=sync; new MutationObserver(sync).observe(I,{attributes:true,attributeFilter:["class"]}); setInterval(sync,300);
- (function pre(){ if(mode==="title"||mode==="intro"){ setTimeout(pre,1500); return; } if(window.THREE&&THREE.GLTFLoader){ m3dLoad(M3D.statue.file,()=>{}); m3dLoad("bottle.json",()=>{}); m3dLoad("chair3d.glb",()=>{}); m3dLoad("rug3d.glb",()=>{}); m3dLoad("doll3d.glb",()=>{}); m3dLoad("table3d.json",()=>{}); } else setTimeout(pre,800); })();   // 동상 모델 미리 받아 두기
+ (function pre(){ if(mode==="title"||mode==="intro"){ setTimeout(pre,1500); return; } if(window.THREE&&THREE.GLTFLoader){ m3dLoad(M3D.statue.file,()=>{}); m3dLoad("bottle.json",()=>{}); m3dLoad("chair3d.glb",()=>{}); m3dLoad("rug3d.glb",()=>{}); ["pill","clock","rumble"].forEach(n=>{ try{ new Audio("sfx/"+n+".mp3").preload="auto"; }catch(e){} }); m3dLoad("doll3d.glb",()=>{}); m3dLoad("table3d.json",()=>{}); } else setTimeout(pre,800); })();   // 동상 모델 미리 받아 두기
 })();
 </script>
 

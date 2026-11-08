@@ -1529,6 +1529,7 @@ function openCloseup(s){
   const seen=opened.has(s.id)||found.has(s.id);
   ph.querySelector("video.cuv")?.remove();
   const show=()=>{ ph.style.backgroundImage=`url(${EVIMG[s.id]})`; ph.classList.remove("cudim","pre"); $("cu").classList.add("open");
+    if(s.id==="doll"&&window.THREE&&THREE.GLTFLoader){ ph.style.backgroundImage="none"; dollPick(); setTimeout(()=>cuThink(found.has(s.id)?s.th:cf.seen,3400),600); return; }
     if(CUVID[s.id]){ const v=document.createElement("video"); v.className="cuv"; v.src=CUVID[s.id]; v.loop=true; v.playsInline=true; v.muted=!soundOn; v.volume=.6; ph.appendChild(v); v.play().catch(()=>{ v.muted=true; v.play().catch(()=>{}); }); }
     setTimeout(()=>cuThink(found.has(s.id)?s.th:cf.seen,3400),600); drawHots(); };
   if(cf.reach && !seen){
@@ -1576,7 +1577,7 @@ function dollPlayback(){ const s=CU.s, L=$("cuLayer"), ph=$("cuPh"); L.querySele
   { const rt=o.querySelector(".rt"), pgi=o.querySelector(".pg i"), t0=Date.now(); const iv=setInterval(()=>{ if(!o.isConnected){ clearInterval(iv); return; } const el=Math.max(0,Math.min(6.2,(Date.now()-t0-900)/1000)); rt.textContent="00:0"+Math.floor(el)+" / 00:06"; pgi.style.width=(el/6.2*100)+"%"; if(el>=6.2){ o.classList.add("done"); clearInterval(iv); } },100); }
   at(900+6150,()=>o.classList.add("done"));
   at(900+7400,()=>{ o.classList.remove("on"); ph.classList.remove("eyezoom","jolt"); $("cu").classList.remove("pb"); if(!found.has(s.id)) miniFinish(s); else cuThink(s.th,3200);
-    setTimeout(()=>{ o.remove(); drawHots(); },1000); });   // 끝나면 원래 장면으로
+    setTimeout(()=>{ o.remove(); if(mode==="closeup"&&CU&&CU.s===s&&s.id==="doll"&&window.THREE){ ph.style.backgroundImage="none"; dollPick(); } else drawHots(); },1000); });   // 끝나면 인형을 든 원래 장면으로
 }
 /* (이전 방식: 인형을 3D로 돌려 스피커를 찾던 단계 — 지금은 쓰지 않음) */
 let DV=null;
@@ -1595,7 +1596,7 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
   S.add(new THREE.HemisphereLight(0xffe7c4,0x16241a,.8)); const key=new THREE.PointLight(0xffc98a,22,8,1.6); key.position.set(1.1,1.4,1.6); S.add(key); const rim=new THREE.PointLight(0x9ec4ae,6,8,1.6); rim.position.set(-1.3,1.1,-1.4); S.add(rim);
   const hint=document.createElement("div"); hint.className="v3hint"; hint.innerHTML="<small>레이스 드레스를 입은 인형. 한쪽 눈 안쪽에서 빨간 불빛이 깜빡인다.</small><b>인형을 돌려서 살펴보자.</b>"; wrap.appendChild(hint);
   const spot=document.createElement("button"); spot.className="exspot"; spot.innerHTML="<span>등의 작은 스피커</span>"; wrap.appendChild(spot);
-  const x=document.createElement("button"); x.className="dollx"; x.innerHTML="내려놓기"; x.onclick=()=>{ dollClose(); $("cuPh").classList.remove("cudim"); drawHots(); }; wrap.appendChild(x);
+  const x=document.createElement("button"); x.className="dollx"; x.innerHTML="내려놓기"; x.onclick=()=>{ dollClose(); closeCloseup(); }; wrap.appendChild(x);
   const obj=new THREE.Group(); S.add(obj);
   DV={s,R,S,C,wrap,obj,raf:0,yaw:.35,pitch:0,zoom:1,drag:null,face:0,done:false,cf:{pitch:[-.5,.5]}};
   const eye=new THREE.PointLight(0xff2a1a,0,.6,2); const eyeDot=new THREE.Mesh(new THREE.SphereGeometry(.011,14,14),new THREE.MeshBasicMaterial({color:0xff2a14,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
@@ -1619,7 +1620,7 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
   el.onwheel=e=>{ e.preventDefault(); DV.zoom=Math.max(.3,Math.min(1.5,DV.zoom*(e.deltaY>0?1.08:.92))); };
   spot.onclick=e=>{ e.stopPropagation(); if(DV.done) return; DV.done=true; spot.classList.remove("on"); wrap.classList.add("exhit"); hint.innerHTML="";
     const fb=document.createElement("div"); fb.className="exfound"; fb.innerHTML="<small>단서 발견</small><b>등의 작은 스피커</b>"; wrap.appendChild(fb); hit(900,.25,.3); paper();
-    setTimeout(()=>{ dollClose(); recPanel(); },1300); };
+    setTimeout(()=>{ dollClose(); dollPlayback(); },1500); };
   const wp=new THREE.Vector3(), wn=new THREE.Vector3(), tc=new THREE.Vector3(), q=new THREE.Quaternion();
   const loop=t=>{ if(!DV) return; if(mode!=="closeup"){ dollClose(); return; }
     const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&R.domElement.width!==Math.round(w*R.getPixelRatio())){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }

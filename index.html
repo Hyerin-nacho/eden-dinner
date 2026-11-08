@@ -1581,7 +1581,7 @@ function dollPlayback(){ const s=CU.s, L=$("cuLayer"), ph=$("cuPh"); L.querySele
 }
 /* (이전 방식: 인형을 3D로 돌려 스피커를 찾던 단계 — 지금은 쓰지 않음) */
 let DV=null;
-function dollClose(){ if(!DV) return; cancelAnimationFrame(DV.raf); DV.wrap.remove(); try{ DV.R.dispose(); }catch(e){} DV=null; window.__excam&&window.__excam(false); }
+function dollClose(){ if(!DV) return; cancelAnimationFrame(DV.raf); DV.wrap.remove(); try{ DV.R.dispose(); DV.R.forceContextLoss(); }catch(e){} DV=null; window.__excam&&window.__excam(false); }
 function dollLift(){
   const L=$("cuLayer"); $("cuPh").classList.add("cudim");
   const wrap=document.createElement("div"); wrap.className="doll-lift";
@@ -1589,13 +1589,18 @@ function dollLift(){
   L.appendChild(wrap);
   wrap.querySelector("button").onclick=()=>{ wrap.remove(); recPanel(); };
 }
+function woodFloor(){ const c=document.createElement("canvas"); c.width=c.height=512; const g=c.getContext("2d"); const pl=8, ph=512/pl;
+  for(let i=0;i<pl;i++){ const y=i*ph, l=20+Math.random()*9; g.fillStyle=`hsl(${22+Math.random()*6},${38+Math.random()*10}%,${l}%)`; g.fillRect(0,y,512,ph);
+    for(let k=0;k<46;k++){ g.strokeStyle=`rgba(${Math.random()<.5?'20,10,4':'70,40,18'},${.08+Math.random()*.14})`; g.lineWidth=.5+Math.random()*1.4; const yy=y+Math.random()*ph; g.beginPath(); g.moveTo(0,yy); for(let x=0;x<=512;x+=64) g.lineTo(x,yy+(Math.random()-.5)*4); g.stroke(); }
+    g.fillStyle="rgba(0,0,0,.55)"; g.fillRect(0,y,512,2); const sx=(i*173)%512; g.fillRect(sx,y,2,ph); }
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(5,5); t.anisotropy=4; t.encoding=THREE.sRGBEncoding; return t; }
 function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").classList.add("cudim");
   const wrap=document.createElement("div"); wrap.className="v3d dollv chair"; L.appendChild(wrap); v3bg(wrap);
-  const R=new THREE.WebGLRenderer({antialias:true,alpha:true}); R.outputEncoding=THREE.sRGBEncoding; R.physicallyCorrectLights=true; R.toneMapping=THREE.ACESFilmicToneMapping; R.setPixelRatio(Math.min(devicePixelRatio,1.5)); R.shadowMap.enabled=true; R.shadowMap.type=THREE.PCFSoftShadowMap; wrap.appendChild(R.domElement);
+  const R=new THREE.WebGLRenderer({antialias:true,alpha:true}); R.outputEncoding=THREE.sRGBEncoding; R.physicallyCorrectLights=true; R.toneMapping=THREE.ACESFilmicToneMapping; R.setPixelRatio(Math.min(devicePixelRatio,1.25)); R.shadowMap.enabled=true; R.shadowMap.type=THREE.PCFSoftShadowMap; wrap.appendChild(R.domElement);
   const S=new THREE.Scene(), C=new THREE.PerspectiveCamera(30,16/9,.01,50); S.environment=exEnv(R);
-  S.add(new THREE.HemisphereLight(0xffe7c4,0x16241a,.10)); const key=new THREE.SpotLight(0xffd2a0,60,12,.7,.6,1.4); key.position.set(.25,2.8,.7); key.target.position.set(0,.3,.1); S.add(key,key.target); key.castShadow=true; key.shadow.mapSize.set(1024,1024); key.shadow.bias=-.0004; key.shadow.radius=4;
+  S.add(new THREE.HemisphereLight(0xffe7c4,0x16241a,.16)); const key=new THREE.SpotLight(0xffd2a0,90,14,.8,.7,1.4); key.position.set(.4,3.2,1.6); key.target.position.set(0,.3,.1); S.add(key,key.target); key.castShadow=true; key.shadow.mapSize.set(768,768); key.shadow.bias=-.0004; key.shadow.radius=4;
   const rim=new THREE.PointLight(0x9ec4ae,2.2,8,1.6); rim.position.set(-1.4,1.3,-1.2); S.add(rim);
-  const fl=new THREE.Mesh(new THREE.CircleGeometry(3.2,48),new THREE.MeshStandardMaterial({color:0x080503,roughness:.85,metalness:0})); fl.rotation.x=-Math.PI/2; fl.receiveShadow=true; S.add(fl);
+  const fl=new THREE.Mesh(new THREE.PlaneGeometry(14,14),new THREE.MeshStandardMaterial({map:woodFloor(),roughness:.55,metalness:0})); fl.rotation.x=-Math.PI/2; fl.receiveShadow=true; S.add(fl); S.background=new THREE.Color(0x0b0705); S.fog=new THREE.FogExp2(0x0b0705,.22);
   const hint=document.createElement("div"); hint.className="v3hint"; hint.innerHTML="<small>의자 밑 어둠 속에서 붉은 빛이 깜빡인다.</small><b>손을 뻗어 아래로 끌어 꺼내 보자.</b>"; wrap.appendChild(hint);
   const bar=document.createElement("div"); bar.className="v3bar"; bar.innerHTML="<i></i>"; wrap.appendChild(bar);
   const x=document.createElement("button"); x.className="dollx"; x.innerHTML="물러나기"; x.onclick=()=>{ dollClose(); closeCloseup(); }; wrap.appendChild(x);
@@ -1608,7 +1613,7 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
   m3dLoad("chair3d.glb",g=>{ if(!DV||DV.wrap!==wrap) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
     m.position.set(-c.x,-b.min.y,-c.z); const k=1/sz.y; const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(k); gp.rotation.y=Math.PI*.1; m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } }); S.add(gp); });
   m3dLoad("doll3d.glb",g=>{ if(!DV||DV.wrap!==wrap) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
-    m.position.set(-c.x,-c.y,-c.z); const k=.42/sz.y; const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(k); m.traverse(o=>{ if(o.isMesh){ o.receiveShadow=true; o.castShadow=true; } }); dollG.add(gp); DV.ready=true; });
+    m.position.set(-c.x,-c.y,-c.z); const k=.34/sz.y; const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(k); m.traverse(o=>{ if(o.isMesh){ o.receiveShadow=true; o.castShadow=true; } }); dollG.add(gp); DV.ready=true; });
   const el=R.domElement; let ly=0;
   el.onpointerdown=e=>{ if(!DV||DV.done) return; DV.drag=true; ly=e.clientY; wrap.classList.add("grab"); try{ el.setPointerCapture(e.pointerId); }catch(_){} };
   el.onpointermove=e=>{ if(!DV||!DV.drag||DV.done) return; const r=el.getBoundingClientRect(); const dy=(e.clientY-ly)/Math.max(220,r.height*.55); ly=e.clientY; DV.p=Math.max(0,Math.min(1,DV.p+dy)); if(Math.random()<.25) hit(260,.04,.05,"lowpass"); };
@@ -1619,17 +1624,17 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
     const dt=Math.min(.05,(t-(DV.pt||t))/1000); DV.pt=t;
     if(!DV.drag&&!DV.done&&DV.p>0) DV.p=Math.max(0,DV.p-dt*.18);   // 놓으면 천천히 도로 밀려 들어감
     const p=DV.p, u=sm(Math.max(0,Math.min(1,(p-.5)/.5)));
-    dollG.position.set(0,.07+u*.15,-.18+p*.62); dollG.rotation.set(-Math.PI/2*(1-u),0,0);
+    dollG.position.set(0,.06+u*.1,-.18+p*.5); dollG.rotation.set(-Math.PI/2*(1-u),0,0);
     bar.querySelector("i").style.width=(p*100)+"%";
     { const tw=Math.max(0,Math.sin(t/230)*.5+Math.sin(t/97)*.3+.35); glint.material.opacity=(1-u)*(.15+tw*.55)+u*.1; glint.scale.setScalar(.035+tw*.03); eyeL.intensity=.04+tw*.22; reveal.intensity=p*4; }
-    C.position.set(Math.sin(t/2600)*.015,.13+u*.24,1.15+u*.8); C.lookAt(0,.17+u*.2,-.12);
+    C.position.set(Math.sin(t/2600)*.02,.62+u*.12,2.5+u*.5); C.lookAt(0,.2,.05);
     if(p>=1&&!DV.done&&DV.ready){ DV.done=true; hint.innerHTML="<b>인형을 꺼냈다.</b>"; hit(900,.25,.3); paper(); window.__dollOut=1; setTimeout(()=>{ if(!DV||DV.wrap!==wrap) return; dollClose(); dollPick(); },1100); }
-    R.render(S,C); DV.raf=requestAnimationFrame(loop); };
+    if(!document.hidden) R.render(S,C); DV.raf=requestAnimationFrame(loop); };
   DV.raf=requestAnimationFrame(loop);
 }
 function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").classList.add("cudim");
   const wrap=document.createElement("div"); wrap.className="v3d dollv"; L.appendChild(wrap);
-  const R=new THREE.WebGLRenderer({antialias:true,alpha:true}); R.outputEncoding=THREE.sRGBEncoding; R.physicallyCorrectLights=true; R.toneMapping=THREE.ACESFilmicToneMapping; R.setPixelRatio(Math.min(devicePixelRatio,1.5)); wrap.appendChild(R.domElement);
+  const R=new THREE.WebGLRenderer({antialias:true,alpha:true}); R.outputEncoding=THREE.sRGBEncoding; R.physicallyCorrectLights=true; R.toneMapping=THREE.ACESFilmicToneMapping; R.setPixelRatio(Math.min(devicePixelRatio,1.25)); wrap.appendChild(R.domElement);
   const S=new THREE.Scene(), C=new THREE.PerspectiveCamera(30,16/9,.01,50); S.environment=exEnv(R);
   S.add(new THREE.HemisphereLight(0xffe7c4,0x16241a,.8)); const key=new THREE.PointLight(0xffc98a,22,8,1.6); key.position.set(1.1,1.4,1.6); S.add(key); const rim=new THREE.PointLight(0x9ec4ae,6,8,1.6); rim.position.set(-1.3,1.1,-1.4); S.add(rim);
   const hint=document.createElement("div"); hint.className="v3hint"; hint.innerHTML="<small>레이스 드레스를 입은 인형. 한쪽 눈 안쪽에서 빨간 불빛이 깜빡인다.</small><b>인형을 돌려서 살펴보자.</b>"; wrap.appendChild(hint);
@@ -1663,13 +1668,13 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
   const wp=new THREE.Vector3(), wn=new THREE.Vector3(), tc=new THREE.Vector3(), q=new THREE.Quaternion();
   const loop=t=>{ if(!DV) return; if(mode!=="closeup"){ dollClose(); return; }
     const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&R.domElement.width!==Math.round(w*R.getPixelRatio())){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
-    obj.rotation.set(DV.pitch,DV.yaw+(DV.drag?0:Math.sin(t/900)*.04),0); const d=2.3*DV.zoom; C.position.set(0,.05*d,d); C.lookAt(0,0,0); obj.updateMatrixWorld(true);
+    obj.rotation.set(DV.pitch,DV.yaw+(DV.drag?0:Math.sin(t/900)*.04),0); const d=3.1*DV.zoom; C.position.set(0,.05*d,d); C.lookAt(0,0,0); obj.updateMatrixWorld(true);
     const blink=(Math.sin(t/260)>.2)?1:.15; eye.intensity=blink*.25; eyeDot.material.opacity=blink*.7;
     if(spkP){ wp.copy(spkP); obj.localToWorld(wp); obj.getWorldQuaternion(q); wn.set(0,0,-1).applyQuaternion(q); tc.copy(C.position).sub(wp).normalize();
       const dt=Math.min(.1,(t-(DV.lt||t))/1000); DV.lt=t; DV.face=wn.dot(tc)>.55?Math.min(1,DV.face+dt*4):Math.max(0,DV.face-dt*6);
       if(!DV.done&&DV.face>=1){ const sp=wp.clone().project(C); spot.style.left=((sp.x+1)/2*100)+"%"; spot.style.top=((1-sp.y)/2*100)+"%"; if(!spot.classList.contains("on")){ spot.classList.add("on"); hit(1800,.05,.08,"bandpass"); } }
       else if(spot.classList.contains("on")&&DV.face<.5) spot.classList.remove("on"); }
-    R.render(S,C); DV.raf=requestAnimationFrame(loop); };
+    if(!document.hidden) R.render(S,C); DV.raf=requestAnimationFrame(loop); };
   DV.raf=requestAnimationFrame(loop); window.__excam&&window.__excam(true); }
 function recPanel(){
   const {s}=CU, L=$("cuLayer"); $("cuPh").classList.add("cudim");
@@ -4300,7 +4305,7 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 </style>
 <style>
 /* 의자 밑만 보이는 어두운 구도: 가장자리를 짙게 가려 틈 안쪽만 보이게 */
-.dollv.chair::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;background:radial-gradient(ellipse 46% 40% at 50% 56%,transparent 0,rgba(0,0,0,.35) 55%,rgba(0,0,0,.92) 100%);transition:opacity 1.2s}
+.dollv.chair::after{display:none}
 .dollv.chair canvas{cursor:grab}.dollv.chair.grab canvas{cursor:grabbing}
 </style>
 <style>

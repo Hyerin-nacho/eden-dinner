@@ -2681,7 +2681,7 @@ function ending(){ const E=$("ending"), V=$("endVid");
   vidStop(); mode="end"; E.parentElement.classList.add("ended"); talkEl.hidden=true; E.hidden=false; clearInterval(clockTimer);
   /* 엔딩 컷: 엘레나가 끌려가고 → 세 용의자의 안도 → 록의 깨달음. 쿵 소리에서 끝나면 바로 CASE CLOSED */
   let went=false; const go=()=>{ if(went) return; went=true; V.onended=V.onerror=V.onclick=null; V.pause(); V.hidden=true; endSeq(); };
-  V.hidden=false; V.muted=!soundOn; V.src="pro/ending_cut.mp4"; V.onended=go; V.onerror=go; V.onclick=go;
+  V.hidden=false; V.muted=!soundOn; V.volume=.4; V.src="pro/ending_cut.mp4"; V.onended=go; V.onerror=go; V.onclick=go;
   const p=V.play(); p&&p.catch(go); setTimeout(()=>{ if(!went&&V.currentTime<.1) go(); },6000); }
 function endSeq(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
   E.className="ending"; ng&&ng.classList.remove("on"); ck.textContent="21:47";

@@ -16,6 +16,34 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/MaskPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/BokehPass.js"></script>
+<script>
+/* 성능: 해상도·픽셀비율 상한 + 프레임이 떨어지면 자동으로 화질을 한 단계씩 낮춘다 */
+(function(){
+  try{
+    if(!window.THREE) return;
+    var REND=[], dpr=window.devicePixelRatio||1, big=Math.max(1,Math.max(innerWidth,innerHeight)/1920);
+    window.__PRC=Math.min(1.5, dpr)/Math.min(1.6,big>1?big:1);   // 큰 모니터일수록 비율을 낮춰 픽셀 수를 비슷하게
+    window.__PRC=Math.max(.7,Math.min(1.5,window.__PRC));
+    var _spr=THREE.WebGLRenderer.prototype.setPixelRatio;
+    THREE.WebGLRenderer.prototype.setPixelRatio=function(v){ if(!this.__reg){ this.__reg=1; REND.push(this); } this.__want=v; return _spr.call(this,Math.min(v,window.__PRC)); };
+    var n=0,t0=performance.now(),low=0,bad=0;
+    function tick(now){
+      n++;
+      if(now-t0>1500){
+        var fps=n*1000/(now-t0); n=0; t0=now;
+        if(!document.hidden && fps>2 && fps<38){ bad++; } else bad=0;
+        if(bad>=2 && low<3){
+          bad=0; low++; window.__PRC=Math.max(.55,window.__PRC-.25);
+          document.documentElement.classList.add("lowfx"); if(low>1) document.documentElement.classList.add("lowfx2");
+          REND.forEach(function(R){ try{ _spr.call(R,Math.min(R.__want||1,window.__PRC)); }catch(e){} });
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }catch(e){}
+})();
+</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Serif+KR:wght@300;400;600&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Nanum+Pen+Script&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap">
 <style>
 [hidden]{display:none!important}
@@ -4708,6 +4736,11 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .en-file.en-file{align-self:center!important;justify-self:end!important}
 .ending .case,.ending .en-ev li,.ending h2.q span,.ending h2.q .kr,.ending .row,.ending .en-file{transition-duration:.7s!important;transition-delay:0s!important}
 .ending .en-ev li{animation-duration:.6s!important}
+/* 저사양 모드: 프레임이 떨어질 때만 켜진다 */
+.lowfx *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.lowfx .ending::before,.lowfx .ending.ending::before{filter:none!important;transition:none!important;transform:none!important}
+.lowfx2 *{text-shadow:none!important}
+.lowfx2 .ev-card,.lowfx2 .tk-vid,.lowfx2 .hud *{box-shadow:none!important}
 </style>
 <script>
 /* 손글씨(증거 쪽지·붉은 펜 메모)를 누르면 종이째로 크게 보여 준다. 아무 데나 누르거나 ESC로 닫힘 */

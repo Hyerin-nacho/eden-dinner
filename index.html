@@ -2878,7 +2878,7 @@ function ending(){ hbStop(); const E=$("ending"), V=$("endVid");
 function endSeq(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
   E.className="ending"; ng&&ng.classList.remove("on"); ck.textContent="21:47";
   const at=(ms,f)=>setTimeout(f,ms);
-  { const ul=$("endEv"); if(ul){ ul.innerHTML=STATE.map((st,i)=>{ const id=USEDBY[i], e=id&&EVID.find(x=>x.id===id); return e?`<li style="--d:${i*.28}s"><small>진술 ${i+1} · ${st.q}</small><b>${e.ev}</b></li>`:""; }).join(""); } }
+  { const ul=$("endEv"); if(ul){ ul.innerHTML=STATE.map((st,i)=>{ const id=USEDBY[i], e=id&&EVID.find(x=>x.id===id); return e?`<li style="--d:${i*.28}s"><b>${SHORT[e.id]||e.ev}</b></li>`:""; }).join(""); } }
   at(60,()=>E.classList.add("e1"));                                                  // 레터박스 닫힘 + 배경 천천히 다가옴
   at(800,()=>{ E.classList.add("e2"); SFX("hit",.5); });   // 도장 쾅
   let tk=0; const tick=setInterval(()=>{ if(mode!=="end"){ clearInterval(tick); return; } void 0; },1000);
@@ -4635,6 +4635,59 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .ending.e3 .en-ev li{opacity:1;transform:none}
 .ending .en-ev small{font-family:var(--mono);font-size:clamp(10px,.85vw,15px);letter-spacing:.14em;color:rgba(217,178,106,.8)}
 .ending .en-ev b{font-family:var(--serif);font-weight:500;font-size:clamp(15px,1.4vw,24px);color:#efe4cb;letter-spacing:.02em}
+
+/* ---- 엔딩 v4: 장식을 걷어내고 글씨 위주로 단정하게 (카드·테이프·도장·글로우 제거) ---- */
+.ending.ending::before{background:#050505!important;filter:none!important}
+.ending.ending{grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr)!important;column-gap:clamp(40px,6vw,120px)!important;padding-left:8%!important;padding-right:8%!important}
+.ending .case{font-family:var(--sans)!important;font-size:clamp(12px,.95vw,17px)!important;letter-spacing:.2em!important;color:rgba(255,255,255,.55)!important;margin:0 0 clamp(18px,3vh,32px)!important}
+.ending .case::before{display:none!important}
+.ending .en-ev{gap:0!important;margin:0 0 clamp(28px,5vh,52px)!important;border-top:1px solid rgba(255,255,255,.16)}
+.ending .en-ev li{display:grid!important;grid-template-columns:clamp(150px,13vw,240px) 1fr;align-items:baseline;gap:16px;border-left:0!important;padding:clamp(10px,1.5vh,16px) 0!important;border-bottom:1px solid rgba(255,255,255,.16)}
+.ending .en-ev small{font-family:var(--sans)!important;font-size:clamp(12px,.95vw,17px)!important;letter-spacing:.02em!important;color:rgba(255,255,255,.5)!important}
+.ending .en-ev b{font-family:var(--sans)!important;font-weight:500!important;font-size:clamp(15px,1.2vw,22px)!important;color:#efe9db!important}
+.ending h2.q{font-weight:500!important;font-size:clamp(24px,2.7vw,44px)!important;line-height:1.4!important;color:#f1ece0!important;letter-spacing:-.015em!important}
+.ending .nag{border-left:0!important;padding-left:0!important;color:rgba(255,255,255,.5)!important;font-size:clamp(13px,1.05vw,19px)!important;letter-spacing:.01em!important;margin-top:clamp(14px,2.2vh,24px)!important}
+.ending p.en{font-family:var(--sans)!important;font-style:normal!important;font-weight:400!important;letter-spacing:.02em!important;font-size:clamp(12px,.95vw,17px)!important;color:rgba(255,255,255,.4)!important;margin-top:clamp(28px,5vh,56px)!important}
+.ending p.en em{color:inherit!important;font-style:normal!important;text-decoration:none!important;font-weight:500!important;color:rgba(255,255,255,.7)!important}
+.ending .row{margin-top:clamp(12px,2vh,22px)!important}
+.ending #ctaBtn{background:transparent!important;color:rgba(255,255,255,.55)!important;border:1px solid rgba(255,255,255,.28)!important;font-weight:500!important;letter-spacing:.04em!important}
+.ending #againBtn{color:#f1ece0!important;border-bottom:1px solid rgba(255,255,255,.5)!important;letter-spacing:.04em!important}
+.ending #againBtn:hover{color:#fff!important;border-bottom-color:#fff!important}
+.ending .en-clock{font-family:var(--sans)!important;letter-spacing:.12em!important;color:rgba(255,255,255,.45)!important}
+.en-file.en-file{width:min(300px,100%)!important;padding:0!important;background:none!important;box-shadow:none!important;border-radius:0!important;color:#e9e3d4!important;transform:translateY(10px)!important}
+.ending.e1 .en-file.en-file{transform:none!important}
+.en-file::before,.en-file .ef-top,.en-file .ef-rows,.en-file .en-stamp{display:none!important}
+.en-file .ef-photo{margin:0!important;border:0!important;padding:0!important}
+.en-file .ef-photo img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;object-position:50% 30%;filter:grayscale(.85) contrast(1.05) brightness(.92);border:0;border-radius:0}
+.en-file .ef-name{margin-top:14px!important;border:0!important;padding:0!important;text-align:left}
+.en-file .ef-name b{font-family:var(--sans)!important;font-weight:500!important;font-size:clamp(15px,1.2vw,21px)!important;color:#efe9db!important}
+.en-file .ef-name small{display:block;font-family:var(--sans)!important;letter-spacing:.04em!important;font-size:clamp(11px,.85vw,15px)!important;color:rgba(255,255,255,.5)!important;margin-top:3px}
+.ending.ending>*:not(.en-bars):not(.en-clock):not(.en-vid):not(.en-file){max-width:none!important}
+.ending .en-ev{width:min(100%,clamp(520px,40vw,900px))}
+.ending .en-ev li{grid-template-columns:clamp(150px,12vw,300px) 1fr!important}
+.ending h2.q,.ending .nag,.ending p.en{text-shadow:none!important}
+.en-file.en-file{width:min(100%,clamp(260px,21vw,520px))!important}
+.en-file .ef-photo img{height:auto!important;aspect-ratio:4/5!important;object-position:50% 38%!important}
+.ending .case{font-size:clamp(12px,.95vw,18px)!important}
+.ending h2.q{font-size:clamp(24px,2.7vw,56px)!important}
+.ending #ctaBtn,.ending #againBtn{font-size:clamp(13px,1vw,18px)!important}
+
+/* 엔딩 v5: 글씨를 최소로 — 라벨 · 질문 · 증거 한 줄 · 버튼, 오른쪽엔 사진과 이름만 */
+.ending .nag,.ending p.en,.ending .en-ev small,.ending .en-clock{display:none!important}
+.ending .en-ev{width:auto!important;flex-direction:row!important;flex-wrap:wrap;align-items:baseline;gap:6px 0!important;border-top:0!important;margin:clamp(10px,1.8vh,20px) 0 clamp(26px,4.5vh,48px)!important}
+.ending .en-ev::before{content:"밝혀낸 증거";font-size:clamp(12px,.95vw,17px);color:rgba(255,255,255,.4);margin-right:16px}
+.ending .en-ev li{display:block!important;border:0!important;padding:0!important}
+.ending .en-ev li+li::before{content:"·";margin:0 12px;color:rgba(255,255,255,.3)}
+.ending .en-ev b{font-size:clamp(14px,1.1vw,20px)!important;color:rgba(255,255,255,.82)!important}
+.ending .row{margin-top:clamp(26px,4.5vh,48px)!important}
+
+/* 엔딩 v6: 흐린 사진을 아주 어둡게 깔고, 질문은 명조 계열로 차분하게 */
+.ending.ending::before{background:linear-gradient(rgba(0,0,0,.74),rgba(0,0,0,.84)),url(pro/relic_bg.jpg) 70% 40%/cover no-repeat!important;filter:blur(7px)!important;transform:scale(1.06)}
+.ending h2.q{font-family:"Gowun Batang","Batang",serif!important;font-weight:400!important;font-size:clamp(30px,3.5vw,64px)!important;line-height:1.6!important;letter-spacing:.04em!important;color:#efe6d2!important;word-break:keep-all}
+.ending h2.q span:first-child{color:rgba(239,230,210,.6)!important;font-size:.78em}
+.ending .case{font-family:"Gowun Batang","Batang",serif!important;letter-spacing:.3em!important;color:rgba(217,178,106,.85)!important}
+.ending .en-ev b{font-family:"Gowun Batang","Batang",serif!important}
+.ending .en-ev::before{font-family:"Gowun Batang","Batang",serif}
 </style>
 <script>
 /* 손글씨(증거 쪽지·붉은 펜 메모)를 누르면 종이째로 크게 보여 준다. 아무 데나 누르거나 ESC로 닫힘 */

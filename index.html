@@ -2780,7 +2780,7 @@ function openTalk(){
   else menu();
 }
 function closeTalk(){
-  talkEl.classList.remove("press","jolt"); hbStop(); vidStop(); talkEl.hidden=true; mode="explore"; stage.classList.add("explore"); ease=.05; tgt.s=1.4;
+  talkEl.classList.remove("press","jolt","lying"); hbStop(); vidStop(); talkEl.hidden=true; mode="explore"; stage.classList.add("explore"); ease=.05; tgt.s=1.4;
   $("tabTalk").setAttribute("aria-selected",false); $("tabScene").setAttribute("aria-selected",true);
   setPrompt(); checkDone();
 }
@@ -2813,9 +2813,9 @@ function pressOn(i){ const s=STATE[i]; PRESS[i]=Math.min(3,(PRESS[i]||0)+1);
 /* 정답 증거를 들이밀면: 화면이 덜컹, 붉은 '거짓말' 도장이 쾅 */
 /* 들킨 진술: 엘레나가 했던 말이 화면에 다시 떠오르고 그 위로 붉은 줄이 쭉 그어진다 */
 function lieCut(text){ talkEl.querySelector(".tk-lie")?.remove(); const L=document.createElement("div"); L.className="tk-lie"; L.setAttribute("aria-hidden","true");
-  const p=document.createElement("p"); p.textContent="“"+text+"”"; L.appendChild(p); talkEl.appendChild(L);
+  const p=document.createElement("p"); p.textContent="“"+text+"”"; L.appendChild(p); talkEl.appendChild(L); talkEl.classList.add("lying");   // 대사 칸·카드는 잠깐 숨기고 문장만
   setTimeout(()=>L.classList.add("on"),20); setTimeout(()=>{ L.classList.add("cut"); try{ SFX("tear",.35); }catch(e){} },380);
-  setTimeout(()=>{ L.classList.add("out"); setTimeout(()=>L.remove(),700); },2300); }
+  setTimeout(()=>{ L.classList.add("out"); talkEl.classList.remove("lying"); setTimeout(()=>L.remove(),700); },2300); }
 /* 증거로 거짓을 깨는 순간: '거짓말' 도장 없이, 카메라가 엘레나 얼굴로 확 튀어 들어가고 화면이 번쩍 — 흠칫 놀라는 느낌 */
 function slam(){ talkEl.classList.remove("shake","startle"); void talkEl.offsetWidth; talkEl.classList.add("shake","startle");
   setTimeout(()=>talkEl.classList.remove("startle"),1400); SFX("hit",.45); hbKick(132); }
@@ -4562,6 +4562,7 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .talk .tk-vid.idle-off{opacity:0!important}
 .talk.hasvid .tk-react{transition:opacity .55s ease!important}
 /* 들킨 진술에 붉은 줄 */
+.talk.lying .tk-box,.talk.lying .tk-opts{opacity:0!important;transition:opacity .25s}
 .talk .tk-lie{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) scale(.96);width:min(760px,72%);text-align:center;z-index:18;pointer-events:none;opacity:0;transition:opacity .35s,transform .5s cubic-bezier(.2,.8,.2,1)}
 .talk .tk-lie.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .talk .tk-lie.out{opacity:0;transition:opacity .6s}

@@ -1427,7 +1427,9 @@ function audio(){ if(!ac){ try{
   sfxLevel=ac.createGain(); sfxLevel.gain.value=.6; limiter.connect(sfxLevel); sfxLevel.connect(ac.destination); sfxBus=limiter;
 }catch(e){} } return ac; }
 function noiseBuf(){ const b=ac.createBuffer(1,ac.sampleRate*.4,ac.sampleRate), d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; return b; }
-function creak(){ if(!soundOn||!audio()) return; const t=ac.currentTime;
+const SFXF={}; function SFX(n,v){ try{ if(!soundOn) return; let a=SFXF[n]; if(!a){ a=SFXF[n]=new Audio("sfx/"+n+".mp3"); a.preload="auto"; } const c=a.cloneNode(); c.volume=Math.min(1,v||.6); c.play().catch(()=>{}); }catch(e){} }
+['door','gasp','tick','horn','squeak'].forEach(n=>{ try{ const a=new Audio("sfx/"+n+".mp3"); a.preload="auto"; SFXF[n]=a; }catch(e){} });
+function creak(){ if(!soundOn) return; SFX("door",.6); return; if(!audio()) return; const t=ac.currentTime;
   const o=ac.createOscillator(), f=ac.createBiquadFilter(), g=ac.createGain(), l=ac.createOscillator(), lg=ac.createGain();
   o.type="sawtooth"; o.frequency.setValueAtTime(70,t); o.frequency.linearRampToValueAtTime(115,t+.9); o.frequency.linearRampToValueAtTime(82,t+2);
   l.frequency.value=23; lg.gain.value=18; l.connect(lg); lg.connect(o.frequency);
@@ -1438,7 +1440,7 @@ function hit(freq,vol,dur,type="lowpass"){ if(!soundOn||!audio()) return; const 
   s.buffer=noiseBuf(); f.type=type; f.frequency.value=freq; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   s.connect(f); f.connect(g); g.connect(sfxBus||ac.destination); s.start(t); s.stop(t+dur+.05); }
 function steps(n=2){ for(let i=0;i<n;i++) setTimeout(()=>hit(320,.35,.18),i*620); }
-function startClock(){ clearInterval(clockTimer); clockTimer=setInterval(()=>hit(3200,.035,.03,"highpass"),1000); }
+function startClock(){ clearInterval(clockTimer); clockTimer=setInterval(()=>SFX("tick",.22),1000); }
 let watchTimer=0, watchStopTimer=0;
 function stopWatchTick(){ clearInterval(watchTimer); clearTimeout(watchStopTimer); watchTimer=0; }
 function startWatchTick(){ stopWatchTick(); if(!soundOn||!audio()) return; let n=0;
@@ -2663,7 +2665,7 @@ function present(i){
     opts([{k:"1",t:"현장으로 돌아가 조사한다",cls:"main",f:closeTalk},{k:"2",t:"조금 더 추궁해 본다",f:()=>play([["R",s.ask],["E",s.press],["r",s.hint]],()=>statement(i,true))}],"act"); return; }
   const L=[{h:"이 진술을 깰 증거를 골라 들이밀어라"}];
   have.forEach((e,j)=>L.push({k:String(j+1),e,t:e.ev,cls:"ev",hint:(WRONG[i]||0)>=1&&need.includes(e.id),f:()=>{
-    if(need.includes(e.id)){ slam(); react("startle"); BROKEN.add(i); comp=Math.max(8,comp-31); gauge(); paper();
+    if(need.includes(e.id)){ slam(); SFX("gasp",.8); react("startle"); BROKEN.add(i); comp=Math.max(8,comp-31); gauge(); paper();
       setTimeout(()=>play(STATE[i].brk,()=>{ render(); caseCards(); if(BROKEN.size===3){ $("tabAcc").classList.remove("lock"); $("tabAcc").removeAttribute("aria-disabled"); $("tabAcc").innerHTML="지목"; setObj("범인을 지목하라","용의자 ▸ 지목"); } menu(); }),900);
     } else { WRONG[i]=(WRONG[i]||0)+1; comp=Math.min(100,comp+4); gauge(); hit(200,.2,.12);
       play([["E",s.press],["r",`아니다, 이걸로는 못 깬다. ${s.hint}`]],()=>present(i)); }   // 한 번 틀리면 정답 카드가 빛난다
@@ -2949,6 +2951,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
 
   /* 0-a. 콜드 오픈 — 검은 화면에 열차 소리만 2.8초, 시각 "21:47"이 떠오른 뒤 인트로로 컷 */
   function coldOpen(next){
+    SFX("horn",.5);
     const c=$("proCold"); c.classList.add("on"); const tv=$("titleTrainV"); try{ tv.pause(); }catch(e){}
     let stopN=()=>{};
     try{ if(soundOn&&audio()){ const a=ac, len=a.sampleRate*3, buf=a.createBuffer(1,len,a.sampleRate), d=buf.getChannelData(0);
@@ -4205,10 +4208,6 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .pro .ps[data-s="start"] .tt-ticket .tk-m b{font-family:"Nanum Myeongjo",var(--serif);font-weight:800;font-size:max(20px,2.2cqw);letter-spacing:.5em;margin-right:-.5em;color:#1d130a;text-shadow:0 1px 0 rgba(255,248,225,.55)}
 .pro .ps[data-s="start"] .tt-ticket .tk-m small{font-size:max(10px,.85cqw);letter-spacing:.1em;color:rgba(50,34,18,.78)}
 .pro .ps[data-s="start"] .tt-ticket:hover{transform:translateY(-.4cqh);box-shadow:0 1.8cqh 3.4cqh rgba(0,0,0,.7),0 0 3cqh rgba(217,178,106,.18)}
-</style>
-<style>
-/* 생체 검문 창이 떠 있을 땐 'CAMERA OFF' 상자를 숨긴다 (카메라를 켠 경우만 보임) */
-.pro:has(.ps.behind.on) .cam:not(:has(video[srcObject])){opacity:0;transition:opacity .3s}
 </style>
 <style>.pro .ps.behind>:not(.consent){filter:blur(9px) brightness(.62) saturate(1.05)}</style>
 </body></html>

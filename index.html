@@ -1703,7 +1703,7 @@ const EXAM={
   card:{pre:"꽃병 옆에 룸서비스 전표가 끼워져 있다. 앞면엔 주문 내역뿐이다.",hint:"끌어서 전표를 뒤집어 보자.",
         label:"뒷면의 서명",build:()=>exSlip(),cam:[0,.05,1.9],spot:{p:[-.06,-.2,-.004],n:[0,0,-1]},pitch:[-.5,.5],yaw:.25},
   bedside:{pre:"협탁의 서류 밑에 갈색 약병이 숨겨져 있다. 라벨엔 ‘수면제’라고만 인쇄돼 있다.",hint:"끌어서 병을 돌려 라벨 뒤쪽을 보자.",
-        label:"라벨 뒤 손글씨",build:()=>exBottle(),cam:[0,.07,.84],spot:{p:[0,-.03,-.106],n:[0,0,-1]},pitch:[-.4,.4],yaw:.3},
+        label:"라벨 뒤 손글씨",build:()=>exBottle(),cam:[0,.07,.84],spot:{p:[0,-.03,-.106],n:[0,0,-1]},pitch:[-.4,.4],yaw:.06},
   glass:{pre:"러그 옆에 깨진 와인잔이 떨어져 있다. 남은 와인에서 쓴 냄새가 난다.",hint:"아래로 끌어 잔을 기울여 안을 들여다보자.",
         label:"잔 바닥의 하얀 가루",build:()=>exGlass(),cam:[0,.18,2.0],spot:{p:[0,.1,0],n:[0,1,0]},pitch:[-.2,1.25],yaw:0}
 };
@@ -1718,7 +1718,7 @@ function exEnv(R){ const c=document.createElement("canvas"); c.width=1024; c.hei
   const pm=new THREE.PMREMGenerator(R), e=pm.fromEquirectangular(t).texture; pm.dispose(); t.dispose(); return e; }
 function exTex(w,h,draw){ const c=document.createElement("canvas"); c.width=w; c.height=h; const x=c.getContext("2d"); draw(x,w,h);
   const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.anisotropy=4;
-  if(document.fonts&&document.fonts.load) Promise.all(['40px "Nanum Pen Script"','700 40px "Nanum Myeongjo"'].map(f=>document.fonts.load(f))).then(()=>{ x.clearRect(0,0,w,h); draw(x,w,h); t.needsUpdate=true; }).catch(()=>{});
+  if(document.fonts&&document.fonts.load) Promise.all(['40px "Nanum Pen Script"','700 40px "Nanum Myeongjo"','italic 25px "Nanum Myeongjo"','600 21px "IBM Plex Mono"','19px "IBM Plex Mono"'].map(f=>document.fonts.load(f))).then(()=>{ x.clearRect(0,0,w,h); draw(x,w,h); t.needsUpdate=true; }).catch(()=>{});
   return t; }
 const exPaper=(x,w,h,tone)=>{ x.fillStyle=tone; x.fillRect(0,0,w,h); for(let i=0;i<900;i++){ x.fillStyle=`rgba(90,60,30,${Math.random()*.05})`; x.fillRect(Math.random()*w,Math.random()*h,2,2); }
   const g=x.createRadialGradient(w/2,h/2,w*.2,w/2,h/2,w*.8); g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(90,60,25,.3)"); x.fillStyle=g; x.fillRect(0,0,w,h); };
@@ -1819,7 +1819,7 @@ function exBottle(){ const G=new THREE.Group(), r=.1;
     for(let i=0;i<3;i++){ const cx=Math.random()*w, cy=Math.random()*h, rr=30+Math.random()*60, q=x.createRadialGradient(cx,cy,rr*.6,cx,cy,rr); q.addColorStop(0,"rgba(150,105,50,.05)"); q.addColorStop(.92,"rgba(120,80,35,.22)"); q.addColorStop(1,"rgba(120,80,35,0)"); x.fillStyle=q; x.fillRect(cx-rr,cy-rr,rr*2,rr*2); }   // 물 얼룩 테두리
     const e=x.createLinearGradient(0,0,w,0); e.addColorStop(0,"rgba(95,60,25,.35)"); e.addColorStop(.06,"rgba(95,60,25,0)"); e.addColorStop(.94,"rgba(95,60,25,0)"); e.addColorStop(1,"rgba(95,60,25,.35)"); x.fillStyle=e; x.fillRect(0,0,w,h);
     const f=x.createLinearGradient(0,0,0,h); f.addColorStop(0,"rgba(95,60,25,.3)"); f.addColorStop(.08,"rgba(95,60,25,0)"); f.addColorStop(.9,"rgba(95,60,25,0)"); f.addColorStop(1,"rgba(95,60,25,.4)"); x.fillStyle=f; x.fillRect(0,0,w,h); };
-  const lf=exTex(640,420,(x,w,h)=>{ ragged(x,w,h,"#dccb9f",5);
+  const lf=exTex(640,420,(x,w,h)=>{ ragged(x,w,h,"#dccb9f",13);
     x.strokeStyle="#7a2a1c"; x.lineWidth=5; x.strokeRect(22,22,w-44,h-44); x.lineWidth=1.5; x.strokeRect(32,32,w-64,h-64);
     x.fillStyle="#2b1f16"; x.textAlign="center"; x.font='600 21px "IBM Plex Mono",monospace'; x.fillText("EDENLINE  ·  INFIRMARY",w/2,78);
     x.strokeStyle="rgba(43,31,22,.5)"; x.lineWidth=1; x.beginPath(); x.moveTo(90,96); x.lineTo(w-90,96); x.stroke();
@@ -1828,7 +1828,7 @@ function exBottle(){ const G=new THREE.Group(), r=.1;
     x.fillStyle="#7a2a1c"; x.font='700 20px "IBM Plex Mono",monospace'; x.fillText("— 과용 시 위험 —",w/2,288);
     x.fillStyle="rgba(43,31,22,.72)"; x.font='19px "IBM Plex Mono",monospace'; x.fillText("Rx No. 2081-117   ·   30 TAB.",w/2,338);
     x.globalCompositeOperation="multiply"; x.fillStyle="rgba(200,170,120,.18)"; x.fillRect(0,0,w,h); x.globalCompositeOperation="source-over"; });
-  const lb=exTex(512,340,(x,w,h)=>{ ragged(x,w,h,"#e2d4ae",7);
+  const lb=exTex(512,340,(x,w,h)=>{ ragged(x,w,h,"#e2d4ae",14);
     for(let i=0;i<5;i++){ x.strokeStyle="rgba(90,110,150,.22)"; x.lineWidth=1; x.beginPath(); x.moveTo(24,96+i*48); x.lineTo(w-24,96+i*48); x.stroke(); }   // 줄 공책 종이
     x.fillStyle="rgba(43,31,22,.6)"; x.font='20px "Nanum Myeongjo",serif'; x.textAlign="left"; x.fillText("복용 지시",36,58);
     x.fillStyle="#1a1410"; x.textAlign="center"; x.font='74px "Nanum Pen Script",cursive'; x.save(); x.translate(w/2,170); x.rotate(-.05); x.fillText("취침 전 2정",0,0); x.restore();
@@ -1836,7 +1836,7 @@ function exBottle(){ const G=new THREE.Group(), r=.1;
     x.fillStyle="rgba(26,20,16,.5)"; x.beginPath(); x.arc(w/2-30,182,2.2,0,7); x.fill(); });   // 펜이 멈춘 잉크 점
   const lab=(tex,start,len,hgt,y)=>{ const m=new THREE.Mesh(new THREE.CylinderGeometry(r+.0016,r+.0016,hgt,64,1,true,start,len),
       new THREE.MeshStandardMaterial({map:tex,roughness:.94,alphaTest:.5,side:THREE.DoubleSide})); m.position.y=y; m.renderOrder=3; return m; };
-  G.add(lab(lf,-1.05,2.1,.21,-.035), lab(lb,Math.PI-.78,1.56,.15,-.03));
+  G.add(lab(lf,-.98,1.96,.2*420/640*(1.96*(r+.0016))/.2,-.035), lab(lb,Math.PI-.78,1.56,(1.56*(r+.0016))*340/512,-.03));
   return G; }
 /* 더러움 맵: 지문 · 먼지 · 마른 와인 자국 (선반 회전체 UV: u=둘레, v=단면 위치) */
 function exDirt(opt={}){ const W=1024,H=512,c=document.createElement("canvas"); c.width=W; c.height=H; const g=c.getContext("2d");

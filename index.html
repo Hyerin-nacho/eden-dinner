@@ -1703,7 +1703,7 @@ const EXAM={
   card:{pre:"꽃병 옆에 룸서비스 전표가 끼워져 있다. 앞면엔 주문 내역뿐이다.",hint:"끌어서 전표를 뒤집어 보자.",
         label:"뒷면의 서명",build:()=>exSlip(),cam:[0,.05,1.9],spot:{p:[-.06,-.2,-.004],n:[0,0,-1]},pitch:[-.5,.5],yaw:.25},
   bedside:{pre:"협탁의 서류 밑에 갈색 약병이 숨겨져 있다. 라벨엔 ‘수면제’라고만 인쇄돼 있다.",hint:"끌어서 병을 돌려 라벨 뒤쪽을 보자.",
-        label:"라벨 뒤 손글씨",build:()=>exBottle(),cam:[0,.1,1.05],spot:{p:[0,-.03,-.106],n:[0,0,-1]},pitch:[-.4,.4],yaw:.3},
+        label:"라벨 뒤 손글씨",build:()=>exBottle(),cam:[0,.07,.84],spot:{p:[0,-.03,-.106],n:[0,0,-1]},pitch:[-.4,.4],yaw:.3},
   glass:{pre:"러그 옆에 깨진 와인잔이 떨어져 있다. 남은 와인에서 쓴 냄새가 난다.",hint:"아래로 끌어 잔을 기울여 안을 들여다보자.",
         label:"잔 바닥의 하얀 가루",build:()=>exGlass(),cam:[0,.18,2.0],spot:{p:[0,.1,0],n:[0,1,0]},pitch:[-.2,1.25],yaw:0}
 };
@@ -1773,8 +1773,8 @@ function exBottle(){ const G=new THREE.Group(), r=.1;
   /* 알약 물리: 병의 기울기를 병 기준 중력으로 바꿔 알약이 바닥·벽을 따라 미끄러지고 서로 밀어낸다.
      빨리 돌리면 흔들려 달그락거리고, 벽·바닥에 세게 부딪히면 유리에 닿는 '딸깍' 소리가 난다 */
   const PILLS=[], PR=.019, IN=.0915, Y=new THREE.Vector3(0,1,0);
-  for(let i=0;i<9;i++){ const a=Math.random()*6.28, d=Math.sqrt(Math.random())*.055, p=new THREE.Mesh(pg,pm);
-    p.position.set(Math.cos(a)*d,-.226+(i>5?.012:0)+Math.random()*.004,Math.sin(a)*d); p.quaternion.setFromEuler(new THREE.Euler((Math.random()-.5)*.3,Math.random()*6,(Math.random()-.5)*.3));
+  for(let i=0;i<13;i++){ const a=Math.random()*6.28, d=Math.sqrt(Math.random())*.058, p=new THREE.Mesh(pg,pm);
+    p.position.set(Math.cos(a)*d,-.226+(i>6?.012:0)+(i>11?.012:0)+Math.random()*.004,Math.sin(a)*d); p.quaternion.setFromEuler(new THREE.Euler((Math.random()-.5)*.3,Math.random()*6,(Math.random()-.5)*.3));
     p.userData={v:new THREE.Vector3(),c:0,sa:Math.random()*6}; G.add(p); PILLS.push(p); }
   const gL=new THREE.Vector3(), qW=new THREE.Quaternion(), qPrev=new THREE.Quaternion(), up=new THREE.Vector3(), tq=new THREE.Quaternion(), sq=new THREE.Quaternion(), tmp=new THREE.Vector3();
   let plt=0, pFirst=true, clinkT=0;

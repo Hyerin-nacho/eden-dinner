@@ -1655,7 +1655,7 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
     dollG.position.set(0,.06+u*.1,-.18+p*.5); dollG.rotation.set(-Math.PI/2*(1-u),0,0);
     bar.querySelector("i").style.width=(p*100)+"%";
     { const tw=Math.max(0,Math.sin(t/230)*.5+Math.sin(t/97)*.3+.35); glint.material.opacity=(1-u)*(.15+tw*.55)+u*.1; glint.scale.setScalar(.035+tw*.03); eyeL.intensity=.04+tw*.22; reveal.intensity=p*4; }
-    C.position.set(.3+Math.sin(t/2600)*.02,.55+u*.1,2.05+u*.45); C.lookAt(0,.4-u*.08,0); roomLamp.intensity=1.7+Math.sin(t/430)*.12+Math.sin(t/170)*.06;
+    C.position.set(.12+Math.sin(t/2600)*.012,.22+u*.12,1.02+u*.5); C.lookAt(0,.2+u*.02,0); roomLamp.intensity=1.7+Math.sin(t/430)*.12+Math.sin(t/170)*.06;
     if(p>=1&&!DV.done&&DV.ready){ DV.done=true; hint.innerHTML="<b>인형을 꺼냈다.</b>"; hit(900,.25,.3); paper(); window.__dollOut=1; setTimeout(()=>{ if(!DV||DV.wrap!==wrap) return; dollClose(); dollPick(); },1100); }
     { const a=pg.attributes.position; for(let i=0;i<NP;i++){ let y=a.getY(i)-pv[i]*dt; if(y<0) y=1.8; a.setY(i,y); a.setX(i,a.getX(i)+Math.sin(t/1700+i)*.0004); } a.needsUpdate=true; } if(!document.hidden) R.render(S,C); DV.raf=requestAnimationFrame(loop); };
   DV.raf=requestAnimationFrame(loop);

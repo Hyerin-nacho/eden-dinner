@@ -3108,7 +3108,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     $("proStart").classList.add("punched"); SFX("flip",.5); setTimeout(()=>SFX("tear",.28),90);   // 표를 뜯는 소리
     setTimeout(()=>{
     // 웹캠은 여기서 켜지 않는다: 초대장이 나온 뒤 '카메라로 체험'을 눌러 허락해야 켜진다
-    camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camBox.classList.add("idle"); camTag.textContent="";   // 웹캠 자리는 처음부터 보이게(영상 속 로고 가림). 카메라는 허락 뒤에만 켜진다
+    camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camTag.textContent="";   // 웹캠 자리는 처음부터 보이게(영상 속 로고 가림). 카메라는 허락 뒤에만 켜진다
     { const pre=document.createElement("video"); pre.preload="auto"; pre.muted=true; pre.src=PRO.intro; window.__introPre=pre; }   // 시계 장면 동안 인트로를 미리 받아 둠
     coldOpen(()=>clip(PRO.intro,null,()=>{ show("hand"); CAMHUB.allowHands(); },0,1,.9));   // 영상 앞 0.9초는 거의 검은 화면이라 건너뜀
     },560); };
@@ -3374,13 +3374,13 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   function camOn(){ camBox.classList.add("on"); camTag.textContent="● REC"; }
   function stopCam(){ camBox.classList.remove("on"); }   // 화면에서만 숨긴다. 카메라는 조사 화면에서 계속 쓴다
   CAMHUB.onState(st=>{
-    if(st==="connecting"){ camOff.style.display="flex"; camOff.textContent="CONNECTING…"; camBox.classList.remove("idle"); }
-    else if(st==="cam"){ camOff.style.display="none"; camBox.classList.remove("idle"); setH("손 인식 준비 중…"); }
-    else if(st==="hands"){ camOff.style.display="none"; camBox.classList.remove("idle"); handOn=true; setH("손바닥을 카메라에 보여주세요"); }
-    else if(st==="nohands"){ handOn=false; camOff.style.display="none"; camBox.classList.remove("idle"); setH("손 인식 로딩 실패 · 마우스로 진행"); }
-    else if(st==="nocam"){ handOn=false; camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camBox.classList.add("idle"); hTag.textContent=""; }
+    if(st==="connecting"){ camOff.style.display="flex"; camOff.textContent="CONNECTING…"; }
+    else if(st==="cam"){ camOff.style.display="none"; setH("손 인식 준비 중…"); }
+    else if(st==="hands"){ camOff.style.display="none"; handOn=true; setH("손바닥을 카메라에 보여주세요"); }
+    else if(st==="nohands"){ handOn=false; camOff.style.display="none"; setH("손 인식 로딩 실패 · 마우스로 진행"); }
+    else if(st==="nocam"){ handOn=false; camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; hTag.textContent=""; }
     else { handOn=false; } });
-  function denied(msg){ CAMHUB.stop(); camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camBox.classList.add("idle"); camTag.textContent=""; hTag.textContent="";
+  function denied(msg){ CAMHUB.stop(); camBox.classList.add("on"); camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camTag.textContent=""; hTag.textContent="";
     $("proTearHint").innerHTML=msg; dip(()=>show("tear"),200); }
   $("proDeny").onclick=()=>denied('초대장을 <b>좌우로 드래그</b>해 찢으세요');
   let camConnecting=false;
@@ -3388,7 +3388,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     if(camConnecting) return; camConnecting=true; $("proAllow").disabled=true;
     camFine.textContent="카메라 연결을 확인하는 중…"; camFine.classList.remove("error");
     camOn(); const ok=await CAMHUB.start(true);
-    if(!ok){ camOff.style.display="flex"; camOff.textContent="CAMERA OFF"; camBox.classList.add("idle");
+    if(!ok){ camOff.style.display="flex"; camOff.textContent="CAMERA OFF";
       camFine.textContent=camError(CAMHUB.err)+` [${CAMHUB.err?.name||CAMHUB.err?.message||"unknown"}]`; camFine.classList.add("error"); camConnecting=false; $("proAllow").disabled=false; return; }
     if(!handOn){ camFine.textContent="손 인식을 불러오지 못했습니다. 마우스로 진행할 수 있습니다."; camFine.classList.add("error"); }
     $("proTearHint").innerHTML=handOn?'손바닥을 보여주고 편지 <b>가운데 선을 따라 아래로</b> 내리세요<br><span style="opacity:.6">마우스로 좌우 드래그해도 됩니다</span>':'손 인식 실패 — 초대장을 <b>좌우로 드래그</b>해 찢으세요';
@@ -4460,12 +4460,6 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .pro.doorvid #proVid{filter:sepia(.2) saturate(.8) brightness(.86) contrast(1.06)}
 .pro.doorvid::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;
   background:linear-gradient(180deg,rgba(6,4,3,.92) 0%,rgba(6,4,3,.45) 14%,transparent 30%,transparent 68%,rgba(6,4,3,.5) 84%,rgba(6,4,3,.95) 100%),radial-gradient(ellipse 80% 75% at 50% 50%,transparent 55%,rgba(6,4,3,.55) 100%)}
-/* 카메라를 켜기 전엔 'CAMERA OFF' 상자 대신, 영상 구석 워터마크 자리만 어둡고 흐리게 덮는다 */
-.pro .cam.idle{border-color:transparent;background:transparent;box-shadow:none;
-  -webkit-backdrop-filter:blur(10px) brightness(.45);backdrop-filter:blur(10px) brightness(.45);
-  -webkit-mask-image:radial-gradient(ellipse 34% 40% at 65% 52%,#000 45%,transparent 100%);mask-image:radial-gradient(ellipse 34% 40% at 65% 52%,#000 45%,transparent 100%)}
-.pro .cam.idle .off{opacity:0}
-.pro:not(:has(#proVid[style*="block"])) .cam.idle{visibility:hidden}   /* 영상이 없을 땐 덮을 것도 없음 */
 /* 단서 표시: 이름표가 단서(손글씨 등)를 덮지 않게 옆으로 비켜 세우고 가는 선으로 잇는다 */
 .exspot span{left:calc(100% + 56px)!important}
 .exspot span::before{content:"";position:absolute;right:100%;top:50%;width:66px;height:1px;background:linear-gradient(90deg,transparent,rgba(210,173,99,.8))}

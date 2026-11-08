@@ -1928,9 +1928,9 @@ function mountExam(s){ const CF=EXAM[s.id]; if(!window.THREE) return;
     EX.vy=EX.vy*.5+(EX.yaw-py)/dt*1000*.5; EX.vp=EX.vp*.5+(EX.pitch-pp)/dt*1000*.5; EX.lm=now; };   // 라디안/초
   el.onpointerup=()=>{ if(!EX) return; if(performance.now()-EX.lm>80){ EX.vy=EX.vp=0; } EX.drag=null; wrap.classList.remove("grab"); };
   el.onwheel=e=>{ e.preventDefault(); EX.zoom=Math.max(.22,Math.min(1.5,(EX.zoom||1)*(e.deltaY>0?1.08:.92))); };
-  spot.onclick=e=>{ e.stopPropagation(); if(EX.done) return; EX.done=true; spot.classList.remove("on"); wrap.classList.add("exhit"); hint.innerHTML="";
+  spot.onclick=e=>{ e.stopPropagation(); if(EX.done) return; EX.done=true; spot.classList.remove("on"); wrap.classList.add("exhit"); hint.innerHTML=""; EX.zoomT=.46; EX.vy=EX.vp=0;
     const fb=document.createElement("div"); fb.className="exfound"; fb.innerHTML=`<small>단서 발견</small><b>${CF.label}</b>`; wrap.appendChild(fb);
-    hit(900,.25,.3); paper(); setTimeout(()=>{ fb.remove(); if(activeSpot!==s) return; collect(s); renderInspect(s); renderSide(); $("iBody").classList.add("rise"); if(s.th) think(s.th); },1300); };
+    hit(900,.25,.3); paper(); setTimeout(()=>{ fb.remove(); if(activeSpot!==s) return; EX.zoomT=1; collect(s); renderInspect(s); renderSide(); $("iBody").classList.add("rise"); if(s.th) think(s.th); },2600); };
   const wp=new THREE.Vector3(), wn=new THREE.Vector3(), tc=new THREE.Vector3(), q=new THREE.Quaternion();
   const loop=t=>{ if(!EX||EX.s!==s) return; if(activeSpot!==s||mode!=="inspect"){ unmountExam(); return; }
     const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&R.domElement.width!==Math.round(w*R.getPixelRatio())){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
@@ -1944,7 +1944,7 @@ function mountExam(s){ const CF=EXAM[s.id]; if(!window.THREE) return;
     const idle=EX.drag?0:Math.sin(t/900)*.04, sway=Math.sin(t/1300)*.012;
     obj.position.set(0,(1-ie)*-.28+Math.sin(t/1100)*.006,0); obj.scale.setScalar(.82+.18*ie);
     obj.rotation.set(EX.rp+(1-ie)*.55+sway,EX.ry+idle,Math.max(-.12,Math.min(.12,-spin*.03)));   // 빨리 돌리면 손목이 살짝 기욺
-    const cp=CF.cam, k=($("insp").classList.contains("exam")?1.75:1)*(EX.zoom||1); C.position.set(cp[0]*k,cp[1]*k,cp[2]*k); C.lookAt(0,0,0); obj.updateMatrixWorld(true);
+    EX.zoom+=((EX.zoomT||1)-(EX.zoom||1))*(1-Math.pow(.003,dt0)); const cp=CF.cam, k=($("insp").classList.contains("exam")?1.75:1)*(EX.zoom||1); C.position.set(cp[0]*k,cp[1]*k,cp[2]*k); C.lookAt(0,0,0); obj.updateMatrixWorld(true);
     wp.set(...CF.spot.p); obj.localToWorld(wp); obj.getWorldQuaternion(q); wn.set(...CF.spot.n).applyQuaternion(q).normalize();
     tc.copy(C.position).sub(wp).normalize(); const facing=wn.dot(tc);
     const dt=Math.min(.1,(t-(EX.lt||t))/1000); EX.lt=t;   // 단서 면이 0.25초쯤 화면을 향하고 있으면 표시
@@ -2077,9 +2077,9 @@ function mountStatue3D(s){ const CF=M3D[s.id];
       const v=(.08+Math.random()*.22)*str; pv[i*3]=Math.cos(a)*v; pv[i*3+1]=(.03+Math.random()*.12)*str; pv[i*3+2]=Math.sin(a)*v; }
     pg.attributes.position.needsUpdate=true; puff.visible=true; puff.userData.age=0; puff.userData.str=str; };
   const hint=document.createElement("div"); hint.className="v3hint"; if(CF.lift) hint.innerHTML=`<small>${s.text}</small><b>좌우로 끌어 돌려 보고, 위로 끌어 들어 올려 보자.</b>`; else hint.textContent=CF.hint||"끌어서 돌려 보기"; wrap.appendChild(hint);
-  const bar=document.createElement("div"); bar.className="v3bar"; bar.innerHTML="<i></i>"; wrap.appendChild(bar);
+  const bar=document.createElement("div"); bar.className="v3bar"; bar.innerHTML="<i></i>"; if(CF.lift) wrap.appendChild(bar);
   S3={s,R,S,C,wrap,raf:0,zoom:1,model:null,yaw:.6,ry:.6,vy:0,lift:0,lv:0,liftT:0,drag:null,done:opened.has(s.id),pt:0,lm:0,landed:true};
-  S3.sync=()=>{ S3.done=!CF.lift||opened.has(s.id); if(S3.done&&CF.lift){ S3.liftT=1; hint.textContent="좌우로 끌어 돌려 보기"; } };
+  S3.sync=()=>{ S3.done=!CF.lift||opened.has(s.id); if(S3.done&&CF.lift){ S3.liftT=1; hint.textContent="좌우로 끌어 돌려 보기"; bar.style.display="none"; } };
   S3.sync();
   m3dLoad(CF.file,g=>{ if(!S3||S3.s!==s) return; const m=g.scene.clone();
     m.traverse(o=>{ if(!o.isMesh) return; if(CF.cloth) splitBiggest(o,0x6a2330,0xe6d8bc); else if(CF.tint){ o.material=o.material.clone(); CF.tint(o,o.material); } }); const b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
@@ -4234,5 +4234,12 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .dpb-rec .pg{height:2px;background:rgba(255,255,255,.14);margin-top:8px}.dpb-rec .pg i{display:block;height:100%;width:0;background:#e2382a}
 .dpb-sub{bottom:22%!important}
 .dpb.done::before{opacity:.5;transition:opacity .6s}
+</style>
+<style>
+/* 3D 살펴보기 안내(조각상 들어 올리기 등)를 잘 보이게 */
+#iPhoto .v3hint{white-space:normal;text-align:center;width:max-content;max-width:64%;bottom:4%;padding:.8em 1.8em;font-size:clamp(13px,1.35vw,17px);line-height:1.6;border:1px solid rgba(210,173,99,.4);background:rgba(10,8,6,.82);z-index:4}
+#iPhoto .v3bar{left:50%;right:auto;transform:translateX(-50%);top:auto;bottom:calc(4% + 7.2em);width:min(320px,52%);height:7px;border-radius:4px;background:rgba(255,255,255,.2);border:1px solid rgba(210,173,99,.45);z-index:4}
+#iPhoto .v3bar::before{content:"↑ 위로 끌어 들어 올리기";position:absolute;left:0;right:0;top:-1.8em;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:#f3d79c;text-shadow:0 1px 4px #000;white-space:nowrap}
+#iPhoto .v3bar i{border-radius:3px;box-shadow:0 0 10px rgba(210,173,99,.7)}
 </style>
 </body></html>

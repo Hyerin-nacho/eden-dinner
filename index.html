@@ -2843,7 +2843,8 @@ function pressOn(i){ const s=STATE[i]; PRESS[i]=Math.min(3,(PRESS[i]||0)+1);
 /* 정답 증거를 들이밀면: 화면이 덜컹, 붉은 '거짓말' 도장이 쾅 */
 /* 들킨 진술: 엘레나가 했던 말이 화면에 다시 떠오르고 그 위로 붉은 줄이 쭉 그어진다 */
 function lieCut(text){ talkEl.querySelector(".tk-lie")?.remove(); const L=document.createElement("div"); L.className="tk-lie"; L.setAttribute("aria-hidden","true");
-  const p=document.createElement("p"); p.textContent="“"+text+"”"; L.appendChild(p); talkEl.appendChild(L); talkEl.classList.add("lying");   // 대사 칸·카드는 잠깐 숨기고 문장만
+  const p=document.createElement("p"); { const t="“"+text+"”", w=t.split(" "); let ls=[t]; if(t.length>16&&w.length>1){ let best=1,bd=1e9; for(let i=1;i<w.length;i++){ const a=w.slice(0,i).join(" ").length, d=Math.abs(a-(t.length-a)); if(d<bd){ bd=d; best=i; } } ls=[w.slice(0,best).join(" "),w.slice(best).join(" ")]; }
+    ls.forEach(x=>{ const sp=document.createElement("span"); sp.className="lc"; sp.textContent=x; p.appendChild(sp); }); } L.appendChild(p); talkEl.appendChild(L); talkEl.classList.add("lying");   // 대사 칸·카드는 잠깐 숨기고 문장만
   setTimeout(()=>L.classList.add("on"),20); setTimeout(()=>{ L.classList.add("cut"); try{ SFX("tear",.35); }catch(e){} },380);
   setTimeout(()=>{ L.classList.add("out"); talkEl.classList.remove("lying"); setTimeout(()=>L.remove(),700); },2300); }
 /* 증거로 거짓을 깨는 순간: '거짓말' 도장 없이, 카메라가 엘레나 얼굴로 확 튀어 들어가고 화면이 번쩍 — 흠칫 놀라는 느낌 */
@@ -3104,6 +3105,12 @@ function badEnd(){ closeBoard(); vidStop&&vidStop(); talkEl.hidden=true; mode="e
 /* ================= 프롤로그 : 초대장 → 회상 → VIP실 =================
    원본 오르페우스(Joljak_S1 → 봉투 → 찢기 → 명부 → 회중시계 → 회상)를 480p로 옮겨 온 부분.
    연결 영상(아내의 복수 → VIP실 문 앞)이 준비되면 PRO.bridge 에 경로만 넣으면 된다. */
+const STORY_CAPS=[[.2,"He killed my wife.\nI boarded this train for revenge.\n그는 내 아내를 죽였다. 나는 복수하려고 이 열차에 올랐다.",null,3000],
+  [3.4,"“Is anyone there?\nPlease — save me!”\n거기 누구 없어요? 제발 살려주세요.","red",2100],
+  [6.0,"The moment I boarded,\na scream echoed through the train.\n열차에 오르자, 비명소리가 들렸다.",null,2700],
+  [9.0,"That voice, begging for help…\n도움을 청하던 그 목소리…",null,2300],
+  [11.4,"…belonged to the one\nwho killed my wife.\n내 아내를 죽인, 바로 그 사람의 것이었다.","red",2800],
+  [14.4,"Locke is behind that door.\n로크는 저 문 뒤에 있다.",null,1800]];
 const PRO={ intro:"pro/intro_fast.mp4", rewind:"pro/rewind_cut.mp4", memory:"pro/Memory.mp4", corridor:"pro/corridor_cut.mp4", reflect:"pro/memoryReflection.mp4", news:"pro/news.mp4",
   /* VIP실까지 가는 연결 컷 — 순서대로 재생, 빈 칸("")은 건너뜀. [시계·다짐 컷], [VIP실 문 앞 컷]이 준비되면 해당 칸에 경로만 넣으면 된다 */
   bridge:[ {src:"pro/seated.mp4"}, {src:"pro/16_corridorWalk.mp4",steps:true,caps:[[.4,"VIP실은, 이 복도 끝이다.",null,3000]]}, {src:"pro/bridge_door.mp4"} ] };
@@ -3405,7 +3412,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   function finishTear(){ SFX("tear2",.55); tearSndStop();
     setTimeout(()=>{ spawnPieces(); fallT0=performance.now(); fallT=0; dirty=true; },40);
      setTimeout(()=>{ if(tearTest){ resetTear(); return; }
-       dip(()=>clip("pro/story_cut.mp4",null,finish),180);
+       dip(()=>clip("pro/story_cut.mp4",STORY_CAPS,finish),180);
      },FALL_T*1000+80); }
   card.addEventListener("pointerdown",e=>{ drag=true; lx=e.clientX; lastMv=performance.now(); try{ card.setPointerCapture(e.pointerId); }catch(_){} });
   window.addEventListener("pointermove",e=>{ if(!drag||torn) return; const now=performance.now(), dt=Math.max(8,now-lastMv), dxs=e.clientX-lx, dx=Math.abs(dxs);
@@ -3506,7 +3513,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   }
   /* 5. 회상 : 시간 되감기 → 공방(Ada) → 붉은 복도 */
   function flashback(){ if(flash) return; flash=true;
-    dip(()=>clip("pro/story_cut.mp4",null,finish),200); }   // 체험 시간 단축: 창에 비친 남자 장면은 뺐다
+    dip(()=>clip("pro/story_cut.mp4",STORY_CAPS,finish),200); }   // 체험 시간 단축: 창에 비친 남자 장면은 뺐다
   /* 5-1. 탑승 히어로샷 — 드래그(또는 휠)한 만큼 영상이 진행되며 기차 안으로 줌인 (원본 P7-1 스크롤 스크럽) */
   const HERO_DRAG_PX=1400, HERO_ZOOM=1.35;   // 드래그 거리(px)만큼 가면 끝까지, 마지막 확대 배율
   function hero(next){
@@ -4760,6 +4767,17 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 
 /* 증거 고르기: 카드를 위로 끌어올려 화면 중앙~상단에 (사용자 표시 위치) */
 .talk .tk-opts.m-ev{top:20%!important;bottom:auto!important}
+
+/* 자막: 영어 큼직하게, 마지막 한국어 줄은 작게 */
+.pro .vcap .ln{display:inline-block}
+.pro .vcap .ln:last-of-type{font-size:.62em;opacity:.78;margin-top:.5em;letter-spacing:.04em}
+.pro .vcap{font-family:"Cormorant Garamond",var(--serif);font-style:italic;font-size:max(17px,2.5cqw);line-height:1.35}
+/* 거짓 진술 붉은 줄: 가운데 정렬, 문장을 짧게 끊어 줄맞춤, 줄은 글자 높이 가운데로 */
+.talk .tk-lie{width:min(620px,64%)!important;top:60%!important}.talk.lying .tk-case{opacity:0!important;transition:opacity .2s}
+.talk .tk-lie p{display:block!important;font-size:clamp(17px,2vw,26px)!important;line-height:1.75!important;background:none!important;position:relative;padding:0 .2em}
+.talk .tk-lie p .lc{display:block;width:fit-content;margin:0 auto;position:relative;padding:0 .3em}
+.talk .tk-lie p .lc::after{content:"";position:absolute;left:0;right:0;top:54%;height:.1em;background:#d23a2c;transform:scaleX(0);transform-origin:left;transition:transform .6s cubic-bezier(.6,0,.2,1);box-shadow:0 0 14px rgba(210,58,44,.6)}
+.talk .tk-lie.cut p .lc::after{transform:scaleX(1)}.talk .tk-lie.cut p .lc:nth-child(2)::after{transition-delay:.25s}
 </style>
 <script>
 /* 손글씨(증거 쪽지·붉은 펜 메모)를 누르면 종이째로 크게 보여 준다. 아무 데나 누르거나 ESC로 닫힘 */

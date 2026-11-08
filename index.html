@@ -20,6 +20,10 @@
 <style>
 [hidden]{display:none!important}
 #ending[hidden]{display:none!important} /* .ending.ending{display:grid!important}가 위 규칙을 이기므로 ID로 고정 */
+/* 타이틀 첫 프레임 튐 방지: 로고 크기·등장 애니메이션 CSS가 문서 뒤쪽에 있어, 그 전엔 로고가 원본 크기로 잠깐 그려짐.
+   크기를 미리 잡고 등장 요소를 투명으로 시작(뒤쪽 애니메이션이 fill:both로 1까지 올려 줌) */
+.pro .ps[data-s="start"] .title-logo{display:block;width:min(56cqw,760px);max-height:42cqh;object-fit:contain}
+.pro .ps[data-s="start"] .title-logo,.pro .ps[data-s="start"] .title-sub,.pro .ps[data-s="start"] .title-start{opacity:0}
 :root{
   color-scheme: dark;
   --ink:#0b100d; --panel:rgba(16,22,19,.92); --line:#2c3831;

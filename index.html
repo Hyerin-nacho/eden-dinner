@@ -1428,7 +1428,7 @@ function audio(){ if(!ac){ try{
 }catch(e){} } return ac; }
 function noiseBuf(){ const b=ac.createBuffer(1,ac.sampleRate*.4,ac.sampleRate), d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; return b; }
 const SFXF={}; function SFX(n,v){ try{ if(!soundOn) return; let a=SFXF[n]; if(!a){ a=SFXF[n]=new Audio("sfx/"+n+".mp3"); a.preload="auto"; } const c=a.cloneNode(); c.volume=Math.min(1,v||.6); c.play().catch(()=>{}); }catch(e){} }
-['door','gasp','tick','horn','squeak'].forEach(n=>{ try{ const a=new Audio("sfx/"+n+".mp3"); a.preload="auto"; SFXF[n]=a; }catch(e){} });
+['door','gasp','tick','horn','squeak','hit','steps'].forEach(n=>{ try{ const a=new Audio("sfx/"+n+".mp3"); a.preload="auto"; SFXF[n]=a; }catch(e){} });
 function creak(){ if(!soundOn) return; SFX("door",.6); return; if(!audio()) return; const t=ac.currentTime;
   const o=ac.createOscillator(), f=ac.createBiquadFilter(), g=ac.createGain(), l=ac.createOscillator(), lg=ac.createGain();
   o.type="sawtooth"; o.frequency.setValueAtTime(70,t); o.frequency.linearRampToValueAtTime(115,t+.9); o.frequency.linearRampToValueAtTime(82,t+2);
@@ -1439,7 +1439,7 @@ function creak(){ if(!soundOn) return; SFX("door",.6); return; if(!audio()) retu
 function hit(freq,vol,dur,type="lowpass"){ if(!soundOn||!audio()) return; const t=ac.currentTime, s=ac.createBufferSource(), f=ac.createBiquadFilter(), g=ac.createGain();
   s.buffer=noiseBuf(); f.type=type; f.frequency.value=freq; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   s.connect(f); f.connect(g); g.connect(sfxBus||ac.destination); s.start(t); s.stop(t+dur+.05); }
-function steps(n=2){ for(let i=0;i<n;i++) setTimeout(()=>hit(320,.35,.18),i*620); }
+function steps(n=2){ SFX("steps",.35); }
 function startClock(){ clearInterval(clockTimer); clockTimer=setInterval(()=>SFX("tick",.22),1000); }
 let watchTimer=0, watchStopTimer=0;
 function stopWatchTick(){ clearInterval(watchTimer); clearTimeout(watchStopTimer); watchTimer=0; }
@@ -2656,7 +2656,7 @@ function statement(i,again){
 /* 정답 증거를 들이밀면: 화면이 덜컹, 붉은 '거짓말' 도장이 쾅 */
 function slam(){ const S=$("tkSlam"); S.classList.remove("on"); void S.offsetWidth; S.classList.add("on");
   talkEl.classList.remove("shake","hitf"); void talkEl.offsetWidth; talkEl.classList.add("shake","hitf");
-  hit(95,.4,.35); hit(1900,.1,.07,"bandpass"); setTimeout(()=>hit(140,.18,.2),90); }
+  SFX("hit",.55); }
 function present(i){
   const s=STATE[i], need=[].concat(s.ans), have=EVID.filter(e=>found.has(e.id));
   /* 쉽게: 이 진술을 깰 증거를 아직 못 찾았으면, 어디를 봐야 하는지 알려 주고 현장으로 */
@@ -2696,8 +2696,8 @@ function endSeq(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
   E.className="ending"; ng&&ng.classList.remove("on"); ck.textContent="21:47";
   const at=(ms,f)=>setTimeout(f,ms);
   at(60,()=>E.classList.add("e1"));                                                  // 레터박스 닫힘 + 배경 천천히 다가옴
-  at(1300,()=>{ E.classList.add("e2"); hit(80,.45,.4); hit(1400,.08,.06,"bandpass"); });   // 도장 쾅
-  let tk=0; const tick=setInterval(()=>{ if(mode!=="end"){ clearInterval(tick); return; } hit(tk++%2?2900:3300,.018,.02,"highpass"); },1000);   // 회중시계 초침
+  at(1300,()=>{ E.classList.add("e2"); SFX("hit",.5); });   // 도장 쾅
+  let tk=0; const tick=setInterval(()=>{ if(mode!=="end"){ clearInterval(tick); return; } SFX("tick",.16); },1000);   // 회중시계 초침
   at(3000,()=>E.classList.add("e3"));                                                // 사건 종결 문구
   at(4600,()=>{ ck.classList.add("flip"); setTimeout(()=>ck.textContent="21:48",180); hit(1600,.05,.03,"bandpass"); });   // 시간은 흘러간다
   at(5200,()=>E.classList.add("e4"));                                                // 질문 첫 줄

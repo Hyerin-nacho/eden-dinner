@@ -1648,7 +1648,7 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
   m3dLoad("chair3d.glb",g=>{ if(!DV||DV.wrap!==wrap) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
     m.position.set(-c.x,-b.min.y,-c.z); const k=1/sz.y; const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(k); gp.rotation.y=Math.PI*.1; m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } }); S.add(gp); });
   m3dLoad("doll3d.glb",g=>{ if(!DV||DV.wrap!==wrap) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
-    m.position.set(-c.x,-c.y,-c.z); const k=.34/sz.y; const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(k); m.traverse(o=>{ if(o.isMesh){ o.receiveShadow=true; o.castShadow=true; } }); dollG.add(gp); DV.ready=true; });
+    m.position.set(-c.x,-c.y,-c.z); const k=.3/sz.y; const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(k); m.traverse(o=>{ if(o.isMesh){ o.receiveShadow=true; o.castShadow=true; } }); dollG.add(gp); DV.ready=true; });
   const el=R.domElement; let ly=0;
   el.onpointerdown=e=>{ if(!DV||DV.done) return; DV.drag=true; ly=e.clientY; wrap.classList.add("grab"); try{ el.setPointerCapture(e.pointerId); }catch(_){} };
   el.onpointermove=e=>{ if(!DV||!DV.drag||DV.done) return; const r=el.getBoundingClientRect(); const dy=(e.clientY-ly)/Math.max(220,r.height*.55); ly=e.clientY; DV.p=Math.max(0,Math.min(1,DV.p+dy)); { const n=performance.now(); if(dy>.004&&n-(DV.sl||0)>900){ DV.sl=n; SFX("slide",Math.min(.5,.18+dy*5)); } } };
@@ -1659,10 +1659,10 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
     const dt=Math.min(.05,(t-(DV.pt||t))/1000); DV.pt=t;
     if(!DV.drag&&!DV.done&&DV.p>0) DV.p=Math.max(0,DV.p-dt*.18);   // 놓으면 천천히 도로 밀려 들어감
     const p=DV.p, u=sm(Math.max(0,Math.min(1,(p-.5)/.5)));
-    dollG.position.set(0,.06+u*.1,-.18+p*.5); dollG.rotation.set(-Math.PI/2*(1-u),0,0);
+    dollG.position.set(0,.06+u*.08,-.18+p*.4); dollG.rotation.set(-Math.PI/2*(1-u),0,0);
     bar.querySelector("i").style.width=(p*100)+"%";
     { const tw=Math.max(0,Math.sin(t/230)*.5+Math.sin(t/97)*.3+.35); glint.material.opacity=(1-u)*(.15+tw*.55)+u*.1; glint.scale.setScalar(.035+tw*.03); eyeL.intensity=.04+tw*.22; reveal.intensity=p*4; }
-    C.position.set(.12+Math.sin(t/2600)*.012,.22+u*.12,1.02+u*.5); C.lookAt(0,.2+u*.02,0); roomLamp.intensity=1.7+Math.sin(t/430)*.12+Math.sin(t/170)*.06;
+    C.position.set(.1+Math.sin(t/2600)*.01,.15+u*.03,1.0+u*.1); C.lookAt(0,.15+u*.05,-.02); roomLamp.intensity=1.7+Math.sin(t/430)*.12+Math.sin(t/170)*.06;
     if(p>=1&&!DV.done&&DV.ready){ DV.done=true; hint.innerHTML="<b>인형을 꺼냈다.</b>"; SFX("thud",.45); SFX("rustle",.45); window.__dollOut=1; setTimeout(()=>{ if(!DV||DV.wrap!==wrap) return; dollClose(); dollPick(); },1100); }
     { const a=pg.attributes.position; for(let i=0;i<NP;i++){ let y=a.getY(i)-pv[i]*dt; if(y<0) y=1.8; a.setY(i,y); a.setX(i,a.getX(i)+Math.sin(t/1700+i)*.0004); } a.needsUpdate=true; } if(!document.hidden) R.render(S,C); DV.raf=requestAnimationFrame(loop); };
   DV.raf=requestAnimationFrame(loop);

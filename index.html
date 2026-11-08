@@ -1690,13 +1690,14 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
   el.onpointermove=e=>{ if(!DV||!DV.drag) return; const r=el.getBoundingClientRect(); DV.yaw=DV.drag.yaw+(e.clientX-DV.drag.x)/Math.min(r.width,640)*5; DV.pitch=Math.max(-.5,Math.min(.5,DV.drag.pitch+(e.clientY-DV.drag.y)/Math.min(r.height,420)*2.6)); };
   el.onpointerup=()=>{ if(!DV) return; DV.drag=null; wrap.classList.remove("grab"); };
   el.onwheel=e=>{ e.preventDefault(); DV.zoom=Math.max(.3,Math.min(1.5,DV.zoom*(e.deltaY>0?1.08:.92))); };
-  spot.onclick=e=>{ e.stopPropagation(); if(DV.done) return; DV.done=true; spot.classList.remove("on"); wrap.classList.add("exhit"); hint.innerHTML="";
+  spot.onclick=e=>{ e.stopPropagation(); if(DV.done) return; DV.done=true; DV.zin=true; spot.classList.remove("on"); wrap.classList.add("exhit"); hint.innerHTML="";
     const fb=document.createElement("div"); fb.className="exfound"; fb.innerHTML="<small>단서 발견</small><b>등의 작은 스피커</b>"; wrap.appendChild(fb); hit(900,.25,.3); paper();
-    setTimeout(()=>{ if(DV&&DV.wrap===wrap) dollPlayback(); },1400); };
+    setTimeout(()=>{ if(DV&&DV.wrap===wrap) dollPlayback(); },2000); };
   const wp=new THREE.Vector3(), wn=new THREE.Vector3(), tc=new THREE.Vector3(), q=new THREE.Quaternion();
   const loop=t=>{ if(!DV) return; if(mode!=="closeup"){ dollClose(); return; }
     const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&R.domElement.width!==Math.round(w*R.getPixelRatio())){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
     obj.rotation.set(DV.pitch,DV.yaw+(DV.drag?0:Math.sin(t/900)*.04),0); const d=3.1*DV.zoom; C.position.set(0,.05*d,d); C.lookAt(0,0,0); obj.updateMatrixWorld(true);
+    if(DV.zin){ DV.sz=Math.min(1,(DV.sz||0)+(1-(DV.sz||0))*.07+.002); const e=DV.sz*DV.sz*(3-2*DV.sz); if(spkP){ const sp2=spkP.clone(); obj.localToWorld(sp2); const nn=new THREE.Vector3(0,0,-1).applyQuaternion(obj.getWorldQuaternion(new THREE.Quaternion())); const tp=sp2.clone().add(nn.multiplyScalar(.38)); C.position.lerp(tp,e); C.lookAt(new THREE.Vector3(0,0,0).lerp(sp2,e)); } }
     const blink=(Math.sin(t/260)>.2)?1:.15; eye.intensity=blink*.25; eyeDot.material.opacity=blink*.7;
     if(spkP){ wp.copy(spkP); obj.localToWorld(wp); obj.getWorldQuaternion(q); wn.set(0,0,-1).applyQuaternion(q); tc.copy(C.position).sub(wp).normalize();
       const dt=Math.min(.1,(t-(DV.lt||t))/1000); DV.lt=t; DV.face=wn.dot(tc)>.55?Math.min(1,DV.face+dt*4):Math.max(0,DV.face-dt*6);
@@ -2623,8 +2624,8 @@ function opts(list,m="act"){
 /* 증거 고르기: 어두운 화면 위에 사진 카드를 한 줄로 늘어놓고 좌우로 넘겨 가운데 카드를 들이민다 */
  const evidenceRoomImage=new Image(); evidenceRoomImage.src=IMG;
  function evidencePhoto(el,s){
-   if(s.id==="doll"){ el.style.backgroundImage='url("ev/doll.jpg")'; el.style.backgroundSize="contain"; el.style.backgroundPosition="center"; return; }
-   if(EVIMG[s.id]){ el.style.backgroundImage=`url(${EVIMG[s.id]})`; el.style.backgroundSize="contain"; el.style.backgroundPosition="center"; return; }
+   if(s.id==="doll"){ el.style.backgroundImage='url("ev/doll.jpg")'; el.style.backgroundSize="cover"; el.style.backgroundPosition="center 62%"; return; }
+   if(EVIMG[s.id]){ el.style.backgroundImage=`url(${EVIMG[s.id]})`; el.style.backgroundSize=s.id==="doll"?"cover":"contain"; el.style.backgroundPosition=s.id==="doll"?"center 62%":"center"; return; }
    const draw=()=>{
      const im=evidenceRoomImage, c=document.createElement("canvas"); c.width=640; c.height=400;
      const sw=im.naturalWidth/2.65, sh=sw/1.6;

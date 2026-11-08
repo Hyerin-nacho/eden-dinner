@@ -1428,7 +1428,7 @@ function audio(){ if(!ac){ try{
 }catch(e){} } return ac; }
 function noiseBuf(){ const b=ac.createBuffer(1,ac.sampleRate*.4,ac.sampleRate), d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; return b; }
 const SFXF={}; function SFX(n,v){ try{ if(!soundOn) return; let a=SFXF[n]; if(!a){ a=SFXF[n]=new Audio("sfx/"+n+".mp3"); a.preload="auto"; } const c=a.cloneNode(); c.volume=Math.min(1,v||.6); c.play().catch(()=>{}); }catch(e){} }
-['door','gasp','tick','horn','squeak','hit','steps'].forEach(n=>{ try{ const a=new Audio("sfx/"+n+".mp3"); a.preload="auto"; SFXF[n]=a; }catch(e){} });
+['door','gasp','tick','horn','squeak','hit','steps','tear','tear2','rustle','lock','cup'].forEach(n=>{ try{ const a=new Audio("sfx/"+n+".mp3"); a.preload="auto"; SFXF[n]=a; }catch(e){} });
 function creak(){ if(!soundOn) return; SFX("door",.6); return; if(!audio()) return; const t=ac.currentTime;
   const o=ac.createOscillator(), f=ac.createBiquadFilter(), g=ac.createGain(), l=ac.createOscillator(), lg=ac.createGain();
   o.type="sawtooth"; o.frequency.setValueAtTime(70,t); o.frequency.linearRampToValueAtTime(115,t+.9); o.frequency.linearRampToValueAtTime(82,t+2);
@@ -1447,7 +1447,7 @@ function startWatchTick(){ stopWatchTick(); if(!soundOn||!audio()) return; let n
   const pulse=()=>{ hit(n++%2?1600:2500,.11,.045,"bandpass"); };
   pulse(); watchTimer=setInterval(pulse,480); watchStopTimer=setTimeout(stopWatchTick,3800);
 }
-function paper(){ hit(2400,.08,.18,"bandpass"); }
+function paper(){ SFX("rustle",.3); }
 $("soundBtn").onclick=e=>{ soundOn=!soundOn; $("soundT").textContent=soundOn?"소리":"음소거"; $("soundBtn").setAttribute("aria-pressed",soundOn); if(soundOn){audio(); ac&&ac.resume(); startClock();} else clearInterval(clockTimer); if(sfxLevel) sfxLevel.gain.setTargetAtTime(soundOn ? .6 : 0,ac.currentTime,.02); document.querySelectorAll("#proVid,#evClipV,#tkVid,#tkReact,#sbVidV,.cuv,.stage>video").forEach(v=>v.muted=!soundOn); };
 
 /* ---------- 인트로 (영상 기반 카메라 연출) ---------- */
@@ -1550,13 +1550,13 @@ function drawHots(){
 }
 /* 인형 기억 재생 — 붉은 눈을 누르면 카메라가 눈 속으로 들어가고, 인형이 기억한 그 밤이 재생된다.
    타임코드가 21:41 → 21:47 로 흐르고, 대사는 자막으로. 21:47에 둔탁한 소리가 쿵, 화면이 덜컹하고 암전 */
-function dollThud(){ try{ if(!soundOn||!audio()) return; const t=ac.currentTime, out=sfxBus||ac.destination;
+function dollThud(){ if(soundOn){ SFX("hit",.75); return; } try{ if(!soundOn||!audio()) return; const t=ac.currentTime, out=sfxBus||ac.destination;
     const o=ac.createOscillator(), g=ac.createGain(); o.type="sine"; o.frequency.setValueAtTime(78,t); o.frequency.exponentialRampToValueAtTime(32,t+.5);
     g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(1,t+.008); g.gain.exponentialRampToValueAtTime(.001,t+.9); o.connect(g); g.connect(out); o.start(t); o.stop(t+1);
     const n=ac.createBuffer(1,ac.sampleRate*.4,ac.sampleRate), d=n.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
     const ns=ac.createBufferSource(), lp=ac.createBiquadFilter(), ng=ac.createGain(); ns.buffer=n; lp.type="lowpass"; lp.frequency.value=420; ng.gain.value=.8; ns.connect(lp); lp.connect(ng); ng.connect(out); ns.start(t);
   }catch(e){} }
-function glassClink(){ try{ if(!soundOn||!audio()) return; const t0=ac.currentTime+.01, out=sfxBus||ac.destination;
+function glassClink(){ if(soundOn){ SFX("cup",.5); return; } try{ if(!soundOn||!audio()) return; const t0=ac.currentTime+.01, out=sfxBus||ac.destination;
     [[0,1],[.045,.55]].forEach(([dt,v])=>{ const t=t0+dt;                        // 두 잔이 '챙' 하고 거의 동시에
       [[2637,.5],[2649,.4],[4180,.22],[6050,.12],[7310,.06]].forEach(([f,a])=>{ const o=ac.createOscillator(), g=ac.createGain(); o.type="sine"; o.frequency.value=f*(1+(Math.random()-.5)*.004);
         g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(a*v*.22,t+.003); g.gain.exponentialRampToValueAtTime(.0001,t+(f<3000?1.8:.7)); o.connect(g); g.connect(out); o.start(t); o.stop(t+1.9); });
@@ -3114,7 +3114,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
       p.el.style.filter=`brightness(${(1-.4*Math.min(1,sh)).toFixed(3)}) drop-shadow(0 ${(22*lift+2).toFixed(1)}px ${(28*lift+4).toFixed(1)}px rgba(0,0,0,${(.5-.12*fs).toFixed(2)}))`; }); }
   /* 찢는 소리: 끊김 없이 흐르는 잡음을 찢는 속도에 맞춰 크게/작게 */
   let tsnd=null;
-  function tearSndStart(){ try{ if(tsnd||!soundOn||!audio()) return; ac.resume&&ac.resume();
+  function tearSndStart(){ try{ if(tsnd||!soundOn||!audio()) return; SFX("tear",.4); ac.resume&&ac.resume();
     const n=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate), dd=n.getChannelData(0); let b=0;
     for(let i=0;i<dd.length;i++){ b=b*.55+(Math.random()*2-1)*.45; dd[i]=Math.random()<.025?(Math.random()*2-1):b*.55; }
     const s=ac.createBufferSource(); s.buffer=n; s.loop=true;
@@ -3186,7 +3186,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     if(fallT>=0 && now-fallT0>FALL_T*1000+150){ looping=false; return; }
     requestAnimationFrame(tloop); }
   requestAnimationFrame(tloop);
-  function finishTear(){ sfx(2600,.12,.2,"bandpass"); sfx(700,.09,.15); tearSndStop();
+  function finishTear(){ SFX("tear2",.55); tearSndStop();
     setTimeout(()=>{ spawnPieces(); fallT0=performance.now(); fallT=0; dirty=true; },40);
      setTimeout(()=>{ if(tearTest){ resetTear(); return; }
        dip(()=>clip("pro/story_cut.mp4",null,finish),180);
@@ -3341,7 +3341,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     DS.p+=(DS.tp-DS.p)*.2; if(Math.abs(DS.tp-DS.p)<.001) DS.p=DS.tp;
     const t=DS.p*OPEN_T; if(!pv.seeking&&Math.abs(pv.currentTime-t)>.02) try{ pv.currentTime=t; }catch(e){}
     $("proDoor").style.opacity=String(Math.max(0,1-DS.p*3));
-    if(DS.p>.42&&!DS.latch){ DS.latch=true; sfx(1300,.09,.04,"bandpass"); sfx(180,.12,.06); }   // 걸쇠 '철컥'
+    if(DS.p>.42&&!DS.latch){ DS.latch=true; SFX("lock",.5); }   // 걸쇠 '철컥'
     if(DS.p<.3) DS.latch=false;
     if(DS.p>.62&&!DS.crk){ DS.crk=true; try{ creak&&creak(); }catch(e){} }
     if(DS.p>.96){ openDoor(); return; }

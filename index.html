@@ -1048,12 +1048,18 @@ button{font:inherit;cursor:pointer;color:inherit}
     <video class="en-vid" id="endVid" playsinline preload="auto" hidden></video>
     <div class="en-bars" aria-hidden="true"><i></i><i></i></div>
     <div class="en-clock" id="endClock" aria-hidden="true">21:47</div>
-    <div class="en-stamp" aria-hidden="true"><b>CASE CLOSED</b><small>ORPHEUS EXPRESS R.R. · VIP</small></div>
     <div class="case">사건 종결 · 범인 엘레나 보로딘</div>
     <h2 class="q"><span>그를 죽인 범인이</span><br><span>정말 엘레나가 맞을까?</span></h2>
     <p class="nag" id="endNag">21:47 — 독이 먼저였을까, 그 소리가 먼저였을까.</p>
     <p class="en">The next scene begins <em>in the game</em>.</p>
     <div class="row"><button class="enter" id="ctaBtn" disabled aria-disabled="true">게임 다운로드 페이지 준비 중</button><button class="skip" style="position:static" id="againBtn">처음으로 돌아가기</button></div>
+    <aside class="en-file" aria-hidden="true">
+      <div class="ef-top"><span>CASE FILE</span><span>ORPHEUS EXPRESS R.R.</span></div>
+      <div class="ef-photo"><img src="ref/elena_master.jpg" alt=""></div>
+      <div class="ef-name"><b>엘레나 보로딘</b><small>ELENA BORODIN · 전담 승무원</small></div>
+      <dl class="ef-rows"><div><dt>피해자</dt><dd>밴더빌트 로크</dd></div><div><dt>현장</dt><dd>VIP실</dd></div><div><dt>추정 시각</dt><dd>21:47</dd></div><div><dt>결론</dt><dd>범인으로 지목</dd></div></dl>
+      <div class="en-stamp"><b>CASE CLOSED</b><small>ORPHEUS R.R. · VIP</small></div>
+    </aside>
   </section>
   <!-- 증거 게시판 (조사) -->
   <section class="ov board" id="insp" aria-labelledby="iTitle">
@@ -1645,7 +1651,7 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
     m.position.set(-c.x,-c.y,-c.z); const k=.34/sz.y; const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(k); m.traverse(o=>{ if(o.isMesh){ o.receiveShadow=true; o.castShadow=true; } }); dollG.add(gp); DV.ready=true; });
   const el=R.domElement; let ly=0;
   el.onpointerdown=e=>{ if(!DV||DV.done) return; DV.drag=true; ly=e.clientY; wrap.classList.add("grab"); try{ el.setPointerCapture(e.pointerId); }catch(_){} };
-  el.onpointermove=e=>{ if(!DV||!DV.drag||DV.done) return; const r=el.getBoundingClientRect(); const dy=(e.clientY-ly)/Math.max(220,r.height*.55); ly=e.clientY; DV.p=Math.max(0,Math.min(1,DV.p+dy)); if(Math.random()<.25) hit(260,.04,.05,"lowpass"); };
+  el.onpointermove=e=>{ if(!DV||!DV.drag||DV.done) return; const r=el.getBoundingClientRect(); const dy=(e.clientY-ly)/Math.max(220,r.height*.55); ly=e.clientY; DV.p=Math.max(0,Math.min(1,DV.p+dy)); { const n=performance.now(); if(dy>.004&&n-(DV.sl||0)>900){ DV.sl=n; SFX("slide",Math.min(.5,.18+dy*5)); } } };
   el.onpointerup=()=>{ if(!DV) return; DV.drag=false; wrap.classList.remove("grab"); };
   const sm=t=>t*t*(3-2*t);
   const loop=t=>{ if(!DV||DV.wrap!==wrap) return; if(mode!=="closeup"){ dollClose(); return; }
@@ -1657,7 +1663,7 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
     bar.querySelector("i").style.width=(p*100)+"%";
     { const tw=Math.max(0,Math.sin(t/230)*.5+Math.sin(t/97)*.3+.35); glint.material.opacity=(1-u)*(.15+tw*.55)+u*.1; glint.scale.setScalar(.035+tw*.03); eyeL.intensity=.04+tw*.22; reveal.intensity=p*4; }
     C.position.set(.12+Math.sin(t/2600)*.012,.22+u*.12,1.02+u*.5); C.lookAt(0,.2+u*.02,0); roomLamp.intensity=1.7+Math.sin(t/430)*.12+Math.sin(t/170)*.06;
-    if(p>=1&&!DV.done&&DV.ready){ DV.done=true; hint.innerHTML="<b>인형을 꺼냈다.</b>"; hit(900,.25,.3); paper(); window.__dollOut=1; setTimeout(()=>{ if(!DV||DV.wrap!==wrap) return; dollClose(); dollPick(); },1100); }
+    if(p>=1&&!DV.done&&DV.ready){ DV.done=true; hint.innerHTML="<b>인형을 꺼냈다.</b>"; SFX("thud",.45); SFX("rustle",.45); window.__dollOut=1; setTimeout(()=>{ if(!DV||DV.wrap!==wrap) return; dollClose(); dollPick(); },1100); }
     { const a=pg.attributes.position; for(let i=0;i<NP;i++){ let y=a.getY(i)-pv[i]*dt; if(y<0) y=1.8; a.setY(i,y); a.setX(i,a.getX(i)+Math.sin(t/1700+i)*.0004); } a.needsUpdate=true; } if(!document.hidden) R.render(S,C); DV.raf=requestAnimationFrame(loop); };
   DV.raf=requestAnimationFrame(loop);
 }
@@ -3593,7 +3599,7 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
    const show=n&&(CAMHUB.on||CAMHUB.state==="connecting"||CAMHUB.state==="nocam");
    if(show!==shown){ shown=show; box.classList.toggle("on",show); base=null; } };
  window.__excam=sync; new MutationObserver(sync).observe(I,{attributes:true,attributeFilter:["class"]}); setInterval(sync,300);
- (function pre(){ if(mode==="title"||mode==="intro"){ setTimeout(pre,1500); return; } if(window.THREE&&THREE.GLTFLoader){ m3dLoad(M3D.statue.file,()=>{}); m3dLoad("bottle.json",()=>{}); m3dLoad("chair3d.glb",()=>{}); m3dLoad("rug3d.glb",()=>{}); ["pill","clock","rumble"].forEach(n=>{ try{ new Audio("sfx/"+n+".mp3").preload="auto"; }catch(e){} }); m3dLoad("doll3d.glb",()=>{}); m3dLoad("table3d.json",()=>{}); } else setTimeout(pre,800); })();   // 동상 모델 미리 받아 두기
+ (function pre(){ if(mode==="title"||mode==="intro"){ setTimeout(pre,1500); return; } if(window.THREE&&THREE.GLTFLoader){ m3dLoad(M3D.statue.file,()=>{}); m3dLoad("bottle.json",()=>{}); m3dLoad("chair3d.glb",()=>{}); m3dLoad("rug3d.glb",()=>{}); ["pill","clock","rumble","slide","thud"].forEach(n=>{ try{ new Audio("sfx/"+n+".mp3").preload="auto"; }catch(e){} }); m3dLoad("doll3d.glb",()=>{}); m3dLoad("table3d.json",()=>{}); } else setTimeout(pre,800); })();   // 동상 모델 미리 받아 두기
 })();
 </script>
 
@@ -4371,5 +4377,40 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .tk-slam::after{content:"";position:absolute;left:50%;top:50%;width:60%;aspect-ratio:1;border:2px solid rgba(226,64,47,.7);border-radius:50%;transform:translate(-50%,-50%) scale(.4);opacity:0;pointer-events:none}
 .tk-slam.on::after{animation:slring .7s ease-out .12s both}
 @keyframes slring{0%{opacity:.9;transform:translate(-50%,-50%) scale(.5)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.4)}}
+</style>
+<style>
+/* ===== 엔딩 페이지 v3: 사건 기록 카드 + 에디토리얼 타이포 ===== */
+.ending.ending{grid-template-rows:repeat(6,auto);display:grid!important;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);column-gap:clamp(28px,5vw,80px);align-content:center;justify-items:start;text-align:left;padding:10% 8% 8%!important;gap:0!important}
+.ending.ending::before{background:radial-gradient(ellipse at 28% 50%,rgba(10,7,5,.55),rgba(0,0,0,.94) 78%),url(pro/relic_bg.jpg) 70% 40%/cover no-repeat!important;filter:blur(3px)}
+.ending.ending>*:not(.en-bars):not(.en-clock):not(.en-vid):not(.en-file){grid-column:1}
+.ending .case{font-family:var(--mono);font-size:clamp(10px,.9vw,12px);letter-spacing:.34em;color:var(--brass);display:flex;align-items:center;gap:14px;margin:0 0 clamp(14px,2.4vh,26px)!important}
+.ending .case::before{content:"";width:44px;height:1px;background:var(--brass);opacity:.8}
+.ending h2.q{text-align:left;font-size:clamp(26px,3.7vw,54px)!important;line-height:1.28!important;letter-spacing:-.01em!important;font-weight:800;color:#f1e8d4}
+.ending h2.q span{display:inline-block}
+.ending .nag{text-align:left;margin:clamp(16px,2.6vh,28px) 0 0!important;font-size:clamp(13px,1.3vw,18px)!important;letter-spacing:.06em!important;color:#c79a86!important;padding-left:14px;border-left:2px solid rgba(199,154,134,.5);line-height:1.7}
+.ending p.en{text-align:left;margin-top:clamp(22px,4vh,44px)!important;font-size:clamp(15px,1.7vw,23px)!important;color:#d9cfb8}
+.ending .row{justify-content:flex-start!important;align-items:center;gap:22px!important;margin-top:clamp(14px,2.4vh,26px)!important}
+.ending #ctaBtn{margin:0;padding:13px 26px;font-size:13px;letter-spacing:.1em;border-radius:2px}
+.ending #againBtn{position:static;background:none!important;border:0!important;padding:6px 2px!important;font-size:13px;letter-spacing:.12em;color:#b9ad95;border-bottom:1px solid rgba(185,173,149,.45)!important;border-radius:0}
+.ending #againBtn:hover{color:var(--brass);border-bottom-color:var(--brass)!important}
+/* 사건 기록 카드 */
+.en-file{grid-column:2!important;grid-row:1/span 6;justify-self:center;align-self:center;position:relative;width:min(330px,100%);padding:16px 20px 18px;color:#2a1f14;background:linear-gradient(160deg,#eadfc6,#d9ccae);border-radius:2px;box-shadow:0 30px 60px rgba(0,0,0,.6),0 2px 0 rgba(255,255,255,.35) inset;opacity:0;transform:translateY(24px) rotate(2.4deg);transition:opacity 1.2s .2s,transform 1.4s .2s cubic-bezier(.2,.7,.2,1);z-index:3}
+.ending.e1 .en-file{opacity:1;transform:rotate(1.6deg)}
+.en-file::before{content:"";position:absolute;left:50%;top:-10px;width:70px;height:20px;margin-left:-35px;background:rgba(190,180,150,.55);border:1px solid rgba(120,100,70,.25);transform:rotate(-2deg)}
+.ef-top{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.26em;color:#7a5a30;padding-bottom:10px;border-bottom:1px solid rgba(90,64,34,.4)}
+.ef-photo{margin:12px 0 10px;aspect-ratio:16/10;overflow:hidden;background:#222;border:1px solid rgba(60,40,20,.5);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.ef-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 8%;filter:sepia(.35) contrast(1.05) saturate(.85)}
+.ef-name b{display:block;font-family:var(--serif);font-weight:800;font-size:22px;letter-spacing:.04em}
+.ef-name small{display:block;margin-top:3px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#7a5a30}
+.ef-rows{margin:10px 0 0;display:grid;gap:0}
+.ef-rows>div{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px dashed rgba(90,64,34,.4);font-size:13px}
+.ef-rows dt{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#7a5a30;align-self:center}
+.ef-rows dd{margin:0;font-family:var(--serif);font-weight:700}
+.en-file .en-stamp{position:absolute!important;right:-14px!important;left:auto!important;top:150px!important;bottom:auto!important;margin:0!important;zoom:.62;transform-origin:center;display:flex;flex-direction:column;align-items:center;mix-blend-mode:multiply;opacity:0;z-index:4}
+.en-file .en-stamp b{color:#b3261e!important;border-color:#b3261e!important;background:rgba(240,225,200,.0);mix-blend-mode:normal;font-size:clamp(26px,3vw,44px)!important}
+.en-file .en-stamp small{color:#b3261e!important;opacity:.85}
+.ending.e2 .en-file .en-stamp{animation:enstamp .7s cubic-bezier(.2,.9,.3,1) forwards}
+.ending .en-clock{right:6%;top:calc(8% + 18px)}
+@media(max-width:860px){.ending.ending{grid-template-columns:1fr;padding:12% 7% 6%!important}.en-file{display:none}}
 </style>
 </body></html>

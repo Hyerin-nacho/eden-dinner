@@ -1045,6 +1045,7 @@ button{font:inherit;cursor:pointer;color:inherit}
     </div>
   </section>
   <section class="ending" id="ending" hidden>
+    <video class="en-vid" id="endVid" playsinline preload="auto" hidden></video>
     <div class="en-bars" aria-hidden="true"><i></i><i></i></div>
     <div class="en-clock" id="endClock" aria-hidden="true">21:47</div>
     <div class="en-stamp" aria-hidden="true"><b>CASE CLOSED</b><small>ORPHEUS EXPRESS R.R. · VIP</small></div>
@@ -2676,8 +2677,13 @@ function accuse(){
 }
 /* 엔딩: 자백이 끝나면 화면이 닫히고 → 'CASE CLOSED' 도장 쾅 → 정적 속 시계 소리 → 21:47이 21:48로 넘어가고
    → 질문이 한 줄씩 → 마지막에야 버튼. 시간은 흘러가는데, 무언가 끝나지 않은 느낌으로 */
-function ending(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
+function ending(){ const E=$("ending"), V=$("endVid");
   vidStop(); mode="end"; E.parentElement.classList.add("ended"); talkEl.hidden=true; E.hidden=false; clearInterval(clockTimer);
+  /* 엔딩 컷: 엘레나가 끌려가고 → 세 용의자의 안도 → 록의 깨달음. 쿵 소리에서 끝나면 바로 CASE CLOSED */
+  let went=false; const go=()=>{ if(went) return; went=true; V.onended=V.onerror=V.onclick=null; V.pause(); V.hidden=true; endSeq(); };
+  V.hidden=false; V.muted=!soundOn; V.src="pro/ending_cut.mp4"; V.onended=go; V.onerror=go; V.onclick=go;
+  const p=V.play(); p&&p.catch(go); setTimeout(()=>{ if(!went&&V.currentTime<.1) go(); },6000); }
+function endSeq(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
   E.className="ending"; ng&&ng.classList.remove("on"); ck.textContent="21:47";
   const at=(ms,f)=>setTimeout(f,ms);
   at(60,()=>E.classList.add("e1"));                                                  // 레터박스 닫힘 + 배경 천천히 다가옴
@@ -4007,6 +4013,7 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .ending .en-bars i{position:absolute;left:0;right:0;height:8%;background:#000;z-index:3;transform:scaleY(0);transition:transform 1.2s cubic-bezier(.6,0,.2,1)}
 .ending .en-bars i:first-child{top:0;transform-origin:top}.ending .en-bars i:last-child{bottom:0;transform-origin:bottom}
 .ending.e1 .en-bars i{transform:scaleY(1)}
+.ending .en-vid{position:absolute;inset:0;margin:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:9;cursor:pointer}
 .ending .en-clock{position:absolute;right:4%;top:calc(8% + 12px);z-index:4;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(13px,1.4vw,18px);letter-spacing:.3em;color:rgba(217,178,106,.7);opacity:0;transition:opacity 1.2s}
 .ending.e3 .en-clock{opacity:1}.ending .en-clock.flip{animation:flapb .35s}
 .ending .en-stamp{display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;transform:rotate(-7deg) scale(2.6)}
@@ -4021,7 +4028,9 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .ending.e4 h2.q span:first-child,.ending.e5 h2.q span:last-child{opacity:1;transform:none;filter:none}
 .ending p.en,.ending .row{opacity:0;transition:opacity 1.6s;pointer-events:none}
 .ending.e6 p.en,.ending.e6 .row{opacity:1;pointer-events:auto}
-.ending>*:not(.en-bars):not(.en-clock){position:relative;z-index:2}
+.ending>*:not(.en-bars):not(.en-clock):not(.en-vid):not(.en-stamp){position:relative;z-index:2}
+.ending .en-stamp{position:absolute;z-index:5;left:3%;bottom:30%;margin:0;transform-origin:left bottom;zoom:.62}
+@media(max-width:760px){.ending .en-stamp{left:50%;margin-left:-26vw;bottom:2%;zoom:.5}}
 .ending{gap:min(12px,1.6vh)!important;padding:9% 24px!important}
 .ending .en-stamp b{font-size:clamp(22px,4vw,64px)!important}
 .ending h2.q{font-size:clamp(20px,3.6vw,48px)!important}

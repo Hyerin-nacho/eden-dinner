@@ -1043,7 +1043,6 @@ button{font:inherit;cursor:pointer;color:inherit}
       <video class="tk-vid tk-react" id="tkReact" playsinline preload="auto"></video>
       <div class="tk-lamp" aria-hidden="true"></div>
     </div>
-    <div class="tk-slam" id="tkSlam" aria-hidden="true"><div class="sl"><span class="t">CONTRADICTION</span><b>거짓말</b><span class="u">LIE DETECTED · 모순 발견</span></div></div>
     <button class="x tk-x" id="tkClose" aria-label="심문 종료">✕</button>
     <div class="tk-case" id="tkCase" aria-label="엘레나의 진술"></div>
     <div class="tk-meter" id="tkMeter" aria-label="엘레나의 평정"><span>평정</span><i></i><em>침착</em></div>
@@ -4569,6 +4568,10 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .talk .tk-lie p{display:inline;margin:0;font-family:var(--serif);font-size:clamp(18px,2.3vw,30px);line-height:1.7;color:#f3ead6;text-shadow:0 2px 12px #000,0 0 30px rgba(0,0,0,.95);word-break:keep-all;
   background:linear-gradient(#d23a2c,#d23a2c) no-repeat 0 58%/0% .12em;-webkit-box-decoration-break:clone;box-decoration-break:clone;transition:background-size .55s cubic-bezier(.6,0,.2,1),color .55s}
 .talk .tk-lie.cut p{background-size:100% .12em;color:rgba(243,234,214,.55)}
+/* 증거 고르는 화면: 위쪽 '진술 n' 표시가 대사와 겹쳐서 이 화면에선 숨김 */
+.talk[data-m="ev"] .tk-case{opacity:0!important;pointer-events:none}
+/* 인형 사진(16:9)은 어디서든 여백 없이 꽉 차게 (수첩 폴라로이드 포함) */
+[data-ev="doll"]{background-size:cover!important;background-position:center 60%!important}
 /* 손글씨 확대 보기 */
 .b-body .note,.b-body .hand,.page .slip,.page .hand:not(.big){cursor:zoom-in}
 .hwz{position:fixed;inset:0;z-index:300;display:grid;place-items:center;background:rgba(6,4,3,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .25s;cursor:zoom-out}

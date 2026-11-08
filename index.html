@@ -1611,14 +1611,10 @@ function roomTex(kind){ const c=document.createElement("canvas"); c.width=c.heig
   const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.anisotropy=4; if(kind==="wall"){ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(3,2); } return t; }
 function dollRoom(S){ const wood=new THREE.MeshStandardMaterial({color:0x0b0503,roughness:.6,metalness:0,envMapIntensity:.15}), paper=new THREE.MeshStandardMaterial({map:roomTex("wall"),color:0xffffff,roughness:.9,metalness:0,envMapIntensity:.2});
   const add=(m,x,y,z,ry)=>{ m.position.set(x,y,z); if(ry) m.rotation.y=ry; m.castShadow=false; m.receiveShadow=true; S.add(m); return m; };
-  add(new THREE.Mesh(new THREE.PlaneGeometry(9,3.4),paper),0,1.7,-1.5);            // 뒷벽 벽지
-  add(new THREE.Mesh(new THREE.PlaneGeometry(9,3.4),paper),-2.6,1.7,0,Math.PI/2);       // 왼쪽 벽
-  add(new THREE.Mesh(new THREE.BoxGeometry(9,.92,.06),wood),0,.46,-1.47);               // 벽 하단 패널
-  add(new THREE.Mesh(new THREE.BoxGeometry(9,.07,.1),wood),0,.95,-1.45);                // 패널 몰딩
-  add(new THREE.Mesh(new THREE.BoxGeometry(9,.14,.08),wood),0,.07,-1.46);               // 걸레받이
-  add(new THREE.Mesh(new THREE.BoxGeometry(.06,.92,9),wood),-2.57,.46,0);
-  add(new THREE.Mesh(new THREE.BoxGeometry(.1,.07,9),wood),-2.55,.95,0);
-  add(new THREE.Mesh(new THREE.BoxGeometry(.08,.14,9),wood),-2.56,.07,0);
+  const wt=new THREE.TextureLoader().load("wall_panel.jpg"); wt.encoding=THREE.sRGBEncoding; wt.anisotropy=8;
+  const wm=new THREE.MeshStandardMaterial({map:wt,roughness:.75,metalness:0,envMapIntensity:.25}), PH=3.0, PW=PH*378/1292;
+  for(let i=-5;i<=5;i++){ add(new THREE.Mesh(new THREE.PlaneGeometry(PW,PH),wm),i*PW,PH/2,-1.5); }          // 뒷벽: 목재 패널 + 초록 벽지
+  for(let i=-4;i<=6;i++){ add(new THREE.Mesh(new THREE.PlaneGeometry(PW,PH),wm),-2.6,PH/2,-1.5+i*PW,Math.PI/2); }  // 왼쪽 벽
   m3dLoad("rug3d.glb",g=>{ const m=g.scene.clone(), bb=new THREE.Box3().setFromObject(m), c=bb.getCenter(new THREE.Vector3()), sz=bb.getSize(new THREE.Vector3()); m.position.set(-c.x,-bb.min.y,-c.z); const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(1.9/sz.x); gp.position.set(.1,.001,.1); m.traverse(o=>{ if(o.isMesh){ o.receiveShadow=true; if(o.material){ o.material.side=THREE.FrontSide; if(o.material.map) o.material.map.anisotropy=8; } } }); S.add(gp); });
   // 탁자 램프(오른쪽) 불빛 + 창가의 차가운 빛
   const lamp=new THREE.PointLight(0xffb36b,1.8,4.5,1.8); lamp.position.set(1.5,.85,-.2); lamp.castShadow=false; S.add(lamp);

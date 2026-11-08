@@ -16,7 +16,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/MaskPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/BokehPass.js"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Nanum+Pen+Script&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Serif+KR:wght@300;400;600&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Nanum+Pen+Script&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap">
 <style>
 [hidden]{display:none!important}
 #ending[hidden]{display:none!important} /* .ending.ending{display:grid!important}가 위 규칙을 이기므로 ID로 고정 */
@@ -4688,6 +4688,11 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .ending .case{font-family:"Gowun Batang","Batang",serif!important;letter-spacing:.3em!important;color:rgba(217,178,106,.85)!important}
 .ending .en-ev b{font-family:"Gowun Batang","Batang",serif!important}
 .ending .en-ev::before{font-family:"Gowun Batang","Batang",serif}
+
+/* 엔딩 v7: 질문 글씨를 대비가 뚜렷한 정통 명조(Noto Serif KR)로 */
+.ending h2.q{font-family:"Noto Serif KR","Nanum Myeongjo","Batang",serif!important;font-weight:300!important;letter-spacing:.06em!important;line-height:1.7!important;font-size:clamp(30px,3.4vw,62px)!important}
+.ending h2.q span:last-child{font-weight:400!important}
+.ending .case,.ending .en-ev b,.ending .en-ev::before{font-family:"Noto Serif KR","Nanum Myeongjo","Batang",serif!important;font-weight:400!important}
 </style>
 <script>
 /* 손글씨(증거 쪽지·붉은 펜 메모)를 누르면 종이째로 크게 보여 준다. 아무 데나 누르거나 ESC로 닫힘 */

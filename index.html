@@ -1433,7 +1433,7 @@ stage.addEventListener("click",e=>{ if(e.target.closest("button,.panel,.ov,.talk
 
 /* ---------- 속마음 자막 / 알림 ---------- */
 /* 대사·생각은 문장 단위로 줄을 바꿔 보여 준다 (문장 중간에서 어색하게 끊기지 않게) */
-function sentBr(t){ const esc=String(t??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); if(esc.includes("\n")) return esc.replace(/\n/g,"<br>");   // 줄바꿈을 직접 적은 문장은 그 자리에서만 바꿈
+function sentBr(t){ const esc=String(t??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); if(esc.includes("\n")) return esc.split("\n").map(x=>`<span class="ln">${x}</span>`).join("<br>");   // 줄바꿈을 직접 적은 문장은 그 자리에서만 바꿈
   return esc.replace(/([.?!…]+["”’)]?)\s+(?=\S)/g,"$1<br>").replace(/<br>([^<]{1,6}…)<br>/g," $1<br>"); }
 let thT; function think(t,ms=3200){ const el=$("thought"); el.innerHTML=sentBr(t); el.classList.toggle("show",!!t); clearTimeout(thT); if(t) thT=setTimeout(()=>el.classList.remove("show"),ms); }
 let nT; function notify(t){ $("notifyT").textContent=t; const n=$("notify"); n.classList.add("show"); clearTimeout(nT); nT=setTimeout(()=>n.classList.remove("show"),2400); }
@@ -2758,7 +2758,7 @@ function openTalk(){
   $("tabTalk").setAttribute("aria-selected",true); $("tabScene").setAttribute("aria-selected",false);
   const sp=SPOTS.find(x=>x.id==="elena"); ease=.06; tgt.fx=sp.x; tgt.fy=sp.y; tgt.s=1.8;
   talkEl.hidden=false; gauge(); steps(1); warmTalk(); vidStart();
-  if(!talkEl.dataset.met){ talkEl.dataset.met=1; play([["R","최초 발견자, 승무원 엘레나. 진술은 세 개.\n거짓을 하나씩 증거로 깨뜨린다."],["E","……손님도 오셨군요. 제가 처음 발견했어요. 무엇이든 물어보세요."]],menu); }
+  if(!talkEl.dataset.met){ talkEl.dataset.met=1; play([["R","최초 발견자, 승무원 엘레나. 진술은 세 개.\n거짓을 하나씩 증거로 깨트린다."],["E","……손님도 오셨군요. 제가 처음 발견했어요. 무엇이든 물어보세요."]],menu); }
   else menu();
 }
 function closeTalk(){
@@ -3044,7 +3044,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   if((ROOM_ONLY&&location.hash!=="#tear")||location.hash==="#room"){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>enterExplore(),60); return; }
   /* ---- 테스트 바로가기 (#test 로 열면 메뉴) ----
      #cold 21:47 오프닝 · #tear 초대장 찢기 · #bottle 약병 · #statue 조각상·먼지 · #doll 의자 밑 인형 · #talk 엘레나 심문 · #ending 엔딩 */
-  const TESTS=[["","타이틀 화면","탑승권 버튼 · 불빛·먼지 연출"],["#cold","21:47 오프닝","플립 시계 → 인트로"],["#tear","초대장 찢기","당기는 힘·바스락·종이 낙엽"],["#bottle","약병","실사 갈색병 · 돌리면 알약이 굴러감"],["#statue","조각상 · 테이블 먼지","들어 올리기 무게감 · 먼지"],["#doll","의자 밑 인형","붉은 눈 → 기억 재생 → 21:47 쿵"],["#door","VIP실 문 열기","손잡이를 아래로 끌어 연다"],["#talk","엘레나 심문","증거 3개 모두 가진 상태"],["#ending","엔딩","CASE CLOSED → 21:48 → 질문"]];
+  const TESTS=[["","타이틀 화면","탑승권 버튼 · 불빛·먼지 연출"],["#cold","21:47 오프닝","플립 시계 → 인트로"],["#tear","초대장 찢기","당기는 힘·바스락·종이 낙엽"],["#bottle","약병","실사 갈색병 · 돌리면 알약이 굴러감"],["#statue","조각상 · 테이블 먼지","들어 올리기 무게감 · 먼지"],["#doll","의자 밑 인형","붉은 눈 → 기억 재생 → 21:47 쿵"],["#door","VIP실 문 열기","손잡이를 아래로 끌어 연다"],["#press","추궁","진술 1에서 바로 '더 추궁한다'"],["#talk","엘레나 심문","증거 3개 모두 가진 상태"],["#ending","엔딩","CASE CLOSED → 21:48 → 질문"]];
   const goTest=h=>{ location.hash=h||""; location.reload(); };
   if(location.hash==="#test"){ const m=document.createElement("div"); m.className="testmenu";
     m.innerHTML=`<div class="tm-in"><small>BEYOND THE ORPHEUS · 테스트 바로가기</small><h3>어디부터 볼까요?</h3>${TESTS.map(([h,t,d],i)=>`<button data-h="${h}"><b>${i+1}</b><span>${t}<em>${d}</em></span></button>`).join("")}<p>보던 화면에서 <kbd>\`</kbd> 키를 누르면 이 메뉴로 돌아와요</p></div>`;
@@ -3052,6 +3052,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   addEventListener("keydown",e=>{ if(e.key==="`"&&!/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) goTest("#test"); });
   if(location.hash==="#cold"){ setTimeout(()=>$("proStart").click(),400); }
   if(location.hash==="#door"){ setTimeout(()=>{ show(""); finish(); },300); }
+  if(location.hash==="#press"){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>{ enterExplore(); EVID.forEach(e=>found.add(e.id)); warmTalk(); setTimeout(()=>{ talkEl.dataset.met=1; openTalk(); },900); },60); return; }   // 테스트: 심문 진술 1 + 추궁 선택지부터
   if(location.hash==="#talk"||location.hash==="#ending"||location.hash==="#statue"||location.hash==="#doll"){ pro.hidden=true; $("title").classList.add("gone");
     setTimeout(()=>{ enterExplore(); const h=location.hash;
       if(h==="#talk"){ EVID.forEach(e=>found.add(e.id)); warmTalk(); setTimeout(openTalk,900); }
@@ -4492,10 +4493,11 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .v3d:not(.dollv) .exfound{top:84%!important}
 /* 추궁 연출 */
 .talk .tk-press{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .7s ease;
-  background:radial-gradient(ellipse 30% 26% at 50% 4%,rgba(255,226,180,.16),transparent 70%),radial-gradient(ellipse 40% 52% at 50% 32%,transparent 38%,rgba(0,0,0,.6) 72%,rgba(0,0,0,.92) 100%)}
+  background:radial-gradient(ellipse 22% 20% at 50% 2%,rgba(255,226,180,.22),transparent 70%),radial-gradient(ellipse 34% 46% at 50% 34%,transparent 30%,rgba(0,0,0,.72) 66%,rgba(0,0,0,.96) 100%)}
+@media (min-width:700px){.talk .tk-line .ln{white-space:nowrap}}
 .talk.press .tk-press{opacity:1}
 .talk .tk-vid{transition:opacity .6s,transform .9s cubic-bezier(.2,.8,.2,1),filter .9s!important}
-.talk.press .tk-vid{transform:scale(calc(1.14 + var(--pz,1)*.08))!important;transform-origin:50% 26%!important;filter:contrast(1.12) saturate(.82) brightness(.95)}
+.talk.press .tk-vid{transform:scale(calc(1.42 + var(--pz,1)*.13))!important;transform-origin:50% 22%!important;filter:contrast(1.12) saturate(.82) brightness(.95)}
 .talk.jolt .tk-por{animation:tkjolt .34s cubic-bezier(.3,.7,.3,1)}
 @keyframes tkjolt{0%{transform:none}18%{transform:translate(-7px,5px) scale(1.01)}42%{transform:translate(6px,-3px)}68%{transform:translate(-2px,2px)}100%{transform:none}}
 .talk .tk-line.punch{font-weight:800;color:#fff;font-size:clamp(19px,2.2vw,28px);letter-spacing:.01em;text-shadow:0 2px 10px #000,0 0 30px rgba(0,0,0,.95)}

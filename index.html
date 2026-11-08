@@ -1568,16 +1568,16 @@ function dollPlayback(){ const s=CU.s, L=$("cuLayer"), ph=$("cuPh"); L.querySele
   const SUB=[[.35,"21:41","“…대표님, 한 잔 더 드세요.”",0],[3.0,"21:44","(잔이 부딪히는 소리)",0],[3.5,"21:46","“…엘레나, 너 뭘……”",1],[5.7,"21:47","",1]];
   const o=document.createElement("div"); o.className="dpb";
   o.innerHTML=`<div class="dpb-top"><i></i>VOICE RECORDER<span>음성 녹음기</span></div><div class="dpb-sub"></div><div class="dpb-rec"><div class="rh"><b>PLAYBACK</b><span>재생</span><em class="st">● PLAYING · 재생 중</em></div><div class="rf"><b>REC_0224.wav</b><span class="rt">00:00 / 00:06</span></div><div class="bars">${Array.from({length:48},(_,i)=>`<u style="--h:${16+Math.round(Math.abs(Math.sin(i*1.7)*Math.cos(i*.6))*74)}%;--d:${(i%7)*.09}s"></u>`).join("")}</div><div class="pg"><i></i></div><div class="rl"><span>INTERNAL RECORDER · 인형 내장 녹음기</span></div></div>`;
-  L.appendChild(o); ph.classList.add("eyezoom"); $("cu").classList.add("pb"); $("cuTh").classList.remove("on"); requestAnimationFrame(()=>o.classList.add("on"));
+  L.appendChild(o); if(DV) o.classList.add("on3d"); else ph.classList.add("eyezoom"); $("cu").classList.add("pb"); $("cuTh").classList.remove("on"); requestAnimationFrame(()=>o.classList.add("on"));
   const sub=o.querySelector(".dpb-sub"), at=(ms,f)=>setTimeout(()=>{ if(o.isConnected) f(); },ms);
   at(900,()=>{ try{ if(soundOn){ if(!window.__recA){ window.__recA=new Audio("ev/doll_rec.mp3"); window.__recA.volume=.95; } window.__recA.currentTime=0; window.__recA.play().catch(()=>{}); } }catch(e){} });
   at(900+3000,glassClink);                                                            // 21:44 잔 부딪히는 소리
   SUB.forEach(([t,c,txt,red])=>at(900+t*1000,()=>{ if(txt){ sub.innerHTML=txt; sub.classList.toggle("red",!!red); sub.classList.remove("in"); void sub.offsetWidth; sub.classList.add("in"); } else sub.classList.remove("in"); }));
-  at(900+5900,()=>{ dollThud(); o.classList.add("hit"); ph.classList.add("jolt"); });   // 둔탁한 소리
+  at(900+5900,()=>{ dollThud(); o.classList.add("hit"); if(!DV) ph.classList.add("jolt"); else { DV.wrap.classList.remove("shk"); void DV.wrap.offsetWidth; DV.wrap.classList.add("shk"); } });   // 둔탁한 소리
   { const rt=o.querySelector(".rt"), pgi=o.querySelector(".pg i"), t0=Date.now(); const iv=setInterval(()=>{ if(!o.isConnected){ clearInterval(iv); return; } const el=Math.max(0,Math.min(6.2,(Date.now()-t0-900)/1000)); rt.textContent="00:0"+Math.floor(el)+" / 00:06";  pgi.style.width=(el/6.2*100)+"%"; if(el>=6.2){ o.classList.add("done"); o.querySelector(".st").textContent="■ END OF RECORDING · 녹음 끝"; clearInterval(iv); } },100); }
   at(900+6150,()=>o.classList.add("done"));
   at(900+7400,()=>{ o.classList.remove("on"); ph.classList.remove("eyezoom","jolt"); $("cu").classList.remove("pb");
-    setTimeout(()=>{ o.remove(); if(!found.has(s.id)){ miniDone.add(s.id); collect(s); } closeCloseup(); setTimeout(()=>inspectBoard(s),120); },900); });   // 끝나면 다른 증거처럼 증거 확인 화면으로
+    setTimeout(()=>{ o.remove(); dollClose(); if(!found.has(s.id)){ miniDone.add(s.id); collect(s); } closeCloseup(); setTimeout(()=>inspectBoard(s),120); },900); });   // 끝나면 다른 증거처럼 증거 확인 화면으로
 }
 /* (이전 방식: 인형을 3D로 돌려 스피커를 찾던 단계 — 지금은 쓰지 않음) */
 let DV=null;
@@ -1619,10 +1619,10 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
     const dt=Math.min(.05,(t-(DV.pt||t))/1000); DV.pt=t;
     if(!DV.drag&&!DV.done&&DV.p>0) DV.p=Math.max(0,DV.p-dt*.18);   // 놓으면 천천히 도로 밀려 들어감
     const p=DV.p, u=sm(Math.max(0,Math.min(1,(p-.5)/.5)));
-    dollG.position.set(0,.07+u*.15,-.18+p*.95); dollG.rotation.set(-Math.PI/2*(1-u),0,0);
+    dollG.position.set(0,.07+u*.15,-.18+p*.62); dollG.rotation.set(-Math.PI/2*(1-u),0,0);
     bar.querySelector("i").style.width=(p*100)+"%";
     { const tw=Math.max(0,Math.sin(t/230)*.5+Math.sin(t/97)*.3+.35); glint.material.opacity=(1-u)*(.15+tw*.55)+u*.1; glint.scale.setScalar(.035+tw*.03); eyeL.intensity=.04+tw*.22; reveal.intensity=p*4; }
-    C.position.set(Math.sin(t/2600)*.015,.13+u*.24,1.15); C.lookAt(0,.17+u*.2,-.12);
+    C.position.set(Math.sin(t/2600)*.015,.13+u*.24,1.15+u*.8); C.lookAt(0,.17+u*.2,-.12);
     if(p>=1&&!DV.done&&DV.ready){ DV.done=true; hint.innerHTML="<b>인형을 꺼냈다.</b>"; hit(900,.25,.3); paper(); window.__dollOut=1; setTimeout(()=>{ if(!DV||DV.wrap!==wrap) return; dollClose(); dollPick(); },1100); }
     R.render(S,C); DV.raf=requestAnimationFrame(loop); };
   DV.raf=requestAnimationFrame(loop);
@@ -1659,7 +1659,7 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
   el.onwheel=e=>{ e.preventDefault(); DV.zoom=Math.max(.3,Math.min(1.5,DV.zoom*(e.deltaY>0?1.08:.92))); };
   spot.onclick=e=>{ e.stopPropagation(); if(DV.done) return; DV.done=true; spot.classList.remove("on"); wrap.classList.add("exhit"); hint.innerHTML="";
     const fb=document.createElement("div"); fb.className="exfound"; fb.innerHTML="<small>단서 발견</small><b>등의 작은 스피커</b>"; wrap.appendChild(fb); hit(900,.25,.3); paper();
-    setTimeout(()=>{ dollClose(); dollPlayback(); },1500); };
+    setTimeout(()=>{ if(DV&&DV.wrap===wrap) dollPlayback(); },1400); };
   const wp=new THREE.Vector3(), wn=new THREE.Vector3(), tc=new THREE.Vector3(), q=new THREE.Quaternion();
   const loop=t=>{ if(!DV) return; if(mode!=="closeup"){ dollClose(); return; }
     const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&R.domElement.width!==Math.round(w*R.getPixelRatio())){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
@@ -4317,5 +4317,11 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .dpb-rec .rl{margin-top:8px;font-size:clamp(9px,.9vw,11px);letter-spacing:.2em;color:rgba(241,217,168,.55)}
 .dollv.chair .v3bg{opacity:.06}
 .dollv.chair{background:#000}
+</style>
+<style>
+/* 3D 인형 위에 올리는 녹음기: 화면을 갈아엎지 않고 가볍게 */
+.dpb.on3d::before{opacity:.3}.dpb.on3d::after{display:none}
+.dpb.on3d .dpb-top{top:4%}
+.dollv.shk{animation:shake .45s}
 </style>
 </body></html>

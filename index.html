@@ -2758,6 +2758,7 @@ function play(lines,done){
   let i=0;
   const step=()=>{ if(i>=lines.length){ done&&done(); return; }
     const [w,t]=lines[i++]; say(w,t);
+    if(lines===CONFESS){ if(i===2) react("confess"); else if(i===3) react("doubt"); }   // 자백: 고개를 떨구고 눈을 감는다 → "제가 낸 게 아니에요"에서 누군가를 곁눈질
     if(w==="E"&&talkEl.classList.contains("press")){ comp=Math.max(45,comp-5); gauge(); const M=$("tkMeter"); M.classList.remove("hitm"); void M.offsetWidth; M.classList.add("hitm"); }
     if(w==="E"&&t.startsWith("……")) { talkEl.classList.remove("shake"); void talkEl.offsetWidth; talkEl.classList.add("shake"); }
     opts([{k:"F",t:i<lines.length?"계속":"확인",f:step}],"next"); };
@@ -2786,7 +2787,8 @@ function idleTick(){ if(talkEl.hidden) return; const d=act.duration; if(d&&d-act
 [vid,vid2].forEach(v=>v.addEventListener("ended",()=>{ if(v===act&&!talkEl.hidden) idleSwap(); }));
 function vidStop(){ cancelAnimationFrame(vRaf); vid.pause(); vid2.pause(); reactStop(); }
 /* 반응 클립: 놀람(startle) · 둘러대기(lie). 대기 영상 위로 천천히 섞여 들어왔다가, 끝나기 전에 천천히 빠진다 */
-const REACT={startle:["elena-startle.mp4","elena-startle2.mp4","elena-startle3.mp4","elena-startle4.mp4"],lie:["elena-lie.mp4","elena-lie2.mp4"]}, reactOK={}, reactLast={};
+const REACT={startle:["elena-startle.mp4","elena-startle2.mp4","elena-startle3.mp4","elena-startle4.mp4"],lie:["elena-lie.mp4","elena-lie2.mp4"],
+  confess:["elena-confess.mp4"],doubt:["elena-doubt.mp4"]}, reactOK={}, reactLast={};
 const rv=$("tkReact"); const pre={};
 function react(k){
   const ok=reactOK[k]||[]; if(!vidOK||!ok.length) return;
@@ -2902,7 +2904,7 @@ function accuse(){
    → 질문이 한 줄씩 → 마지막에야 버튼. 시간은 흘러가는데, 무언가 끝나지 않은 느낌으로 */
 function ending(){ hbStop(); const E=$("ending"), V=$("endVid");
   vidStop(); mode="end"; E.parentElement.classList.add("ended"); talkEl.hidden=true; E.hidden=false; ambStop();
-  /* 엔딩 컷: 엘레나가 끌려가고 → 세 용의자의 안도 → 록의 깨달음. 쿵 소리에서 끝나면 바로 CASE CLOSED */
+  /* 엔딩 컷: 엘레나가 끌려가며 돌아보고 → 세 용의자의 안도 → 록의 깨달음 → 엘레나의 씁쓸한 얼굴 클로즈업. 쿵 소리에서 끝나면 바로 CASE CLOSED */
   let went=false; const go=()=>{ if(went) return; went=true; V.onended=V.onerror=V.onclick=null; V.pause(); V.hidden=true; endSeq(); };
   V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4"; V.onended=go; V.onerror=go; V.onclick=go;
   const p=V.play(); p&&p.catch(go); setTimeout(()=>{ if(!went&&V.currentTime<.1) go(); },6000); }
@@ -4768,10 +4770,15 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 /* 증거 고르기: 카드를 위로 끌어올려 화면 중앙~상단에 (사용자 표시 위치) */
 .talk .tk-opts.m-ev{top:20%!important;bottom:auto!important}
 
-/* 자막: 영어 큼직하게, 마지막 한국어 줄은 작게 */
-.pro .vcap .ln{display:inline-block}
-.pro .vcap .ln:last-of-type{font-size:.62em;opacity:.78;margin-top:.5em;letter-spacing:.04em}
-.pro .vcap{font-family:"Cormorant Garamond",var(--serif);font-style:italic;font-size:max(17px,2.5cqw);line-height:1.35}
+/* 자막: 인트로·회상 영상에 박힌 자막과 같은 모양으로 통일 — 한국어(흰색 고딕)가 위, 영어(금색 세리프)가 아래, 배경 띠 없음.
+   (이전 스타일: 영어 큼직하게 이탤릭 + 한국어 작게. 되돌리려면 이 블록만 예전 3줄로 바꾸면 된다) */
+.pro .vcap{display:flex;flex-direction:column;align-items:center;bottom:7.5%;padding:0 6%;background:none;
+  font-family:"Noto Sans KR","Pretendard","Malgun Gothic",sans-serif;font-style:normal;font-weight:500;font-size:max(13px,2cqw);line-height:1.5;letter-spacing:0;color:#fff;text-shadow:0 1px 6px #000,0 0 2px #000}
+.pro .vcap br{display:none}
+.pro .vcap .ln{display:block;font-family:"Noto Serif KR",var(--serif);font-weight:600;font-size:.95em;line-height:1.4;color:#d2ad63;letter-spacing:.01em;text-shadow:0 1px 8px #000,0 0 3px #000,0 0 14px rgba(0,0,0,.8)}
+.pro .vcap .ln:last-of-type{order:-1;margin:0 0 .35em;font-family:inherit;font-weight:500;font-size:1em;line-height:1.5;color:#fff;opacity:1;letter-spacing:0}
+.pro .vcap.red .ln:not(:last-of-type){color:#e07070}
+.pro .vcap.stamp{display:block}
 /* 거짓 진술 붉은 줄: 가운데 정렬, 문장을 짧게 끊어 줄맞춤, 줄은 글자 높이 가운데로 */
 .talk .tk-lie{width:min(620px,64%)!important;top:60%!important}.talk.lying .tk-case{opacity:0!important;transition:opacity .2s}
 .talk .tk-lie p{display:block!important;font-size:clamp(17px,2vw,26px)!important;line-height:1.75!important;background:none!important;position:relative;padding:0 .2em}

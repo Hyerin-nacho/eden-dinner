@@ -2079,7 +2079,7 @@ function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.
   const cv=R.domElement; cv.className="v3room"; host.insertBefore(cv,host.children[1]||null);
   const S=new THREE.Scene(), C=new THREE.PerspectiveCamera(32,16/9,.05,80); S.fog=new THREE.FogExp2(0x070b08,.05);
   S.add(new THREE.HemisphereLight(0xffe2b8,0x122018,.55)); try{ S.environment=exEnv(R); }catch(e){}
-  const CFG={ bedside:{f:4.5,y:-4.4,wz:-1.05,wh:2.8,wy:-.38,tilt:.44}, statue:{f:2.6,y:-1.93,wz:-.37,wh:2.2}, doll:{f:3,y:-1.2,wz:-1.7,wh:2.8,wy:-.5} }[where]||{f:3,y:-1.5,wz:-1.5,wh:2.8};
+  const CFG={ bedside:{f:4.5,y:-4.7,wz:-1.05,wh:2.8,wy:-.38,tilt:.44}, statue:{f:2.6,y:-1.93,wz:-.37,wh:2.2}, doll:{f:3,y:-1.2,wz:-1.7,wh:2.8,wy:-.5} }[where]||{f:3,y:-1.5,wz:-1.5,wh:2.8};
   const f=CFG.f, G=new THREE.Group(), PV=new THREE.Group(); G.scale.setScalar(f); G.position.y=CFG.y; PV.add(G); PV.rotation.x=CFG.tilt||0; S.add(PV);   // G 안은 미터 단위
   const std=(c,r,m)=>new THREE.MeshStandardMaterial({color:new THREE.Color(c).convertSRGBToLinear(),roughness:r===undefined?.8:r,metalness:m||0});
   const add=(geo,mat,x,y,z)=>{ const o=new THREE.Mesh(geo,mat); o.position.set(x,y,z); G.add(o); return o; };
@@ -2100,7 +2100,7 @@ function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.
   const frame=(x,y,z,w,h)=>{ add(new THREE.BoxGeometry(w,h,.025),std(0x7a5c2c,.45,.6),x,y,z+.014); add(new THREE.PlaneGeometry(w-.05,h-.05),std(0x3b2f22,.9),x,y,z+.028); };
   const rug=(x,z,w)=>m3dLoad("rug3d.glb",g=>{ if(!wrap.isConnected) return; const m=g.scene.clone(), bb=new THREE.Box3().setFromObject(m), c=bb.getCenter(new THREE.Vector3()), sz=bb.getSize(new THREE.Vector3()); m.position.set(-c.x,-bb.min.y,-c.z); const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(w/sz.x); gp.position.set(x,.002,z); G.add(gp); });
   if(where==="bedside"){   // 협탁을 블렌더 장면 그대로: 물결 모양 상판의 밝은 참나무 탁자 · 깎은 다리 · 레이스 러너 · 신문 두 부 · 빨간 통 · 펜 두 자루 · 스프레이 캔
-    const T=new THREE.Group(); T.position.set(.02,0,-.6); T.rotation.y=-.42; G.add(T); const ty=.7;   // ty: 상판 윗면 높이
+    const T=new THREE.Group(); T.position.set(.02,0,-.66); T.rotation.y=-.42; G.add(T); const ty=.7;   // ty: 상판 윗면 높이
     const D=new THREE.Group(), PT=new THREE.Group(); T.add(D,PT);   // D: 책상 위 소품, PT: 직접 만든 임시 책상(진짜 모델이 오면 교체)
     const put=(geo,mat,x,y,z)=>{ const o=new THREE.Mesh(geo,mat); o.position.set(x,y,z); D.add(o); return o; }, putT=(geo,mat,x,y,z)=>{ const o=new THREE.Mesh(geo,mat); o.position.set(x,y,z); PT.add(o); return o; };
     const cvs=(w,h,draw)=>{ const c=document.createElement("canvas"); c.width=w; c.height=h; draw(c.getContext("2d"),w,h); const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.anisotropy=4; return t; };
@@ -2133,6 +2133,13 @@ function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.
     m3dLoad("bedside3d.glb",g=>{ if(!wrap.isConnected) return; const src=g.scene.clone(true); src.updateMatrixWorld(true); const part={}; src.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.envMapIntensity=.5; if(o.material.map) o.material.map.anisotropy=8; part[o.material.name]=o; } }); const tb=part.TABLE; if(!tb) return;
       const b=new THREE.Box3().setFromObject(tb), k=ty/(b.max.y-b.min.y), M=new THREE.Group(); src.position.set(-(b.min.x+b.max.x)/2,-b.min.y,-(b.min.z+b.max.z)/2); M.add(src); M.scale.setScalar(k);
       if(part.Material){ const am=new THREE.TextureLoader().load("bedside3d_lace.jpg"); am.flipY=false; const mt=part.Material.material; mt.alphaMap=am; mt.transparent=true; mt.alphaTest=.4; mt.side=THREE.DoubleSide; mt.needsUpdate=true; }   // 레이스의 구멍
+      /* 스프레이 캔: 내보낸 텍스처엔 라벨이 없어서, 사진처럼 흰 몸통에 빨간 'TITAN PAINT' 라벨을 둘러 붙인다 */
+      { const o=part["lambert1.002"]; if(o){ o.material.color.setScalar(1.22); const ps=o.geometry.attributes.position, v=new THREE.Vector3(), mw=o.matrixWorld.clone(); let y0=1e9,yT=-1e9; for(let q=0;q<ps.count;q++){ v.fromBufferAttribute(ps,q).applyMatrix4(mw); if(v.y<y0)y0=v.y; if(v.y>yT)yT=v.y; } const hh=yT-y0; let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;   /* 책상 기준 좌표(위쪽이 +y)에서 잰다 */
+          for(let q=0;q<ps.count;q++){ v.fromBufferAttribute(ps,q).applyMatrix4(mw); if(v.y>y0+hh*.78){ if(v.x<x0)x0=v.x; if(v.x>x1)x1=v.x; if(v.z<z0)z0=v.z; if(v.z>z1)z1=v.z; } }   // 통보다 높은 구간 = 캔 뚜껑(몸통과 지름이 거의 같다)
+          if(x1>x0){ const r=(x1-x0+z1-z0)/4*1.13, lab=cvs(1024,256,(g,w,h)=>{ g.fillStyle="#a8221d"; g.fillRect(0,0,w,h); g.fillStyle="#f1ede4"; g.fillRect(0,0,w,10); g.fillRect(0,h-10,w,10); g.textAlign="center";
+                for(let n=0;n<2;n++){ const cx=w/4+n*w/2; g.font="900 118px 'Arial Black',Impact,sans-serif"; g.fillText("TITAN",cx,150,w/2-70); g.font="700 44px Arial,sans-serif"; g.fillText("P A I N T",cx,208,w/2-90); }
+                for(let n=0;n<260;n++){ g.fillStyle=`rgba(${Math.random()<.5?"70,10,8":"240,230,220"},${Math.random()*.18})`; g.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*7,1); } });
+            const lm=new THREE.Mesh(new THREE.CylinderGeometry(r*1.015,r*1.015,hh*.36,36,1,true),new THREE.MeshStandardMaterial({map:lab,roughness:.42,metalness:.1})); lm.position.set((x0+x1)/2,y0+hh*.4,(z0+z1)/2); lm.rotation.y=1.75; src.add(lm); } } }
       T.remove(PT); T.remove(D); T.add(M); });
     /* 레이스 러너: 구멍이 뚫린 꽃무늬, 뒤에서 앞으로 상판을 가로질러 앞 가장자리 아래로 늘어지고 끝은 물결 */
     const laceT=cvs(384,1024,(g,w,h)=>{ g.clearRect(0,0,w,h); const sc=28;

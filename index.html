@@ -3054,7 +3054,7 @@ function ending(){ hbStop(); const E=$("ending"), V=$("endVid");
   const cap=$("endCap"), CAP=[2.7,5.7];   // 엘레나가 돌아서서 외치는 구간(초)에만 자막
   V.ontimeupdate=()=>{ cap&&cap.classList.toggle("on",V.currentTime>=CAP[0]&&V.currentTime<CAP[1]); };
   let went=false; const go=()=>{ if(went) return; went=true; V.onended=V.onerror=V.onclick=V.ontimeupdate=null; cap&&cap.classList.remove("on"); V.pause(); V.hidden=true; endSeq(); };
-  V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4?v=4"; V.onended=go; V.onerror=go; V.onclick=go;
+  V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4?v=5"; V.onended=go; V.onerror=go; V.onclick=go;
   const p=V.play(); p&&p.catch(go); setTimeout(()=>{ if(!went&&V.currentTime<.1) go(); },6000); }
 function endSeq(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
   E.className="ending"; ng&&ng.classList.remove("on"); ck.textContent="21:47";

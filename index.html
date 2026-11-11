@@ -1085,10 +1085,12 @@ button{font:inherit;cursor:pointer;color:inherit}
   </section>
   <section class="ending" id="ending" hidden>
     <video class="en-vid" id="endVid" playsinline preload="auto" hidden></video>
+    <div class="en-cap" id="endCap" aria-live="polite"><b>수면제였어요! 저는…… 죽이지 않았어요!</b><i>It was only a sleeping draught! I didn't kill him!</i></div>
     <div class="en-bars" aria-hidden="true"><i></i><i></i></div>
     <div class="en-clock" id="endClock" aria-hidden="true">21:47</div>
     <div class="case">사건 종결 · 범인 엘레나 보로딘</div>
     <ul class="en-ev" id="endEv" aria-label="밝혀낸 증거"></ul>
+    <p class="en-stat" id="endStat"></p>
     <h2 class="q"><span>Was the one who killed him</span><br><span>really Elena?</span><em class="kr">그를 죽인 범인이 정말 엘레나가 맞을까?</em></h2>
     <p class="nag" id="endNag">21:47 — 독이 먼저였을까, 그 소리가 먼저였을까.</p>
     <p class="en">The next scene begins <em>in the game</em>.</p>
@@ -1099,6 +1101,8 @@ button{font:inherit;cursor:pointer;color:inherit}
       <div class="ef-name"><b>엘레나 보로딘</b><small>ELENA BORODIN · 전담 승무원</small></div>
       <dl class="ef-rows"><div><dt>피해자</dt><dd>밴더빌트 로크</dd></div><div><dt>현장</dt><dd>VIP실</dd></div><div><dt>추정 시각</dt><dd>21:47</dd></div><div><dt>결론</dt><dd>범인으로 지목</dd></div></dl>
       <div class="en-stamp"><b>CASE CLOSED</b><small>ORPHEUS R.R. · VIP</small></div>
+      <span class="en-sus-cap">아직 묻지 못한 사람들</span>
+      <div class="en-sus"><i><img src="sus/evelyn.jpg" alt="" loading="lazy"></i><i><img src="sus/magician.jpg" alt="" loading="lazy"></i><i><img src="sus/margaret.jpg" alt="" loading="lazy"></i></div>
     </aside>
   </section>
   <!-- 증거 게시판 (조사) -->
@@ -1484,12 +1488,27 @@ function creak(){ if(!soundOn) return; SFX("door",.6); return; if(!audio()) retu
   f.type="bandpass"; f.frequency.value=950; f.Q.value=9;
   g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.16,t+.25); g.gain.linearRampToValueAtTime(.09,t+1.4); g.gain.linearRampToValueAtTime(0,t+2.1);
   o.connect(f); f.connect(g); g.connect(sfxBus||ac.destination); o.start(t); l.start(t); o.stop(t+2.2); l.stop(t+2.2); }
-function hit(freq,vol,dur,type="lowpass"){ if(!soundOn||!audio()) return; const t=ac.currentTime, s=ac.createBufferSource(), f=ac.createBiquadFilter(), g=ac.createGain();
+/* 실제 녹음 효과음(짧은 간격 중복 방지 + 아주 약한 높낮이 변화로 같은 소리가 기계처럼 반복되지 않게) */
+const RSFX_T={}; function RSFX(n,v,gap){ try{ if(!soundOn) return; const now=performance.now(); if(now-(RSFX_T[n]||0)<(gap||60)) return; RSFX_T[n]=now;
+  let a=SFXF[n]; if(!a){ a=SFXF[n]=new Audio("sfx/"+n+".mp3"); a.preload="auto"; } const c=a.cloneNode(); c.volume=Math.max(0,Math.min(1,v||.5)); try{ c.preservesPitch=false; c.playbackRate=.94+Math.random()*.12; }catch(e){} c.play().catch(()=>{}); }catch(e){} }
+/* 렉 줄이기: 화면에 안 보이는 반복 영상은 디코딩을 멈춘다 (타이틀 뒤 열차 영상은 조사 시작 후, 방 배경은 엔딩에서) */
+setInterval(()=>{ try{ const tv=document.getElementById("titleTrainV"); if(tv&&!tv.paused&&["explore","inspect","closeup","talk","find","scrub","manip","board","end"].includes(mode)) tv.pause();
+  if(mode==="end") document.querySelectorAll("video.vloop").forEach(v=>{ if(!v.paused) v.pause(); }); }catch(e){} },2000);
+/* 조사·심문 중 이따금 들리는 객차 소리(실제 녹음): 나무 삐걱, 먼 기적 */
+(function carriageLife(){ setTimeout(()=>{ try{ if(soundOn&&["explore","inspect","closeup","talk","find","scrub","manip"].includes(mode)){ const L=[["woodcreak",.15],["squeak",.09],["horn",.06],["woodcreak",.11]], p=L[Math.floor(Math.random()*L.length)]; RSFX(p[0],p[1],4000); } }catch(e){} carriageLife(); },14000+Math.random()*16000); })();
+/* hit(): 예전에는 합성 잡음이었다 → 높이에 따라 실제 녹음으로 바꿔 재생 (낮음=둔탁한 쿵, 900=단서 발견 타자기 키, 가운데=종이, 높음=시계 똑딱) */
+function hit(freq,vol,dur,type="lowpass"){ if(!soundOn) return; { const v=Math.max(.06,Math.min(.8,vol*1.7));
+    if(freq<400) return RSFX("thud",v,90);
+    if(freq===900) return RSFX(Math.random()<.5?"key":"key2",Math.min(.7,v+.12),60);
+    if(freq<1300) return RSFX("flip",v,90);
+    if(freq===3000) return RSFX("tick",.05,240);
+    return RSFX("tick",Math.max(.05,v*.8),70); }
+  if(!audio()) return; const t=ac.currentTime, s=ac.createBufferSource(), f=ac.createBiquadFilter(), g=ac.createGain();
   s.buffer=noiseBuf(); f.type=type; f.frequency.value=freq; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   s.connect(f); f.connect(g); g.connect(sfxBus||ac.destination); s.start(t); s.stop(t+dur+.05); }
 function steps(n=2){ SFX("steps",.35); }
 const AMB={}; function ambStop(){ Object.values(AMB).forEach(a=>{ try{ a.pause(); }catch(e){} }); }
-function startClock(){ if(!soundOn) return; [["rumble",.30],["clock",.10]].forEach(([n,v])=>{ let a=AMB[n]; if(!a){ a=AMB[n]=new Audio("sfx/"+n+".mp3"); a.loop=true; } a.volume=v; a.play().catch(()=>{}); }); }   // 조사 중 은은한 시계 소리 + 낮은 열차 진동음
+function startClock(){ if(!soundOn) return; [["rumble",.30],["clock",.10],["carriage",.14]].forEach(([n,v])=>{ let a=AMB[n]; if(!a){ a=AMB[n]=new Audio("sfx/"+n+".mp3"); a.loop=true; } a.volume=v; a.play().catch(()=>{}); }); }   // 조사 중 은은한 시계 소리 + 낮은 열차 진동음
 let watchTimer=0, watchStopTimer=0;
 function stopWatchTick(){ clearInterval(watchTimer); clearTimeout(watchStopTimer); watchTimer=0; }
 function startWatchTick(){ stopWatchTick(); if(!soundOn||!audio()) return; let n=0;
@@ -1695,7 +1714,7 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
   DV={s,R,S,C,wrap,obj:dollG,raf:0,yaw:0,pitch:0,zoom:1,drag:null,face:0,done:false,cf:{pitch:[-.5,.5]},p:0,pt:0};
   m3dLoad("chair3d.glb",g=>{ if(!DV||DV.wrap!==wrap) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
     m.position.set(-c.x,-b.min.y,-c.z); const k=1/sz.y; const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(k); gp.rotation.y=Math.PI*.1; m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; if(o.material){ o.material=o.material.clone(); o.material.envMapIntensity=.35; } } }); S.add(gp); });
-  m3dLoad("doll3d.glb",g=>{ if(!DV||DV.wrap!==wrap) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
+  m3dLoad("doll3d.glb",g=>{ if(!DV||DV.wrap!==wrap) return; dollMatte(g.scene); const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
     m.position.set(-c.x,-c.y,-c.z); const k=.3/sz.y; const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(k); m.traverse(o=>{ if(o.isMesh){ o.receiveShadow=true; o.castShadow=true; if(o.material){ o.material=o.material.clone(); o.material.envMapIntensity=.08; } } }); dollG.add(gp); DV.ready=true; });   // 그림자가 못 막는 환경광을 줄여 의자 밑에선 어둠에 묻힘
   const el=R.domElement; let ly=0;
   el.onpointerdown=e=>{ if(!DV||DV.done) return; DV.drag=true; ly=e.clientY; DV.y0=ly; DV.mv=0; wrap.classList.add("grab"); try{ el.setPointerCapture(e.pointerId); }catch(_){} };
@@ -1721,8 +1740,10 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
     DV.raf=requestAnimationFrame(loop); };
   DV.raf=requestAnimationFrame(loop);
 }
+/* 인형 모델은 금속성·광택 값이 높아 젖은 플라스틱처럼 번들거린다 → 천·도자기 느낌의 무광으로 */
+function dollMatte(sc){ sc.traverse(o=>{ if(o.isMesh&&o.material) [].concat(o.material).forEach(m=>{ if(m._matte) return; m._matte=1; m.metalnessMap=null; m.roughnessMap=null; m.metalness=.04; m.roughness=.66; m.envMapIntensity=.55; m.needsUpdate=true; }); }); }
 function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").classList.add("cudim");
-  const wrap=document.createElement("div"); wrap.className="v3d dollv"; L.appendChild(wrap);
+  const wrap=document.createElement("div"); wrap.className="v3d dollv"; L.appendChild(wrap); v3bg(wrap,"doll");
   const R=new THREE.WebGLRenderer({antialias:true,alpha:true}); R.outputEncoding=THREE.sRGBEncoding; R.physicallyCorrectLights=true; R.toneMapping=THREE.ACESFilmicToneMapping; R.toneMappingExposure=1.1; R.setPixelRatio(Math.min(devicePixelRatio,2)); wrap.appendChild(R.domElement);
   const S=new THREE.Scene(), C=new THREE.PerspectiveCamera(30,16/9,.01,50); S.environment=exEnv(R);
   S.add(new THREE.HemisphereLight(0xffe7c4,0x16241a,.8)); const key=new THREE.PointLight(0xffc98a,22,8,1.6); key.position.set(1.1,1.4,1.6); S.add(key); const rim=new THREE.PointLight(0x9ec4ae,6,8,1.6); rim.position.set(-1.3,1.1,-1.4); S.add(rim);
@@ -1733,7 +1754,7 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
   DV={s,R,S,C,wrap,obj,raf:0,yaw:.35,pitch:0,zoom:1,drag:null,face:0,done:false,cf:{pitch:[-.5,.5]}};
   const eye=new THREE.PointLight(0xff2a1a,0,.6,2); const eyeDot=new THREE.Mesh(new THREE.SphereGeometry(.011,14,14),new THREE.MeshBasicMaterial({color:0xff2a14,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
   const spk=new THREE.Group(); let spkP=null;
-  m3dLoad("doll3d.glb",g=>{ if(!DV) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
+  m3dLoad("doll3d.glb",g=>{ if(!DV) return; dollMatte(g.scene); const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
     m.position.set(-c.x,-c.y,-c.z); const k=.9/sz.y; const p=new THREE.Group(); p.add(m); p.scale.setScalar(k); obj.add(p); p.updateMatrixWorld(true);
     const rc=new THREE.Raycaster(), hitAt=(x,y,z,dz)=>{ rc.set(new THREE.Vector3(x,y,z),new THREE.Vector3(0,0,dz)); const r=rc.intersectObject(p,true)[0]; return r&&r.point; };
     const H=.45, ey=H*.685, ex=.031;   // 오른쪽 눈(화면 기준)
@@ -1757,7 +1778,8 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
   const wp=new THREE.Vector3(), wn=new THREE.Vector3(), tc=new THREE.Vector3(), q=new THREE.Quaternion();
   const loop=t=>{ if(!DV) return; if(mode!=="closeup"){ dollClose(); return; }
     const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&R.domElement.width!==Math.round(w*R.getPixelRatio())){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
-    obj.rotation.set(DV.pitch,DV.yaw+(DV.drag?0:Math.sin(t/900)*.04),0); const d=3.1*DV.zoom; C.position.set(0,.05*d,d); C.lookAt(0,0,0); obj.updateMatrixWorld(true);
+    const dtv=Math.min(.05,(t-(DV.pt2||t))/1000); DV.pt2=t; if(DV.ry===undefined){ DV.ry=DV.yaw; DV.rp=DV.pitch; } const fk=1-Math.pow(.0008,dtv); DV.ry+=(DV.yaw-DV.ry)*fk; DV.rp+=(DV.pitch-DV.rp)*fk;   // 약병처럼 손을 살짝 늦게 따라옴
+    obj.rotation.set(DV.rp,DV.ry+(DV.drag?0:Math.sin(t/900)*.04),0); const d=2.7*DV.zoom; C.position.set(0,.05*d,d); C.lookAt(0,0,0); obj.updateMatrixWorld(true);
     if(DV.zin){ DV.sz=Math.min(1,(DV.sz||0)+(1-(DV.sz||0))*.07+.002); const e=DV.sz*DV.sz*(3-2*DV.sz); if(spkP){ const sp2=spkP.clone(); obj.localToWorld(sp2); const nn=new THREE.Vector3(0,0,-1).applyQuaternion(obj.getWorldQuaternion(new THREE.Quaternion())); const tp=sp2.clone().add(nn.multiplyScalar(.38)); C.position.lerp(tp,e); C.lookAt(new THREE.Vector3(0,0,0).lerp(sp2,e)); } }
     const blink=(Math.sin(t/260)>.2)?1:.15; eye.intensity=blink*.25; eyeDot.material.opacity=blink*.7;
     if(spkP){ wp.copy(spkP); obj.localToWorld(wp); obj.getWorldQuaternion(q); wn.set(0,0,-1).applyQuaternion(q); tc.copy(C.position).sub(wp).normalize();
@@ -1765,7 +1787,7 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
       if(!DV.done&&DV.face>=1){ const sp=wp.clone().project(C); spot.style.left=((sp.x+1)/2*100)+"%"; spot.style.top=((1-sp.y)/2*100)+"%"; if(!spot.classList.contains("on")){ spot.classList.add("on"); hit(1800,.05,.08,"bandpass"); } }
       else if(spot.classList.contains("on")&&DV.face<.5) spot.classList.remove("on"); }
     if(!document.hidden) R.render(S,C); DV.raf=requestAnimationFrame(loop); };
-  DV.raf=requestAnimationFrame(loop); window.__excam&&window.__excam(true); }
+  DV.raf=requestAnimationFrame(loop); roomBack(wrap,"doll",()=>DV&&DV.C); window.__excam&&window.__excam(true); }
 function recPanel(){
   const {s}=CU, L=$("cuLayer"); $("cuPh").classList.add("cudim");
   const p=document.createElement("div"); p.className="panel2"; L.appendChild(p);
@@ -1854,7 +1876,7 @@ let EX=null;
 /* 영상 속 객실처럼: 따뜻한 벽등과 마호가니 벽이 비치는 반사 환경 */
 function exEnv(R){ const c=document.createElement("canvas"); c.width=1024; c.height=512; const g=c.getContext("2d");
   const gr=g.createLinearGradient(0,0,0,512); gr.addColorStop(0,"#1a120c"); gr.addColorStop(.45,"#3b2516"); gr.addColorStop(.6,"#24170e"); gr.addColorStop(1,"#0b0705"); g.fillStyle=gr; g.fillRect(0,0,1024,512);
-  for(let i=0;i<8;i++){ g.fillStyle=`rgba(${60+i%3*10},${32+i%2*8},18,.5)`; g.fillRect(i*128+8,150,110,200); }
+  for(let i=0;i<8;i++){ g.fillStyle=i%2?`rgba(${60+i%3*10},40,18,.5)`:"rgba(34,66,44,.55)"; g.fillRect(i*128+8,150,110,200); }   // 초록 벽지와 나무 기둥이 번갈아 비침
   g.fillStyle="rgba(46,72,52,.45)"; g.fillRect(390,120,150,190);
   [[120,170,70],[640,160,60],[880,180,50],[330,60,40]].forEach(([x,y,r])=>{ const q=g.createRadialGradient(x,y,0,x,y,r); q.addColorStop(0,"rgba(255,226,170,1)"); q.addColorStop(.35,"rgba(255,190,110,.7)"); q.addColorStop(1,"rgba(255,160,80,0)"); g.fillStyle=q; g.fillRect(x-r,y-r,2*r,2*r); });
   const t=new THREE.CanvasTexture(c); t.mapping=THREE.EquirectangularReflectionMapping; t.encoding=THREE.sRGBEncoding;
@@ -2046,7 +2068,128 @@ function exGlass(){ const G=new THREE.Group();
   const pw=new THREE.Mesh(new THREE.CircleGeometry(.14,48),new THREE.MeshStandardMaterial({map:pt,roughness:.85,transparent:true,depthWrite:false})); pw.rotation.x=-Math.PI/2; pw.position.y=.0765; G.add(pw);
   return G; }
 /* 3D 증거 화면 배경: 증거 촬영 — 무광 회색 배경지 + 위에서 떨어지는 스포트라이트 */
-function v3bg(wrap){ const bg=document.createElement("div"); bg.className="v3bg"; bg.innerHTML='<i class="l1"></i><i class="l2"></i><i class="l3"></i>'; wrap.prepend(bg); wrap.dataset.bg="a"; }
+function v3bg(wrap,where){ const bg=document.createElement("div"); bg.className="v3bg"; bg.innerHTML='<i class="l1"></i><i class="l2"></i><i class="l4"></i><i class="l3"></i>'; wrap.prepend(bg); wrap.dataset.bg="a"; if(where) wrap.dataset.where=where; }   // where: 증거가 놓여 있던 자리(그 자리의 방 모습이 뒤로 흐려져 보임)
+/* ===== 조사 화면 뒤 3D 방 세트 =====
+   증거 뒤에 사진을 까는 대신, 그 증거가 놓여 있던 자리(협탁 옆 · 조각상 뒤 벽 · 의자 옆)를 실제 3D 물체로 세운다.
+   벽 패널(wall_panel.jpg)·나무 바닥·러그·램프·벽등·액자. 앞쪽 증거 카메라를 그대로 따라가서 돌리거나 다가가면 같이 움직이고,
+   캔버스를 따로 두어 살짝 흐리게(아웃포커스) 보여 준다. 증거 캔버스의 투명 배경(증거 사진 촬영)은 그대로 유지된다. */
+function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.querySelector(".v3bg"); if(!host) return;
+  let R; try{ R=new THREE.WebGLRenderer({antialias:where==="bedside",alpha:false,powerPreference:"low-power"}); }catch(e){ return; }
+  R.outputEncoding=THREE.sRGBEncoding; R.physicallyCorrectLights=true; R.toneMapping=THREE.ACESFilmicToneMapping; R.toneMappingExposure=1.05; R.setPixelRatio(1); R.setClearColor(0x060907,1);
+  const cv=R.domElement; cv.className="v3room"; host.insertBefore(cv,host.children[1]||null);
+  const S=new THREE.Scene(), C=new THREE.PerspectiveCamera(32,16/9,.05,80); S.fog=new THREE.FogExp2(0x070b08,.05);
+  S.add(new THREE.HemisphereLight(0xffe2b8,0x122018,.55)); try{ S.environment=exEnv(R); }catch(e){}
+  const CFG={ bedside:{f:4.5,y:-4.4,wz:-1.05,wh:2.8,wy:-.38,tilt:.44}, statue:{f:2.6,y:-1.93,wz:-.37,wh:2.2}, doll:{f:3,y:-1.2,wz:-1.7,wh:2.8,wy:-.5} }[where]||{f:3,y:-1.5,wz:-1.5,wh:2.8};
+  const f=CFG.f, G=new THREE.Group(), PV=new THREE.Group(); G.scale.setScalar(f); G.position.y=CFG.y; PV.add(G); PV.rotation.x=CFG.tilt||0; S.add(PV);   // G 안은 미터 단위
+  const std=(c,r,m)=>new THREE.MeshStandardMaterial({color:new THREE.Color(c).convertSRGBToLinear(),roughness:r===undefined?.8:r,metalness:m||0});
+  const add=(geo,mat,x,y,z)=>{ const o=new THREE.Mesh(geo,mat); o.position.set(x,y,z); G.add(o); return o; };
+  const wood=std(0x2a1710,.55), brass=std(0x9a7638,.4,.8);
+  /* 바닥 + 벽 */
+  { const ft=woodFloor(); ft.repeat.set(6,6); const fl=add(new THREE.PlaneGeometry(9,9),new THREE.MeshStandardMaterial({map:ft,roughness:.6}),0,0,0); fl.rotation.x=-Math.PI/2;
+    const wt=new THREE.TextureLoader().load("wall_panel.jpg"); wt.encoding=THREE.sRGBEncoding; wt.wrapS=THREE.RepeatWrapping; const pw=CFG.wh*.293; wt.repeat.set(Math.round(8/pw),1); wt.anisotropy=4;
+    add(new THREE.PlaneGeometry(8,CFG.wh),new THREE.MeshStandardMaterial({map:wt,roughness:.85}),0,CFG.wh/2+(CFG.wy||0),CFG.wz); }
+  /* 빛나는 갓 주변의 번짐 */
+  const gc=document.createElement("canvas"); gc.width=gc.height=128; { const g=gc.getContext("2d"), q=g.createRadialGradient(64,64,0,64,64,64); q.addColorStop(0,"rgba(255,214,150,.9)"); q.addColorStop(.3,"rgba(255,170,90,.32)"); q.addColorStop(1,"rgba(255,150,70,0)"); g.fillStyle=q; g.fillRect(0,0,128,128); }
+  const gtex=new THREE.CanvasTexture(gc), lamps=[];
+  const glow=(x,y,z,sz,I,dist)=>{ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:gtex,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,fog:false})); sp.scale.setScalar(sz); sp.position.set(x,y,z); G.add(sp);
+    const L=new THREE.PointLight(0xffb468,I*f*f,dist*f,2); L.position.set(x,y,z+.06); G.add(L); lamps.push([L,I*f*f,Math.random()*9]); };
+  const shadeM=new THREE.MeshBasicMaterial({color:new THREE.Color(0xe9a55c).convertSRGBToLinear().multiplyScalar(.85),side:THREE.DoubleSide,fog:false});
+  const sconce=(x,y,z)=>{ add(new THREE.CylinderGeometry(.035,.035,.012,20),brass,x,y-.1,z+.006).rotation.x=Math.PI/2; const arm=add(new THREE.TorusGeometry(.06,.006,8,16,Math.PI),brass,x,y-.1,z+.07); arm.rotation.set(0,Math.PI/2,Math.PI);
+    add(new THREE.CylinderGeometry(.042,.075,.11,20,1,true),shadeM,x,y,z+.13); glow(x,y,z+.14,.75,1.5,3.2); };
+  const tlamp=(x,y,z)=>{ add(new THREE.CylinderGeometry(.045,.06,.02,20),brass,x,y+.01,z); add(new THREE.CylinderGeometry(.012,.022,.2,12),brass,x,y+.11,z); add(new THREE.CylinderGeometry(.06,.13,.15,24,1,true),shadeM,x,y+.27,z); glow(x,y+.27,z,.7,.75,3.4); };
+  const frame=(x,y,z,w,h)=>{ add(new THREE.BoxGeometry(w,h,.025),std(0x7a5c2c,.45,.6),x,y,z+.014); add(new THREE.PlaneGeometry(w-.05,h-.05),std(0x3b2f22,.9),x,y,z+.028); };
+  const rug=(x,z,w)=>m3dLoad("rug3d.glb",g=>{ if(!wrap.isConnected) return; const m=g.scene.clone(), bb=new THREE.Box3().setFromObject(m), c=bb.getCenter(new THREE.Vector3()), sz=bb.getSize(new THREE.Vector3()); m.position.set(-c.x,-bb.min.y,-c.z); const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(w/sz.x); gp.position.set(x,.002,z); G.add(gp); });
+  if(where==="bedside"){   // 협탁을 블렌더 장면 그대로: 물결 모양 상판의 밝은 참나무 탁자 · 깎은 다리 · 레이스 러너 · 신문 두 부 · 빨간 통 · 펜 두 자루 · 스프레이 캔
+    const T=new THREE.Group(); T.position.set(.02,0,-.6); T.rotation.y=-.42; G.add(T); const ty=.7;   // ty: 상판 윗면 높이
+    const D=new THREE.Group(), PT=new THREE.Group(); T.add(D,PT);   // D: 책상 위 소품, PT: 직접 만든 임시 책상(진짜 모델이 오면 교체)
+    const put=(geo,mat,x,y,z)=>{ const o=new THREE.Mesh(geo,mat); o.position.set(x,y,z); D.add(o); return o; }, putT=(geo,mat,x,y,z)=>{ const o=new THREE.Mesh(geo,mat); o.position.set(x,y,z); PT.add(o); return o; };
+    const cvs=(w,h,draw)=>{ const c=document.createElement("canvas"); c.width=w; c.height=h; draw(c.getContext("2d"),w,h); const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.anisotropy=4; return t; };
+    /* 나무결 */
+    const oakT=cvs(1024,1024,(g,w,h)=>{   // 사진의 책상처럼 빛바랜 밝은 참나무: 줄무늬가 아니라 은은한 결 + 넓은 얼룩 + 드문 짙은 결
+      g.fillStyle="#94795a"; g.fillRect(0,0,w,h);
+      for(let k=0;k<26;k++){ const x=Math.random()*w, y=Math.random()*h, rx=160+Math.random()*320, ry=30+Math.random()*70, q=g.createRadialGradient(0,0,0,0,0,1); const d=Math.random()<.5; q.addColorStop(0,d?"rgba(70,50,32,.3)":"rgba(206,188,156,.24)"); q.addColorStop(1,"rgba(0,0,0,0)");
+        g.save(); g.translate(x,y); g.scale(rx,ry); g.fillStyle=q; g.fillRect(-1,-1,2,2); g.restore(); }
+      for(let k=0;k<1500;k++){ const y=Math.random()*h, x=Math.random()*w, len=60+Math.random()*320, d=Math.random()<.55; g.strokeStyle=d?`rgba(66,46,28,${.1+Math.random()*.16})`:`rgba(214,196,164,${.07+Math.random()*.12})`; g.lineWidth=.5+Math.random()*1.1;
+        g.beginPath(); g.moveTo(x,y); g.bezierCurveTo(x+len*.33,y+(Math.random()-.5)*5,x+len*.66,y+(Math.random()-.5)*5,x+len,y+(Math.random()-.5)*6); g.stroke(); }
+      for(let k=0;k<14;k++){ const y=Math.random()*h; g.strokeStyle=`rgba(58,40,24,${.22+Math.random()*.2})`; g.lineWidth=1.2+Math.random()*2; g.beginPath(); g.moveTo(0,y); let yy=y; for(let x=0;x<=w;x+=64){ yy+=(Math.random()-.5)*7; g.lineTo(x,yy); } g.stroke(); }
+      for(let k=0;k<9000;k++){ g.fillStyle=`rgba(${Math.random()<.5?"70,54,38":"232,220,198"},${Math.random()*.06})`; g.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*5,1); } });
+    oakT.wrapS=oakT.wrapT=THREE.RepeatWrapping;
+    const oak=new THREE.MeshStandardMaterial({map:oakT,roughness:.68}), oakD=new THREE.MeshStandardMaterial({map:oakT,roughness:.7,color:new THREE.Color(0xc9b8a2).convertSRGBToLinear()});
+    /* 상판: 네 귀가 둥글게 튀어나오고 변이 완만하게 굽은 모양 */
+    { const a=.37,b=.27,e=.05,sh=new THREE.Shape(); sh.moveTo(-a+e*1.6,-b+.012);
+      sh.quadraticCurveTo(0,-b-.012,a-e*1.6,-b+.012); sh.lineTo(a-e*1.25,-b+.012); sh.absarc(a-e,-b+e,e,-Math.PI/2-.5,.5,false); sh.lineTo(a-.012,-b+e*1.6);
+      sh.quadraticCurveTo(a+.01,0,a-.012,b-e*1.6); sh.absarc(a-e,b-e,e,-.5,Math.PI/2+.5,false); sh.lineTo(a-e*1.6,b-.012);
+      sh.quadraticCurveTo(0,b+.012,-a+e*1.6,b-.012); sh.absarc(-a+e,b-e,e,Math.PI/2-.5,Math.PI+.5,false); sh.lineTo(-a+.012,b-e*1.6);
+      sh.quadraticCurveTo(-a-.01,0,-a+.012,-b+e*1.6); sh.absarc(-a+e,-b+e,e,Math.PI-.5,Math.PI*1.5+.5,false);
+      const tg=new THREE.ExtrudeGeometry(sh,{depth:.026,bevelEnabled:true,bevelThickness:.006,bevelSize:.007,bevelSegments:3,curveSegments:14}); tg.rotateX(-Math.PI/2);
+      { const uv=tg.attributes.uv, ps=tg.attributes.position; for(let k=0;k<uv.count;k++) uv.setXY(k,ps.getX(k)*1.3+.5,ps.getZ(k)*1.3+.5); }
+      putT(tg,oak,0,ty-.032,0); }
+    putT(new THREE.BoxGeometry(.6,.075,.42),oakD,0,ty-.078,0);   // 상판 아래 프레임
+    /* 깎은 다리(선반 가공) */
+    { const pr=[[.0,0],[.02,0],[.026,.02],[.016,.05],[.021,.09],[.03,.13],[.021,.17],[.015,.2],[.024,.215],[.015,.23],[.017,.33],[.03,.38],[.034,.42],[.022,.46],[.016,.48],[.026,.495],[.026,.5],[0,.5]].map(q=>new THREE.Vector2(q[0],q[1])), lg=new THREE.LatheGeometry(pr,14);
+      [[-.27,-.18],[.27,-.18],[-.27,.18],[.27,.18]].forEach(([lx,lz])=>{ putT(lg,oakD,lx,0,lz); putT(new THREE.BoxGeometry(.056,.16,.056),oakD,lx,.58,lz); }); }
+    /* 진짜 책상: 졸업작품 원본(Table2.obj + 서브스턴스 페인터 텍스처 4세트)을 glb로 묶은 bedside3d.glb.
+       책상·레이스 천·신문·펜·빨간 통·스프레이 캔이 모양과 텍스처 모두 원본 그대로다. 아래 직접 만든 소품은 이 파일을 못 읽었을 때만 쓰는 대비용 */
+    m3dLoad("bedside3d.glb",g=>{ if(!wrap.isConnected) return; const src=g.scene.clone(true); src.updateMatrixWorld(true); const part={}; src.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.envMapIntensity=.5; if(o.material.map) o.material.map.anisotropy=8; part[o.material.name]=o; } }); const tb=part.TABLE; if(!tb) return;
+      const b=new THREE.Box3().setFromObject(tb), k=ty/(b.max.y-b.min.y), M=new THREE.Group(); src.position.set(-(b.min.x+b.max.x)/2,-b.min.y,-(b.min.z+b.max.z)/2); M.add(src); M.scale.setScalar(k);
+      if(part.Material){ const am=new THREE.TextureLoader().load("bedside3d_lace.jpg"); am.flipY=false; const mt=part.Material.material; mt.alphaMap=am; mt.transparent=true; mt.alphaTest=.4; mt.side=THREE.DoubleSide; mt.needsUpdate=true; }   // 레이스의 구멍
+      T.remove(PT); T.remove(D); T.add(M); });
+    /* 레이스 러너: 구멍이 뚫린 꽃무늬, 뒤에서 앞으로 상판을 가로질러 앞 가장자리 아래로 늘어지고 끝은 물결 */
+    const laceT=cvs(384,1024,(g,w,h)=>{ g.clearRect(0,0,w,h); const sc=28;
+      g.fillStyle="rgba(232,222,224,.5)"; g.fillRect(6,sc,w-12,h-sc*2);                                  // 성긴 망
+      g.globalCompositeOperation="destination-out"; for(let y=sc;y<h-sc;y+=9) for(let x=8+((y/9|0)%2)*4.5;x<w-8;x+=9){ g.beginPath(); g.arc(x,y,2.6,0,7); g.fill(); }
+      g.globalCompositeOperation="source-over"; g.fillStyle="rgba(240,231,232,1)";
+      for(let x=0;x<w;x+=48){ g.beginPath(); g.arc(x+24,sc,24,Math.PI,0); g.fill(); g.beginPath(); g.arc(x+24,h-sc,24,0,Math.PI); g.fill(); }   // 양 끝 물결 단
+      g.fillRect(0,sc,10,h-sc*2); g.fillRect(w-10,sc,10,h-sc*2);
+      for(let y=90;y<h-60;y+=96) for(let x=48+((y/96|0)%2)*48;x<w-20;x+=96){ g.save(); g.translate(x,y); for(let q=0;q<6;q++){ g.rotate(Math.PI/3); g.beginPath(); g.ellipse(0,19,9,17,0,0,7); g.fill(); } g.beginPath(); g.arc(0,0,8,0,7); g.fill(); g.restore();
+        g.strokeStyle="rgba(240,231,232,.95)"; g.lineWidth=4; g.beginPath(); g.arc(x+48,y+48,22,0,7); g.stroke(); }
+      g.globalCompositeOperation="destination-out"; for(let x=0;x<w;x+=48){ g.beginPath(); g.arc(x+24,sc-4,7,0,7); g.fill(); g.beginPath(); g.arc(x+24,h-sc+4,7,0,7); g.fill(); } });
+    { const W=.3,N=36,L=.78,pos=[],uvs=[],idx=[],zb=-.285,zf=.285; for(let k=0;k<=N;k++){ const q=k/N*L; let y,z; if(q<.06){ z=zb-.004; y=ty-(.06-q); } else if(q<.06+(zf-zb)){ z=zb+(q-.06); y=ty+.003; } else { const d=q-.06-(zf-zb); z=zf+.006+Math.sin(d*9)*.006; y=ty-d; }
+        pos.push(-W/2,y,z, W/2,y,z); uvs.push(0,1-k/N, 1,1-k/N); if(k<N){ const o=k*2; idx.push(o,o+2,o+1, o+1,o+2,o+3); } }
+      const lg=new THREE.BufferGeometry(); lg.setAttribute("position",new THREE.Float32BufferAttribute(pos,3)); lg.setAttribute("uv",new THREE.Float32BufferAttribute(uvs,2)); lg.setIndex(idx); lg.computeVertexNormals();
+      put(lg,new THREE.MeshStandardMaterial({map:laceT,transparent:true,alphaTest:.3,side:THREE.DoubleSide,roughness:1}),.07,0,0); }
+    /* 신문: 실제 헤드라인을 인쇄 */
+    const paperBase=(g,w,h)=>{ g.fillStyle="#b9b2a0"; g.fillRect(0,0,w,h); for(let k=0;k<900;k++){ g.fillStyle=`rgba(90,80,62,${Math.random()*.06})`; g.fillRect(Math.random()*w,Math.random()*h,3,3); } };
+    const cols=(g,x,y,w,h,n)=>{ g.fillStyle="rgba(34,30,26,.6)"; const cw=(w-(n-1)*10)/n; for(let c=0;c<n;c++) for(let r=0;r<h;r+=7) g.fillRect(x+c*(cw+10),y+r,cw*(.82+Math.random()*.18),2.6); };
+    const news1=cvs(512,704,(g,w,h)=>{ paperBase(g,w,h); g.fillStyle="#1d1a17"; g.textAlign="center"; g.font="900 78px 'Arial Black',Impact,sans-serif"; g.fillText("ALARM SYSTEM",w/2,92,w-36); g.fillText("DETECTS FAILS",w/2,176,w-36);
+      g.fillRect(24,196,w-48,4); g.font="700 20px Georgia,serif"; g.fillText("SECURITY EXPERTS ISSUE WARNING",w/2,228,w-60); g.fillRect(24,240,w-48,2);
+      g.beginPath(); g.arc(w/2,330,54,0,7); g.fill(); g.fillStyle="#b9b2a0"; g.beginPath(); g.arc(w/2,330,40,0,7); g.fill(); g.fillStyle="#1d1a17"; g.font="700 13px Georgia,serif"; g.fillText("SECURITY",w/2,326); g.fillText("SYSTEMS",w/2,342);
+      cols(g,26,262,150,150,1); cols(g,336,262,150,150,1); cols(g,26,430,w-52,250,4); });
+    const news2=cvs(512,704,(g,w,h)=>{ paperBase(g,w,h); g.fillStyle="#1d1a17"; g.textAlign="center"; g.font="700 26px Georgia,serif"; g.fillText("THE EVENING DISPATCH",w/2,40,w-40); g.fillRect(24,52,w-48,3);
+      g.font="900 54px 'Arial Black',Impact,sans-serif"; g.fillText("TRAIN ROBBERY",w/2,112,w-40); g.fillText("SUSPECT ARRESTED",w/2,166,w-40); g.fillRect(24,182,w-48,3);
+      g.fillStyle="#2b2723"; g.fillRect(30,204,210,250); g.fillStyle="#8d8778"; g.beginPath(); g.ellipse(135,300,46,58,0,0,7); g.fill(); g.fillStyle="#57524a"; g.beginPath(); g.ellipse(135,420,86,56,0,Math.PI,0); g.fill(); g.fillStyle="#3a352f"; g.beginPath(); g.ellipse(135,262,50,26,0,Math.PI,0); g.fill();
+      cols(g,262,206,224,246,2); cols(g,30,474,w-60,206,4); });
+    const pm=std(0xa49d8c,.92), nm=t=>new THREE.MeshStandardMaterial({map:t,roughness:.9,side:THREE.DoubleSide});
+    { const n=put(new THREE.BoxGeometry(.25,.004,.345),[pm,pm,nm(news2),pm,pm,pm],-.04,ty+.008,.085); n.rotation.y=.42; n.userData.keep=1; }   // 아래 신문(초상 사진)
+    { const g2=new THREE.PlaneGeometry(.25,.345,1,18); g2.rotateX(-Math.PI/2); const ps=g2.attributes.position; for(let k=0;k<ps.count;k++){ const z=ps.getZ(k), u=(z+.1725)/.345; ps.setY(k,.005+.004*Math.exp(-Math.pow((u-.56)/.13,2))); } g2.computeVertexNormals();
+      const n=put(g2,nm(news1),.1,ty+.008,-.03); n.rotation.y=-.1; n.userData.keep=1; }                                                             // 위 신문(가운데가 접혀 살짝 뜸)
+    /* 빨간 통 */
+    { const red=std(0xa3211d,.35,.35); put(new THREE.CylinderGeometry(.03,.03,.03,24),red,-.09,ty+.02,-.1); put(new THREE.CylinderGeometry(.031,.031,.008,24),std(0x7d1512,.3,.4),-.09,ty+.036,-.1); put(new THREE.CylinderGeometry(.022,.022,.002,20),std(0xc23a30,.4,.3),-.09,ty+.041,-.1); }
+    /* 펜 두 자루: 적갈색 몸통 + 금색 띠·촉 */
+    { const body=std(0x4c1714,.3,.2), gold=std(0xb8934a,.3,.9); const pen=(x,z,r)=>{ const P=new THREE.Group(); const b=new THREE.Mesh(new THREE.CylinderGeometry(.0058,.0052,.12,10),body); b.rotation.z=Math.PI/2; P.add(b);
+        const r1=new THREE.Mesh(new THREE.CylinderGeometry(.0062,.0062,.006,10),gold); r1.rotation.z=Math.PI/2; r1.position.x=.02; P.add(r1); const nb=new THREE.Mesh(new THREE.ConeGeometry(.005,.022,10),gold); nb.rotation.z=-Math.PI/2; nb.position.x=.071; P.add(nb);
+        P.position.set(x,ty+.014,z); P.rotation.y=r; D.add(P); }; pen(-.05,.19,.55); pen(.03,.215,.3); }
+    /* 스프레이 캔: 흰 몸통 + 빨간 뚜껑 + 라벨 */
+    { const lab=cvs(256,128,(g,w,h)=>{ g.fillStyle="#e9e6de"; g.fillRect(0,0,w,h); g.fillStyle="#b3231f"; g.fillRect(0,34,w,58); g.fillStyle="#fff"; g.textAlign="center"; g.font="900 34px 'Arial Black',Impact,sans-serif"; g.fillText("TITAN",64,72); g.fillText("TITAN",192,72); g.font="700 13px Arial"; g.fillText("PAINT",64,87); g.fillText("PAINT",192,87); });
+      put(new THREE.CylinderGeometry(.03,.03,.105,24),new THREE.MeshStandardMaterial({map:lab,roughness:.35,metalness:.2}),-.235,ty+.053,-.075); put(new THREE.CylinderGeometry(.027,.029,.034,24),std(0xb3231f,.35,.1),-.235,ty+.122,-.075); put(new THREE.CylinderGeometry(.03,.031,.006,24),std(0xbdb9b0,.3,.8),-.235,ty+.107,-.075); }
+    sconce(-.62,1.2,CFG.wz); { const L=new THREE.PointLight(0xffe6c8,1.2*f*f,3.2*f,2); L.position.set(-.2,1.45,-.25); G.add(L); S.fog.density=.014; const dl=new THREE.DirectionalLight(0xfff0dc,1.9); dl.position.set(-1.5,5,3); S.add(dl); S.add(new THREE.HemisphereLight(0xfff4e6,0x3a3830,.75)); /* 원본 재질이 사진처럼 제 색(흰 레이스·흰 캔·밝은 나무)으로 보이도록 밝고 덜 누런 빛 */ }   // 책상 위를 비추는 방 조명
+    add(new THREE.BoxGeometry(1.1,1.02,.06),wood,1.25,.51,CFG.wz+.06); add(new THREE.BoxGeometry(1.0,.26,1.3),std(0x2c5238,.95),1.25,.47,-.32); add(new THREE.BoxGeometry(.5,.1,.3),std(0x4a6b4e,.95),1.13,.65,-.78);
+    rug(.4,.3,2.2);
+  } else if(where==="statue"){   // 조각상 테이블 뒤의 벽 · 벽등 · 초상화 액자
+    sconce(.52,1.1,CFG.wz); frame(-.6,1.12,CFG.wz,.3,.38); rug(0,.5,2.2);
+  } else {   // 인형: 방금 인형이 나온 의자 · 러그 · 붉은 식탁보의 식탁과 램프
+    rug(0,-.7,2.3);
+    m3dLoad("chair3d.glb",g=>{ if(!wrap.isConnected) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3()); m.position.set(-c.x,-b.min.y,-c.z); const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(1/sz.y); gp.rotation.y=.55; gp.position.set(-.6,0,-.85); G.add(gp); });
+    add(new THREE.CylinderGeometry(.5,.56,.74,40),std(0x6a242e,.95),.98,.37,-1.15); add(new THREE.CylinderGeometry(.11,.11,.008,24),std(0xe6dfcf,.4),.82,.746,-.95);
+    tlamp(.8,.74,-1.3); sconce(-.22,.92,CFG.wz); frame(.22,.86,CFG.wz,.34,.26);
+  }
+  const loop=t=>{ if(!wrap.isConnected){ try{ R.dispose(); R.forceContextLoss(); }catch(e){} return; }
+    if((loop.n=(loop.n||0)+1)%2){ requestAnimationFrame(loop); return; }   // 흐리게 보이는 뒷배경이라 절반 해상도 · 한 프레임 걸러 그려 가볍게
+    const rs=where==="bedside"?1:.6, w=Math.round(host.clientWidth*rs),h=Math.round(host.clientHeight*rs); if(w&&h&&(cv.width!==w||cv.height!==h)) R.setSize(w,h,false);
+    const c=getCam&&getCam(); if(c){ c.updateMatrixWorld(); C.copy(c); C.near=.05; C.far=80; C.updateProjectionMatrix(); C.updateMatrixWorld(true); }
+    lamps.forEach(l=>{ l[0].intensity=l[1]*(1+Math.sin(t/430+l[2])*.05+Math.sin(t/170+l[2])*.025); });   // 램프 불빛이 아주 살짝 흔들림
+    if(!document.hidden) R.render(S,C); requestAnimationFrame(loop); };
+  requestAnimationFrame(loop); }
 function unmountExam(){ if(!EX) return; cancelAnimationFrame(EX.raf); EX.wrap.remove(); try{ EX.R.dispose(); }catch(e){} EX=null; }
 function cropContent(cv){ const W=cv.width,H=cv.height, t=document.createElement("canvas"); t.width=W; t.height=H; const g=t.getContext("2d"); g.drawImage(cv,0,0);
   const d=g.getImageData(0,0,W,H).data; let x0=W,y0=H,x1=0,y1=0;
@@ -2056,7 +2199,7 @@ function cropContent(cv){ const W=cv.width,H=cv.height, t=document.createElement
   const o=document.createElement("canvas"); o.width=x1-x0; o.height=y1-y0; o.getContext("2d").drawImage(t,x0,y0,o.width,o.height,0,0,o.width,o.height); return o.toDataURL("image/png"); }
 function mountExam(s){ const CF=EXAM[s.id]; if(!window.THREE) return;
   if(EX&&EX.s===s){ EX.sync(); return; } unmountExam(); unmountStatue3D();
-  const ph=$("iPhoto"), wrap=document.createElement("div"); wrap.className="v3d"; ph.appendChild(wrap); ph.classList.remove("veiled"); v3bg(wrap);
+  const ph=$("iPhoto"), wrap=document.createElement("div"); wrap.className="v3d"; ph.appendChild(wrap); ph.classList.remove("veiled"); v3bg(wrap,s.id);
   const R=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:s.id==="bedside"}); R.outputEncoding=THREE.sRGBEncoding; R.physicallyCorrectLights=true; R.toneMapping=THREE.ACESFilmicToneMapping;
   R.setPixelRatio(Math.min(devicePixelRatio,1.5)); wrap.appendChild(R.domElement);
   const S=new THREE.Scene(), C=new THREE.PerspectiveCamera(32,16/9,.01,50);
@@ -2076,7 +2219,7 @@ function mountExam(s){ const CF=EXAM[s.id]; if(!window.THREE) return;
   el.onpointermove=e=>{ if(!EX||!EX.drag) return; const r=el.getBoundingClientRect(), now=performance.now(), dt=Math.max(8,now-EX.lm);
     const py=EX.yaw, pp=EX.pitch;
     EX.yaw=EX.drag.yaw+(e.clientX-EX.drag.x)/Math.min(r.width,640)*5; EX.pitch=Math.max(CF.pitch[0],Math.min(CF.pitch[1],EX.drag.pitch+(e.clientY-EX.drag.y)/Math.min(r.height,420)*2.6));
-    EX.vy=EX.vy*.5+(EX.yaw-py)/dt*1000*.5; EX.vp=EX.vp*.5+(EX.pitch-pp)/dt*1000*.5; EX.lm=now; };   // 라디안/초
+    EX.vy=Math.max(-7,Math.min(7,EX.vy*.5+(EX.yaw-py)/dt*1000*.5)); EX.vp=Math.max(-4,Math.min(4,EX.vp*.5+(EX.pitch-pp)/dt*1000*.5)); EX.lm=now; };   // 라디안/초
   el.onpointerup=()=>{ if(!EX) return; if(performance.now()-EX.lm>80){ EX.vy=EX.vp=0; } EX.drag=null; wrap.classList.remove("grab"); };
   el.onwheel=e=>{ e.preventDefault(); EX.zoom=Math.max(.22,Math.min(1.5,(EX.zoom||1)*(e.deltaY>0?1.08:.92))); };
   spot.onclick=e=>{ e.stopPropagation(); if(EX.done) return; EX.done=true; spot.classList.remove("on"); wrap.classList.add("exhit"); hint.innerHTML=""; EX.zoomT=.46; EX.vy=EX.vp=0; EX.zin=true; EX.zs=0;   // 인형처럼 단서 앞으로 카메라가 다가가 크게 보여 줌
@@ -2110,7 +2253,7 @@ function mountExam(s){ const CF=EXAM[s.id]; if(!window.THREE) return;
         EVIMG.bedside=cropContent(R.domElement); C.position.copy(kp); C.lookAt(0,0,0); obj.rotation.set(EX.pitch,kr,0); }catch(e){}
     }
     EX.raf=requestAnimationFrame(loop); };
-  EX.raf=requestAnimationFrame(loop);
+  EX.raf=requestAnimationFrame(loop); roomBack(wrap,s.id,()=>EX&&EX.C);
 }
 /* ---------- 3D 조각상 (돌려 보고 들어 올리기) ---------- */
 let S3=null;
@@ -2193,7 +2336,7 @@ function exDustPlane(pw=5,pd=1.6,opt={}){ const W=2048,H=Math.max(256,Math.round
 function mountStatue3D(s){ const CF=M3D[s.id];
   if(!window.THREE||!THREE.GLTFLoader) return;
   if(S3&&S3.s===s){ S3.sync(); return; } unmountStatue3D();
-  const ph=$("iPhoto"), wrap=document.createElement("div"); wrap.className="v3d"; ph.appendChild(wrap); v3bg(wrap);
+  const ph=$("iPhoto"), wrap=document.createElement("div"); wrap.className="v3d"; ph.appendChild(wrap); v3bg(wrap,s.id);
   const R=new THREE.WebGLRenderer({antialias:true,alpha:true}); R.outputEncoding=THREE.sRGBEncoding; R.physicallyCorrectLights=true; R.toneMapping=THREE.ACESFilmicToneMapping;
   R.setPixelRatio(Math.min(devicePixelRatio,1.5)); wrap.appendChild(R.domElement);
   const S=new THREE.Scene(), C=new THREE.PerspectiveCamera(32,16/9,.01,50);
@@ -2280,7 +2423,7 @@ function mountStatue3D(s){ const CF=M3D[s.id];
     /* 들어 올릴수록 카메라가 받침 밑 병 쪽으로 내려가며 다가간다 (조각상은 위로 빠지고 병이 화면 가운데) */
     const rq=CF.lift?Math.max(0,Math.min(1,(S3.lift-.25)/.75)):0, rv=rq*rq*(3-2*rq);
     C.position.set(cp[0],(cp[1]+S3.lift*.15)*(1-rv)+.3*rv,cp[2]*S3.zoom*kz*(1-rv*.62)); C.lookAt(0,(CF.look+S3.lift*.12)*(1-rv)+.1*rv,0); R.render(S,C); S3.raf=requestAnimationFrame(loop); };
-  S3.raf=requestAnimationFrame(loop);
+  S3.raf=requestAnimationFrame(loop); roomBack(wrap,s.id,()=>S3&&S3.C);
 }
 function renderInspect(s){
   { const ph=$("iPhoto"); ph.style.transform=""; ph.classList.remove("tilting"); ph.onpointerdown=ph.onpointermove=ph.onpointerup=null; ph.querySelector(".powder")?.remove(); }
@@ -2381,12 +2524,13 @@ function render(){
   renderPage(); renderSide(); refreshMarkers();
 }
 let flipping=false;
-function rustle(){ hit(2600,.10,.18,"bandpass"); setTimeout(()=>hit(1500,.14,.32,"bandpass"),160); setTimeout(()=>hit(700,.12,.12),560); }
+function rustle(){ SFX("rustle",.4); setTimeout(()=>RSFX("flip",.28,90),520); }   // 실제 종이 소리
 function faceOf(pg,cls){ const c=pg.cloneNode(true); c.removeAttribute("id"); c.querySelectorAll("[id]").forEach(n=>n.removeAttribute("id")); if(cls) c.classList.add(...cls.split(" ")); return c; }
 function boxOf(el,pg){ Object.assign(el.style,{left:pg.offsetLeft+"px",top:pg.offsetTop+"px",width:pg.offsetWidth+"px",height:pg.offsetHeight+"px"}); }
 /* 종이처럼 모서리부터 말려 넘어가는 장 (접힌 선을 기준으로 앞면은 잘라 내고, 뒷면은 그 선에 비쳐 보이게 그린다).
    오른쪽/왼쪽 페이지 바깥 가장자리를 잡고 끌어서 넘길 수도 있다. */
-function rustleSweep(dur=.75){ if(!soundOn||!audio()) return; const t=ac.currentTime;
+function rustleSweep(dur=.75){ if(!soundOn) return; SFX("rustle",.38); setTimeout(()=>RSFX("flip",.3,90),dur*1000*.9); return;   // 실제 종이 넘기는 소리 (아래는 예전 합성음, 쓰지 않음)
+  const t=ac.currentTime;
   const s=ac.createBufferSource(), f=ac.createBiquadFilter(), g=ac.createGain(); s.buffer=noiseBuf(); s.loop=true;
   f.type="bandpass"; f.Q.value=.9; f.frequency.setValueAtTime(900,t); f.frequency.exponentialRampToValueAtTime(4200,t+dur*.55); f.frequency.exponentialRampToValueAtTime(1600,t+dur);
   g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.16,t+dur*.3); g.gain.exponentialRampToValueAtTime(.05,t+dur*.75); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
@@ -2671,8 +2815,8 @@ const SUSPECTS=[
  ["magician","???","전직 정비공 · 마술사","그는 9시 15분에 까마귀만 두고 나갔다. ‘마지막 쇼’는 로크의 비밀을 폭로하려던 그의 계획이었다. 하지만 독이 든 잔을 따른 손은 그의 것이 아니다."],
  ["elena","엘레나 보로딘","27세 · 전담 승무원",null]
 ];
-const CONFESS=[["R","엘레나. 로크를 독살한 건 당신이다."],["E","5년 동안 그 사람은 저를 쥐고 흔들었어요. 오늘 밤 와인에 넣었어요."],
- ["E","……그런데 이상하죠. 잔이 깨지던 소리는 제가 낸 게 아니에요."],["R","(녹음 속 21시 47분의 둔탁한 소리가 떠올랐다.)"]];
+const CONFESS=[["R","엘레나. 로크를 독살한 건 당신이다."],["E","……제 잘못이긴 해요."],
+ ["E","하지만, 저는……  ……아니에요. 됐어요."]];   // 다 말하지 않고 삼킨다 → 끌려가다 돌아서서 외치는 한마디는 엔딩 영상에서
 const USED=new Set(), USEDBY={}, TRIED={}; let BROKEN=new Set(), comp=100, confessed=false, twistHinted=false, seq=null;
 const talkEl=$("talk"); talkEl.appendChild($("tkOpts"));   // 선택지는 화면 전체 기준으로 배치
 function setObj(a,b){ $("objText").textContent=a; if(b) $("objSub").textContent=b; }
@@ -2840,7 +2984,7 @@ function pressOn(i){ const s=STATE[i]; PRESS[i]=Math.min(3,(PRESS[i]||0)+1);
   if(!$("tkPress")){ const d=document.createElement("div"); d.className="tk-press"; d.id="tkPress"; d.setAttribute("aria-hidden","true"); $("tkVid").parentElement.appendChild(d); }
   talkEl.style.setProperty("--pz",PRESS[i]); talkEl.classList.add("press");
   talkEl.classList.remove("jolt"); void talkEl.offsetWidth; talkEl.classList.add("jolt");
-  try{ SFX("thud",.8); hit(70,.45,.3); }catch(e){} hbKick(96);                                   // 책상 내리치는 소리 + 박동이 빨라짐
+  try{ SFX("thud",.8); }catch(e){} hbKick(96);                                   // 책상 내리치는 소리 + 박동이 빨라짐
   setTimeout(()=>play([["R!",s.ask],["E",s.press],["r",s.hint]],()=>{ talkEl.classList.remove("press"); statement(i,true); }),260); }
 /* 정답 증거를 들이밀면: 화면이 덜컹, 붉은 '거짓말' 도장이 쾅 */
 /* 들킨 진술: 엘레나가 했던 말이 화면에 다시 떠오르고 그 위로 붉은 줄이 쭉 그어진다 */
@@ -2861,17 +3005,18 @@ function hbThump(t,v){ const out=sfxBus||ac.destination, o=ac.createOscillator()
   g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.012); g.gain.exponentialRampToValueAtTime(.0001,t+.28);
   o.connect(lp); lp.connect(g); g.connect(out); o.start(t); o.stop(t+.32); }
 function hbBeat(){ if(!HB.on) return; if(!soundOn||!ac){ HB.tm=setTimeout(hbBeat,600); return; }
-  const t=ac.currentTime+.02, k=Math.min(1,(HB.bpm-60)/80), v=.32+k*.3; hbThump(t,v); hbThump(t+.17,v*.6);   // 쿵-쿵
+  const t=ac.currentTime+.02, k=Math.min(1,(HB.bpm-60)/80), v=.32+k*.3; RSFX("heart",Math.min(.9,v*1.25),200);   // 쿵-쿵 (실제 심장 박동 녹음)
   HB.bpm+=(HB.target-HB.bpm)*.22; HB.target+=(hbBase()-HB.target)*.08;                                    // 치솟았던 박동이 천천히 가라앉음
   if(HB.drone) HB.drone.g.gain.setTargetAtTime(.05+k*.07,ac.currentTime,.6);
   HB.tm=setTimeout(hbBeat,60000/HB.bpm); }
 function hbStart(){ if(HB.on) return; HB.on=true; HB.bpm=HB.target=hbBase();
-  try{ if(soundOn&&audio()){ const out=sfxBus||ac.destination, n=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate), d=n.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  try{ if(soundOn&&AMB.carriage) AMB.carriage.volume=.26; }catch(e){}   // 심문 중에는 객차 실내음(실제 녹음)을 조금 키운다. 예전 합성 저음은 끔
+  try{ if(false&&soundOn&&audio()){ const out=sfxBus||ac.destination, n=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate), d=n.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
       const src=ac.createBufferSource(), lp=ac.createBiquadFilter(), o=ac.createOscillator(), og=ac.createGain(), g=ac.createGain(); src.buffer=n; src.loop=true; lp.type="lowpass"; lp.frequency.value=110; lp.Q.value=4;
       o.type="sine"; o.frequency.value=41; og.gain.value=.5; g.gain.setValueAtTime(0,ac.currentTime); g.gain.linearRampToValueAtTime(.05,ac.currentTime+2.5);
       src.connect(lp); lp.connect(g); o.connect(og); og.connect(g); g.connect(out); src.start(); o.start(); HB.drone={src,o,g}; } }catch(e){}
   hbBeat(); }
-function hbStop(){ HB.on=false; clearTimeout(HB.tm); const d=HB.drone; HB.drone=null; if(d&&ac){ try{ d.g.gain.setTargetAtTime(0,ac.currentTime,.4); setTimeout(()=>{ try{ d.src.stop(); d.o.stop(); }catch(e){} },1800); }catch(e){} } }
+function hbStop(){ HB.on=false; clearTimeout(HB.tm); try{ if(AMB.carriage) AMB.carriage.volume=.14; }catch(e){} const d=HB.drone; HB.drone=null; if(d&&ac){ try{ d.g.gain.setTargetAtTime(0,ac.currentTime,.4); setTimeout(()=>{ try{ d.src.stop(); d.o.stop(); }catch(e){} },1800); }catch(e){} } }
 function hbKick(b){ HB.target=Math.max(HB.target,b); HB.bpm=Math.max(HB.bpm,b*.85); }
 function present(i){
   const s=STATE[i], need=[].concat(s.ans), have=EVID.filter(e=>found.has(e.id));
@@ -2905,22 +3050,28 @@ function accuse(){
 function ending(){ hbStop(); const E=$("ending"), V=$("endVid");
   vidStop(); mode="end"; E.parentElement.classList.add("ended"); talkEl.hidden=true; E.hidden=false; ambStop();
   /* 엔딩 컷: 엘레나가 끌려가며 돌아보고 → 세 용의자의 안도 → 록의 깨달음 → 엘레나의 씁쓸한 얼굴 클로즈업. 쿵 소리에서 끝나면 바로 CASE CLOSED */
-  let went=false; const go=()=>{ if(went) return; went=true; V.onended=V.onerror=V.onclick=null; V.pause(); V.hidden=true; endSeq(); };
-  V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4"; V.onended=go; V.onerror=go; V.onclick=go;
+  /* 엔딩 컷: 끌려가던 엘레나가 돌아서서 급하게 외친다 → 누군가의 손이 독약병을 집어 간다 → 세 용의자 → 록의 깨달음 */
+  const cap=$("endCap"), CAP=[2.7,5.7];   // 엘레나가 돌아서서 외치는 구간(초)에만 자막
+  V.ontimeupdate=()=>{ cap&&cap.classList.toggle("on",V.currentTime>=CAP[0]&&V.currentTime<CAP[1]); };
+  let went=false; const go=()=>{ if(went) return; went=true; V.onended=V.onerror=V.onclick=V.ontimeupdate=null; cap&&cap.classList.remove("on"); V.pause(); V.hidden=true; endSeq(); };
+  V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4?v=4"; V.onended=go; V.onerror=go; V.onclick=go;
   const p=V.play(); p&&p.catch(go); setTimeout(()=>{ if(!went&&V.currentTime<.1) go(); },6000); }
 function endSeq(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
   E.className="ending"; ng&&ng.classList.remove("on"); ck.textContent="21:47";
   const at=(ms,f)=>setTimeout(f,ms);
   { const ul=$("endEv"); if(ul){ ul.innerHTML=STATE.map((st,i)=>{ const id=USEDBY[i], e=id&&EVID.find(x=>x.id===id); return e?`<li style="--d:${i*.28}s"><b>${SHORT[e.id]||e.ev}</b></li>`:""; }).join(""); } }
-  at(40,()=>E.classList.add("e1"));                                                  // 레터박스 닫힘 + 배경 천천히 다가옴
-  at(350,()=>{ E.classList.add("e2"); SFX("hit",.5); });   // 도장 쾅
+  { const st=$("endStat"); if(st){ try{ const s=Math.max(0,Math.round(performance.now()/1000)), mm=String(Math.floor(s/60)).padStart(2,"0"), ss=String(s%60).padStart(2,"0"), wr=Object.values(WRONG||{}).reduce((a,b)=>a+(b||0),0);
+      st.textContent=`플레이 ${mm}:${ss}  ·  깨뜨린 거짓 ${Math.min(3,BROKEN.size)}/3  ·  빗나간 추궁 ${wr}회`; }catch(e){ st.textContent=""; } } }
+  try{ if(soundOn){ let a=AMB.endck; if(!a){ a=AMB.endck=new Audio("sfx/clock.mp3"); a.loop=true; } a.volume=.16; a.currentTime=0; a.play().catch(()=>{}); } }catch(e){}   // 정적 속 시계 초침(실제 녹음)
+  at(40,()=>E.classList.add("e1"));                                                // 레터박스 닫힘 + 배경 천천히 다가옴
+  at(500,()=>{ E.classList.add("e2"); SFX("hit",.5); });   // 도장 쾅
   let tk=0; const tick=setInterval(()=>{ if(mode!=="end"){ clearInterval(tick); return; } void 0; },1000);
-  at(800,()=>E.classList.add("e3"));                                                // 사건 종결 문구
-  at(1200,()=>{ ck.classList.add("flip"); setTimeout(()=>ck.textContent="21:48",180); hit(1600,.05,.03,"bandpass"); });   // 시간은 흘러간다
-  at(1500,()=>E.classList.add("e4"));                                                // 질문 첫 줄
-  at(2100,()=>E.classList.add("e5"));                                                // 둘째 줄
-  at(2700,()=>{ ng&&ng.classList.add("on"); });
-  at(3100,()=>{ E.classList.add("e6"); $("againBtn").focus({preventScroll:true}); }); }
+  at(1300,()=>E.classList.add("e3"));                                               // 사건 종결 문구
+  at(2000,()=>{ ck.classList.add("flip"); setTimeout(()=>ck.textContent="21:48",180); hit(1600,.05,.03,"bandpass"); });   // 시간은 흘러간다
+  at(2700,()=>E.classList.add("e4"));                                              // 질문 첫 줄
+  at(3900,()=>{ E.classList.add("e5"); RSFX("thud",.42,200); });                                              // 둘째 줄
+  at(4800,()=>{ ng&&ng.classList.add("on"); });
+  at(5400,()=>{ E.classList.add("e6"); $("againBtn").focus({preventScroll:true}); }); }
 $("tkClose").onclick=closeTalk;
 $("tabTalk").onclick=openTalk;
 $("againBtn").onclick=()=>location.reload();
@@ -3125,6 +3276,9 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   if(!PRO_ON){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>enterExplore(),60); return; }   // 프롤로그 끔 → 바로 방 조사
   /* 테스트: 주소 끝에 #room 을 붙여 열면 프롤로그·문 열기 없이 조사 화면(VIP실)부터 */
   const ROOM_ONLY=false;  // true면 열자마자 VIP실 (조사 화면만 테스트할 때). 지금은 처음부터 전체 진행
+  /* 테스트: 주소 끝에 #end 를 붙이면 엔딩 영상부터(영상을 누르면 바로 엔딩 화면), #endscreen 은 영상 없이 엔딩 화면 연출만 */
+  if(location.hash==="#end"||location.hash==="#endscreen"){ pro.hidden=true; $("title").classList.add("gone"); const only=location.hash==="#endscreen";
+    setTimeout(()=>{ enterExplore(); setTimeout(()=>{ ending(); if(only) setTimeout(()=>{ const v=$("endVid"); v.onclick&&v.onclick(); },150); },900); },60); return; }
   if((ROOM_ONLY&&location.hash!=="#tear")||location.hash==="#room"){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>enterExplore(),60); return; }
   /* ---- 테스트 바로가기 (#test 로 열면 메뉴) ----
      #cold 21:47 오프닝 · #tear 초대장 찢기 · #bottle 약병 · #statue 조각상·먼지 · #doll 의자 밑 인형 · #talk 엘레나 심문 · #ending 엔딩 */
@@ -3178,7 +3332,8 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     SFX("horn",.5);
     const c=$("proCold"); c.classList.add("on"); const tv=$("titleTrainV"); try{ tv.pause(); }catch(e){}
     let stopN=()=>{};
-    try{ if(soundOn&&audio()){ const a=ac, len=a.sampleRate*3, buf=a.createBuffer(1,len,a.sampleRate), d=buf.getChannelData(0);
+    try{ if(soundOn){ const ra=new Audio("sfx/rumble.mp3"); ra.volume=.55; ra.play().catch(()=>{}); stopN=()=>{ try{ ra.pause(); }catch(e){} }; setTimeout(()=>{ try{ ra.pause(); }catch(e){} },2900); }   // 실제 열차 진동 녹음 (아래는 예전 합성 저음, 쓰지 않음)
+      else if(false&&soundOn&&audio()){ const a=ac, len=a.sampleRate*3, buf=a.createBuffer(1,len,a.sampleRate), d=buf.getChannelData(0);
         for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
         const src=a.createBufferSource(); src.buffer=buf; const lp=a.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=170; const g=a.createGain();
         g.gain.setValueAtTime(0,a.currentTime); g.gain.linearRampToValueAtTime(.7,a.currentTime+.5); g.gain.linearRampToValueAtTime(.0,a.currentTime+2.9);
@@ -3339,15 +3494,17 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
       p.el.style.filter=`brightness(${(1-.4*Math.min(1,sh)).toFixed(3)}) drop-shadow(0 ${(22*lift+2).toFixed(1)}px ${(28*lift+4).toFixed(1)}px rgba(0,0,0,${(.5-.12*fs).toFixed(2)}))`; }); }
   /* 찢는 소리: 끊김 없이 흐르는 잡음을 찢는 속도에 맞춰 크게/작게 */
   let tsnd=null;
-  function tearSndStart(){ try{ if(tsnd||!soundOn||!audio()) return; SFX("tear",.4); ac.resume&&ac.resume();
+  function tearSndStart(){ try{ if(tsnd||!soundOn||!audio()) return; SFX("tear",.4);
+    { const a=new Audio("sfx/tearloop.mp3"); a.loop=true; a.volume=0; try{ a.currentTime=Math.random()*5; }catch(e){} a.play().catch(()=>{}); tsnd={a}; return; }   // 실제 종이 찢는 녹음을 찢는 속도에 맞춰 크게/작게 (아래는 예전 합성음, 쓰지 않음)
+    ac.resume&&ac.resume();
     const n=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate), dd=n.getChannelData(0); let b=0;
     for(let i=0;i<dd.length;i++){ b=b*.55+(Math.random()*2-1)*.45; dd[i]=Math.random()<.025?(Math.random()*2-1):b*.55; }
     const s=ac.createBufferSource(); s.buffer=n; s.loop=true;
     const hp=ac.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=900;
     const pk=ac.createBiquadFilter(); pk.type="peaking"; pk.frequency.value=3200; pk.gain.value=2;
     const g=ac.createGain(); g.gain.value=0; s.connect(hp); hp.connect(pk); pk.connect(g); g.connect(sfxBus||ac.destination); s.start(); tsnd={s,g}; }catch(e){} }
-  function tearSnd(v){ if(tsnd) try{ tsnd.g.gain.setTargetAtTime(v,ac.currentTime,.015); }catch(e){} }
-  function tearSndStop(){ if(!tsnd) return; const t=tsnd; tsnd=null; try{ t.g.gain.setTargetAtTime(0,ac.currentTime,.05); }catch(e){} setTimeout(()=>{ try{ t.s.stop(); }catch(e){} },400); }
+  function tearSnd(v){ if(tsnd) try{ if(tsnd.a){ tsnd.a.volume=Math.max(0,Math.min(1,v*45)); return; } tsnd.g.gain.setTargetAtTime(v,ac.currentTime,.015); }catch(e){} }
+  function tearSndStop(){ if(!tsnd) return; const t=tsnd; tsnd=null; if(t.a){ try{ t.a.pause(); }catch(e){} return; } try{ t.g.gain.setTargetAtTime(0,ac.currentTime,.05); }catch(e){} setTimeout(()=>{ try{ t.s.stop(); }catch(e){} },400); }
   /* ---- 찢기 v4 : 당기는 힘 vs 종이 저항 ----
      드래그 '속도'가 당기는 힘(pull). 찢어지는 끝의 저항보다 세게 당겨야 찢어진다.
      첫 찢김은 뻑뻑하고, 중간중간 질긴 섬유 매듭이 있어서 버티다가 '툭' 하고 터진다.
@@ -3363,7 +3520,8 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   function setTear(v){ if(torn) return; goal=Math.max(goal,Math.min(1,v)); if(goal>=.96) goal=1; if(goal>0) tearSndStart(); }
   /* 섬유가 끊기는 소리: 아주 짧은 잡음 알갱이를 무작위 높이·타이밍으로 흩뿌린다 */
   let CRK=null;
-  function crackle(n,vol){ try{ if(!soundOn||!audio()||n<1) return;
+  function crackle(n,vol){ return;   /* 합성 잡음 알갱이는 끔: 실제 찢는 녹음(tearloop)이 대신한다 */
+    try{ if(!soundOn||!audio()||n<1) return;
     if(!CRK){ CRK=ac.createBuffer(1,Math.round(ac.sampleRate*.02),ac.sampleRate); const d=CRK.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2.5); }
     const t0=ac.currentTime;
     for(let i=0;i<n;i++){ const s=ac.createBufferSource(); s.buffer=CRK; s.playbackRate.value=.6+Math.random()*1.4;
@@ -4778,13 +4936,60 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .pro .vcap .ln{display:block;font-family:"Noto Serif KR",var(--serif);font-weight:600;font-size:.95em;line-height:1.4;color:#d2ad63;letter-spacing:.01em;text-shadow:0 1px 8px #000,0 0 3px #000,0 0 14px rgba(0,0,0,.8)}
 .pro .vcap .ln:last-of-type{order:-1;margin:0 0 .35em;font-family:inherit;font-weight:500;font-size:1em;line-height:1.5;color:#fff;opacity:1;letter-spacing:0}
 .pro .vcap.red .ln:not(:last-of-type){color:#e07070}
+/* 엔딩 영상 속 엘레나의 외침: 인트로·회상 자막과 같은 모양(한국어 흰색 위, 영어 금색 아래) */
+.ending .en-cap{position:absolute!important;left:0;right:0;bottom:9%;z-index:10!important;display:flex;flex-direction:column;align-items:center;gap:.3em;padding:0 6%;pointer-events:none;opacity:0;transition:opacity .25s}
+.ending .en-cap.on{opacity:1}
+.ending .en-cap b{font-family:"Noto Sans KR","Pretendard","Malgun Gothic",sans-serif;font-weight:500;font-size:max(13px,2cqw);line-height:1.5;color:#fff;text-shadow:0 1px 6px #000,0 0 2px #000}
+.ending .en-cap i{font-style:normal;font-family:"Noto Serif KR",var(--serif);font-weight:600;font-size:max(12px,1.9cqw);line-height:1.4;color:#d2ad63;text-shadow:0 1px 8px #000,0 0 3px #000}
 .pro .vcap.stamp{display:block}
+/* 엔딩 마무리: 플레이 결과 한 줄 · 남은 용의자 세 명(물음표) · 한국어 질문을 읽기 좋게 · '다시 조사하기'를 주 버튼으로 */
+.ending .en-stat{grid-column:1;margin:.5em 0 0;font-family:var(--mono);font-size:clamp(10.5px,.85vw,12.5px);letter-spacing:.16em;color:rgba(210,173,99,.82);opacity:0;transition:opacity 1.4s}
+.ending.e3 .en-stat{opacity:1}
+.ending .q .kr{font-size:clamp(16px,1.45vw,22px)!important;opacity:.95!important;color:var(--paper)!important;letter-spacing:.02em}
+.en-file .en-sus-cap{display:block;margin-top:20px;font-family:var(--mono);font-size:10px;letter-spacing:.26em;color:var(--muted);opacity:0;transition:opacity 1.8s}
+.en-file .en-sus{display:flex;gap:10px;margin-top:10px;opacity:0;transform:translateY(8px);transition:opacity 1.8s,transform 1.8s}
+.ending.e6 .en-file .en-sus{opacity:1;transform:none}.ending.e6 .en-file .en-sus-cap{opacity:.8}
+.en-file .en-sus i{flex:1;display:block;position:relative;aspect-ratio:3/4;overflow:hidden;border:1px solid rgba(210,173,99,.32);background:#0b0d0c}
+.en-file .en-sus img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(.9) brightness(.5);transition:filter .6s}
+.en-file .en-sus i:hover img{filter:grayscale(.3) brightness(.8)}
+.en-file .en-sus i::after{content:"?";position:absolute;inset:0;display:grid;place-items:center;font-family:var(--serif);font-style:italic;font-size:clamp(22px,2.2vw,34px);color:rgba(236,226,203,.92);text-shadow:0 2px 12px #000;pointer-events:none}
+.ending .row{align-items:center;gap:22px;flex-wrap:wrap}
+.ending #againBtn{order:1;border:1px solid var(--brass)!important;padding:.95em 1.7em!important;color:var(--paper)!important;letter-spacing:.14em;background:rgba(210,173,99,.08);cursor:pointer;transition:background .25s}
+.ending #againBtn:hover,.ending #againBtn:focus-visible{background:rgba(210,173,99,.2)}
+.ending #ctaBtn{order:2;border:0!important;padding:0!important;background:none!important;font-size:12px!important;letter-spacing:.14em;opacity:.55!important;min-height:0!important}
 /* 거짓 진술 붉은 줄: 가운데 정렬, 문장을 짧게 끊어 줄맞춤, 줄은 글자 높이 가운데로 */
 .talk .tk-lie{width:min(620px,64%)!important;top:60%!important}.talk.lying .tk-case{opacity:0!important;transition:opacity .2s}
 .talk .tk-lie p{display:block!important;font-size:clamp(17px,2vw,26px)!important;line-height:1.75!important;background:none!important;position:relative;padding:0 .2em}
 .talk .tk-lie p .lc{display:block;width:fit-content;margin:0 auto;position:relative;padding:0 .3em}
 .talk .tk-lie p .lc::after{content:"";position:absolute;left:0;right:0;top:54%;height:.1em;background:#d23a2c;transform:scaleX(0);transform-origin:left;transition:transform .6s cubic-bezier(.6,0,.2,1);box-shadow:0 0 14px rgba(210,58,44,.6)}
 .talk .tk-lie.cut p .lc::after{transform:scaleX(1)}.talk .tk-lie.cut p .lc:nth-child(2)::after{transition-delay:.25s}
+</style>
+<style>
+/* ===== 3D 조사 화면 톤 통일: 방(vip_loop)의 초록 벽 + 호박색 램프가 뒤로 흐려진 모습 ===== */
+.v3d[data-bg="a"] .v3bg .l1{background:#0b0f0c url(pro/exam_bg.jpg) center/cover no-repeat;filter:brightness(.8) saturate(1.25);animation:v3drift 26s ease-in-out infinite alternate}
+.v3d[data-bg="a"] .v3bg .l2{background:radial-gradient(ellipse 34% 60% at 50% 44%,rgba(255,214,150,.07),transparent 72%),linear-gradient(180deg,rgba(4,6,5,.35) 0%,transparent 26%,transparent 58%,rgba(4,6,5,.8) 100%)}
+.v3d[data-bg="a"] .v3bg .l3{background:radial-gradient(ellipse 85% 85% at 50% 45%,transparent 42%,rgba(0,0,0,.7) 100%)}
+/* 램프 빛 속에 떠다니는 먼지 */
+.v3d[data-bg="a"] .v3bg .l4{inset:-10% -5%;opacity:.55;background-image:radial-gradient(circle,rgba(255,226,170,.75) 0 1px,transparent 2px),radial-gradient(circle,rgba(255,226,170,.5) 0 1.5px,transparent 3px),radial-gradient(circle,rgba(255,240,210,.6) 0 1px,transparent 2px);background-size:310px 270px,470px 390px,230px 330px;background-position:40px 60px,180px 20px,110px 200px;-webkit-mask-image:radial-gradient(ellipse 60% 60% at 50% 40%,#000 20%,transparent 80%);mask-image:radial-gradient(ellipse 60% 60% at 50% 40%,#000 20%,transparent 80%);animation:v3dust 38s linear infinite}
+@keyframes v3dust{from{transform:translate3d(0,0,0)}to{transform:translate3d(-3%,-7%,0)}}
+@media (prefers-reduced-motion:reduce){.v3d[data-bg="a"] .v3bg .l4{animation:none}}
+.dollv.chair .v3bg .l4{display:none}
+/* 3D 방 세트 캔버스: 증거 뒤에서 살짝 아웃포커스 */
+.v3d .v3bg canvas.v3room{position:absolute;inset:0;z-index:auto;width:100%!important;height:100%!important;display:block;filter:blur(2.5px);transform:scale(1.02)}
+.v3d[data-where="bedside"] .v3bg canvas.v3room{filter:blur(1.1px)}
+@keyframes v3drift{from{transform:scale(1.04) translateX(-1%)}to{transform:scale(1.08) translateX(1%)}}
+@media (prefers-reduced-motion:reduce){.v3d[data-bg="a"] .v3bg .l1{animation:none}}
+.dollv:not(.chair){background:#070a08;-webkit-backdrop-filter:none;backdrop-filter:none}
+/* 인형: '단서 발견' 글자가 스피커를 가리지 않게 아래로 */
+.dollv .exfound{top:80%!important}
+/* 조각상: 안내 상자와 겹치던 중복 문구 제거(막대만 남김) */
+#iPhoto .v3bar::before{content:none}
+/* 심문: 진술이 시작되기 전엔 빈 진술 표시(빈 알약 모양)를 숨김 */
+.talk .tk-case:empty{display:none!important}
+/* 카메라가 없을 때의 표시는 조용하게 */
+.excam.nocam{border:0;background:none;box-shadow:none;min-width:0;padding:0;opacity:.6}
+.excam.nocam .off{font-size:9.5px;letter-spacing:.18em;color:rgba(236,226,203,.7);justify-content:flex-end}
+.excam.nocam .xhtag{position:static;display:block;text-align:right;font-size:10px;color:rgba(210,173,99,.85)}
 </style>
 <script>
 /* 손글씨(증거 쪽지·붉은 펜 메모)를 누르면 종이째로 크게 보여 준다. 아무 데나 누르거나 ESC로 닫힘 */

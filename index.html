@@ -2938,7 +2938,7 @@ function idleTick(){ if(talkEl.hidden) return; const d=act.duration; if(d&&d-act
 [vid,vid2].forEach(v=>v.addEventListener("ended",()=>{ if(v===act&&!talkEl.hidden) idleSwap(); }));
 function vidStop(){ cancelAnimationFrame(vRaf); vid.pause(); vid2.pause(); reactStop(); }
 /* 반응 클립: 놀람(startle) · 둘러대기(lie). 대기 영상 위로 천천히 섞여 들어왔다가, 끝나기 전에 천천히 빠진다 */
-const REACT={startle:["elena-startle.mp4","elena-startle2.mp4","elena-startle3.mp4","elena-startle4.mp4"],lie:["elena-lie.mp4","elena-lie2.mp4"],
+const REACT={startle:["elena-startle.mp4","elena-startle2.mp4"],lie:["elena-lie.mp4","elena-lie2.mp4"],
   confess:["elena-confess.mp4"],doubt:["elena-doubt.mp4"]}, reactOK={}, reactLast={};
 const rv=$("tkReact"); const pre={};
 function react(k){
@@ -2952,7 +2952,8 @@ function react(k){
 rv.addEventListener("ended",()=>{ rv._out&&rv._out(); });
 function reactStop(){ rv.pause(); rv.classList.remove("on"); }
 
-setTimeout(()=>{ try{ warmTalk(); }catch(e){} },6000);
+/* 심문 영상 미리 받기: 타이틀·인트로 영상이 도는 동안에는 받지 않는다(인트로 영상과 회선을 다투지 않게). 방에 들어온 뒤 4초쯤 지나서 시작 */
+(function warmLater(){ if(mode==="title"||mode==="intro"){ setTimeout(warmLater,1500); return; } setTimeout(()=>{ try{ warmTalk(); }catch(e){} },4000); })();
 function openTalk(){
   if(mode==="inspect") $("insp").classList.remove("open");
   closeBook(); mode="talk"; stage.classList.remove("explore"); $("prompt").classList.remove("show");
@@ -3061,7 +3062,7 @@ function ending(){ hbStop(); const E=$("ending"), V=$("endVid");
   const cap=$("endCap"), CAP=[2.7,5.7];   // 엘레나가 돌아서서 외치는 구간(초)에만 자막
   V.ontimeupdate=()=>{ cap&&cap.classList.toggle("on",V.currentTime>=CAP[0]&&V.currentTime<CAP[1]); };
   let went=false; const go=()=>{ if(went) return; went=true; V.onended=V.onerror=V.onclick=V.ontimeupdate=null; cap&&cap.classList.remove("on"); V.pause(); V.hidden=true; endSeq(); };
-  V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4?v=5"; V.onended=go; V.onerror=go; V.onclick=go;
+  V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4?v=6"; V.onended=go; V.onerror=go; V.onclick=go;
   const p=V.play(); p&&p.catch(go); setTimeout(()=>{ if(!went&&V.currentTime<.1) go(); },6000); }
 function endSeq(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
   E.className="ending"; ng&&ng.classList.remove("on"); ck.textContent="21:47";
@@ -4997,6 +4998,19 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .excam.nocam{border:0;background:none;box-shadow:none;min-width:0;padding:0;opacity:.6}
 .excam.nocam .off{font-size:9.5px;letter-spacing:.18em;color:rgba(236,226,203,.7);justify-content:flex-end}
 .excam.nocam .xhtag{position:static;display:block;text-align:right;font-size:10px;color:rgba(210,173,99,.85)}
+/* ===== UI 정리 =====
+   1) 조사 화면의 '사건 개요'를 왼쪽 목표 상자와 같은 틀(같은 바탕·테두리·왼쪽 정렬)로 맞춘다
+   2) 용의자 카드: '라운지 목격' 버튼이 얼굴 한가운데를 가리지 않게 사진 왼쪽 위로 옮기고, 사진을 키워 카드의 빈 공간을 줄인다
+   3) 심문의 'F 계속' 안내를 다른 화면의 키 표시(ESC 닫기)와 같은 모양으로 키운다
+   4) 개발용 버전 표시는 숨긴다 */
+.hud .brief{background:rgba(40,44,42,.72);border:1px solid rgba(255,255,255,.1);text-align:left;line-height:1.6;color:rgba(236,226,203,.9)}
+.hud .brief b{margin-bottom:.35em;letter-spacing:.02em}
+.sboard .sc .ph{flex:0 0 auto;height:clamp(150px,42cqh,400px)}   /* 사진을 키워 이름과 버튼 사이의 빈 공간을 채운다 */
+.sboard .sc .ph .pi{background-size:cover;background-position:center 22%}
+.sboard .sc .ph .play{left:8px;right:auto;top:8px;bottom:auto;transform:none;font-size:clamp(10.5px,.8vw,13px);padding:.35em .75em;background:rgba(10,9,7,.78);border:1px solid rgba(236,226,203,.22)}
+.talk .tk-opts.m-next .opt{display:flex;align-items:center;gap:.6em;font-size:clamp(13px,1.02vw,19px);color:#efe6d0;padding:6px 10px}
+.talk .tk-opts.m-next .opt .k{display:inline-grid;place-items:center;min-width:1.7em;height:1.7em;padding:0 .35em;border:1px solid rgba(210,173,99,.75);border-radius:3px;background:rgba(8,10,9,.6);font-size:.82em;color:#e2c079}
+.ver{display:none}
 </style>
 <script>
 /* 손글씨(증거 쪽지·붉은 펜 메모)를 누르면 종이째로 크게 보여 준다. 아무 데나 누르거나 ESC로 닫힘 */

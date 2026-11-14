@@ -1709,11 +1709,10 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
   S.add(new THREE.HemisphereLight(0xffe7c4,0x16241a,.16)); const key=new THREE.SpotLight(0xffd2a0,28,14,.5,.9,1.4); key.position.set(.3,3.4,.45); key.target.position.set(0,.3,.1);   /* 거의 머리 위에서 내려와 좌석 그림자가 의자 밑을 덮음 */ S.add(key,key.target); key.castShadow=true; key.shadow.mapSize.set(2048,2048); key.shadow.bias=-.0004; key.shadow.radius=6; key.shadow.normalBias=.01; R.toneMappingExposure=1.15;
   const rim=new THREE.PointLight(0x9ec4ae,.35,8,1.6); rim.position.set(-1.4,1.3,-1.2); S.add(rim);
   const fl=new THREE.Mesh(new THREE.PlaneGeometry(14,14),new THREE.ShadowMaterial({opacity:.55})); fl.rotation.x=-Math.PI/2; fl.receiveShadow=true; S.add(fl); S.background=darkBackdrop();
-  /* 의자 밑 장면에도 방이 뒤로 보이게: 방 사진을 흐리고 어둡게 깔아 검은 허공 대신 VIP실 안이라는 느낌을 준다(붉은 눈빛이 묻히지 않도록 충분히 어둡게) */
-  { const im=new Image(); im.onload=()=>{ try{ if(!wrap.isConnected) return; const c=document.createElement("canvas"); c.width=1024; c.height=576; const g=c.getContext("2d"), W=c.width, H=c.height;
-      const r=Math.max(W/im.width,H/im.height)*1.25, w=im.width*r, h=im.height*r; g.filter="blur(5px) brightness(1.05) saturate(1.05)"; g.drawImage(im,(W-w)/2,(H-h)/2-H*.1,w,h); g.filter="none";
-      const v=g.createRadialGradient(W/2,H*.42,H*.18,W/2,H*.5,H*.98); v.addColorStop(0,"rgba(0,0,0,0)"); v.addColorStop(1,"rgba(0,0,0,.62)"); g.fillStyle=v; g.fillRect(0,0,W,H);
-      const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; S.background=t; }catch(e){} }; im.src=IMG; } S.fog=new THREE.FogExp2(0x0e0d0c,.3); const roomLamp=dollRoom(S);
+  /* 의자 밑 장면에도 인형 살펴보기와 같은 3D 방을 뒤에 깐다: 방을 그리는 캔버스(roomBack)를 이 장면의 배경 텍스처로 써서, 초점 흐림·색 보정을 같이 받게 한다 */
+  roomBack(wrap,"doll",()=>DV&&DV.C);
+  { const rc=wrap.querySelector("canvas.v3room"); if(rc){ const bt=new THREE.CanvasTexture(rc); bt.encoding=THREE.sRGBEncoding; bt.minFilter=bt.magFilter=THREE.LinearFilter; bt.generateMipmaps=false;
+      let n=0; (function up(){ if(!wrap.isConnected){ try{ bt.dispose(); }catch(e){} return; } if(rc.width>8){ bt.needsUpdate=true; if(++n===3) S.background=bt; } requestAnimationFrame(up); })(); } } S.fog=new THREE.FogExp2(0x0e0d0c,.3); const roomLamp=dollRoom(S);
   const NP=90, pg=new THREE.BufferGeometry(), pa=new Float32Array(NP*3), pv=[]; for(let i=0;i<NP;i++){ pa[i*3]=(Math.random()-.5)*1.6; pa[i*3+1]=Math.random()*1.8; pa[i*3+2]=(Math.random()-.5)*1.4; pv.push(.01+Math.random()*.02); }
   pg.setAttribute("position",new THREE.BufferAttribute(pa,3)); const dc=document.createElement("canvas"); dc.width=dc.height=32; { const g3=dc.getContext("2d"), q3=g3.createRadialGradient(16,16,0,16,16,16); q3.addColorStop(0,"rgba(255,230,190,1)"); q3.addColorStop(1,"rgba(255,230,190,0)"); g3.fillStyle=q3; g3.fillRect(0,0,32,32); }
   const dust=new THREE.Points(pg,new THREE.PointsMaterial({map:new THREE.CanvasTexture(dc),size:.018,transparent:true,opacity:.5,depthWrite:false,blending:THREE.AdditiveBlending}));   // 흰 먼지 입자는 쓰지 않음
@@ -2092,7 +2091,7 @@ function v3bg(wrap,where){ const bg=document.createElement("div"); bg.className=
    벽 패널(wall_panel.jpg)·나무 바닥·러그·램프·벽등·액자. 앞쪽 증거 카메라를 그대로 따라가서 돌리거나 다가가면 같이 움직이고,
    캔버스를 따로 두어 살짝 흐리게(아웃포커스) 보여 준다. 증거 캔버스의 투명 배경(증거 사진 촬영)은 그대로 유지된다. */
 function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.querySelector(".v3bg"); if(!host) return;
-  let R; try{ R=new THREE.WebGLRenderer({antialias:where==="bedside",alpha:false,powerPreference:"low-power"}); }catch(e){ return; }
+  let R; try{ R=new THREE.WebGLRenderer({antialias:where==="bedside",alpha:false,powerPreference:"low-power",preserveDrawingBuffer:true});   /* 그린 화면을 다른 장면의 배경으로도 읽어 갈 수 있게 유지 */ }catch(e){ return; }
   R.outputEncoding=THREE.sRGBEncoding; R.physicallyCorrectLights=true; R.toneMapping=THREE.ACESFilmicToneMapping; R.toneMappingExposure=1.05; R.setPixelRatio(1); R.setClearColor(0x060907,1);
   const cv=R.domElement; cv.className="v3room"; host.insertBefore(cv,host.children[1]||null);
   /* 배경(벽 텍스처·책상 모델)이 준비되고 한 번 그려진 뒤에 증거와 배경을 같이 드러낸다. 늦어도 1.6초 뒤에는 그냥 보여 준다 */
@@ -2205,8 +2204,9 @@ function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.
   } else if(where==="statue"){   // 조각상 테이블 뒤의 벽 · 벽등 · 초상화 액자
     sconce(.52,1.1,CFG.wz); frame(-.6,1.12,CFG.wz,.3,.38); rug(0,.5,2.2);
   } else {   // 인형: 방금 인형이 나온 의자 · 러그 · 붉은 식탁보의 식탁과 램프
-    rug(0,-.7,2.3);
-    m3dLoad("chair3d.glb",g=>{ if(!wrap.isConnected) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3()); m.position.set(-c.x,-b.min.y,-c.z); const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(1/sz.y); gp.rotation.y=.55; gp.position.set(-.6,0,-.85); G.add(gp); });
+    const underChair=wrap.classList.contains("chair");   // 의자 밑 장면: 앞에 이미 의자와 러그가 있으니 배경에는 또 놓지 않는다
+    if(!underChair) rug(0,-.7,2.3);
+    if(!underChair) m3dLoad("chair3d.glb",g=>{ if(!wrap.isConnected) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3()); m.position.set(-c.x,-b.min.y,-c.z); const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(1/sz.y); gp.rotation.y=.55; gp.position.set(-.6,0,-.85); G.add(gp); });
     add(new THREE.CylinderGeometry(.5,.56,.74,40),std(0x6a242e,.95),.98,.37,-1.15); add(new THREE.CylinderGeometry(.11,.11,.008,24),std(0xe6dfcf,.4),.82,.746,-.95);
     tlamp(.8,.74,-1.3); sconce(-.22,.92,CFG.wz); frame(.22,.86,CFG.wz,.34,.26);
   }

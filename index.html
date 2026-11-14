@@ -1720,14 +1720,14 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
     const pool=new THREE.Mesh(new THREE.PlaneGeometry(1.15,.95),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(sc),transparent:true,depthWrite:false,fog:false})); pool.rotation.x=-Math.PI/2; pool.position.set(0,.004,-.08); pool.renderOrder=1; S.add(pool); }   // 의자 밑 짙은 그늘
   const gc=document.createElement("canvas"); gc.width=gc.height=64; { const g2=gc.getContext("2d"), q=g2.createRadialGradient(32,32,0,32,32,32); q.addColorStop(0,"rgba(255,90,60,1)"); q.addColorStop(.25,"rgba(255,40,20,.55)"); q.addColorStop(1,"rgba(255,20,10,0)"); g2.fillStyle=q; g2.fillRect(0,0,64,64); }
   const glint=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(gc),blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,depthTest:true})); glint.scale.setScalar(.018); glint.position.set(.012,.135,.05); dollG.add(glint);
-  const eyeL=new THREE.PointLight(0xff3a20,0,.45,2); eyeL.position.set(.012,.135,.08); dollG.add(eyeL);
+  const eyeL=new THREE.PointLight(0xff3a20,0,.14,2); eyeL.position.set(.012,.135,.08); dollG.add(eyeL);
   const reveal=new THREE.PointLight(0xffd9a8,0,3,1.8); reveal.position.set(.1,.4,1.4); S.add(reveal);
   DV={s,R,S,C,wrap,obj:dollG,raf:0,yaw:0,pitch:0,zoom:1,drag:null,face:0,done:false,cf:{pitch:[-.5,.5]},p:0,pt:0};
   m3dLoad("chair3d.glb",g=>{ if(!DV||DV.wrap!==wrap) return; const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
     m.position.set(-c.x,-b.min.y,-c.z); const k=1/sz.y; const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(k); gp.rotation.y=Math.PI*.1; m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; if(o.material){ o.material=o.material.clone(); o.material.envMapIntensity=.35; } } }); S.add(gp); });
   m3dLoad("doll3d.glb",g=>{ if(!DV||DV.wrap!==wrap) return; dollMatte(g.scene); const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
     m.position.set(-c.x,-c.y,-c.z); const k=.3/sz.y; const gp=new THREE.Group(); gp.add(m); gp.scale.setScalar(k); m.traverse(o=>{ if(o.isMesh){ o.receiveShadow=true; o.castShadow=true; if(o.material){ o.material=o.material.clone(); o.material.envMapIntensity=.08; } } }); dollG.add(gp); DV.ready=true;
-    try{ dollG.updateMatrixWorld(true); const rc=new THREE.Raycaster(), o0=dollG.localToWorld(new THREE.Vector3(.0103,.1027,1)), d0=new THREE.Vector3(0,0,-1).transformDirection(dollG.matrixWorld); rc.set(o0,d0);
+    try{ dollG.updateMatrixWorld(true); const rc=new THREE.Raycaster(), o0=dollG.localToWorld(new THREE.Vector3(.0106,.1063,1)), d0=new THREE.Vector3(0,0,-1).transformDirection(dollG.matrixWorld); rc.set(o0,d0);
       const h0=rc.intersectObject(gp,true)[0]; if(h0){ const lp=dollG.worldToLocal(h0.point.clone()); glint.position.copy(lp).add(new THREE.Vector3(0,0,.004)); eyeL.position.copy(lp).add(new THREE.Vector3(0,0,.03)); } }catch(e){} });   // 붉은 불빛을 눈 표면에 붙인다   // 그림자가 못 막는 환경광을 줄여 의자 밑에선 어둠에 묻힘
   const el=R.domElement; let ly=0;
   el.onpointerdown=e=>{ if(!DV||DV.done) return; DV.drag=true; ly=e.clientY; DV.y0=ly; DV.mv=0; wrap.classList.add("grab"); try{ el.setPointerCapture(e.pointerId); }catch(_){} };
@@ -1745,7 +1745,7 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
     dollG.rotation.set(-Math.PI/2*(1-u)+drag*.06*(1-u),Math.sin(p*7)*.05*(1-u),drag*.05);
     bar.querySelector("i").style.width=(p*100)+"%";
     { const ph=(t%1800)/1800, on=ph<.32?Math.sin(ph/.32*Math.PI):0, tw=on*on;   // 작은 LED: 1.8초마다 한 번, 부드럽게 켜졌다 꺼짐
-      glint.material.opacity=(1-u*.6)*(.08+tw*.85); glint.scale.setScalar(.012+tw*.008); eyeL.intensity=tw*.12; reveal.intensity=p*3; }
+      glint.material.opacity=(1-u*.6)*(.08+tw*.85); glint.scale.setScalar(.005+tw*.003); eyeL.intensity=tw*.012;   /* 눈동자 크기에 맞춰 작게, 붉은 번짐도 눈 주변에만 */ reveal.intensity=p*3; }
     C.position.set(.1+Math.sin(t/2600)*.01,.15+u*.03,1.0+u*.1); C.lookAt(0,.15+u*.05,-.02); roomLamp.intensity=1.1+Math.sin(t/430)*.08+Math.sin(t/170)*.04;
     if(p>=.985&&DV.p>=1&&!DV.done&&DV.ready){ DV.done=true; hint.innerHTML="<b>인형을 꺼냈다.</b>"; SFX("thud",.45); SFX("rustle",.45); window.__dollOut=1; setTimeout(()=>{ if(!DV||DV.wrap!==wrap) return; dollClose(); dollPick(); },1100); }
     { const a=pg.attributes.position; for(let i=0;i<NP;i++){ let y=a.getY(i)-pv[i]*dt; if(y<0) y=1.8; a.setY(i,y); a.setX(i,a.getX(i)+Math.sin(t/1700+i)*.0004); } a.needsUpdate=true; } if(!document.hidden){ if(comp) comp.render(); else R.render(S,C);
@@ -1765,13 +1765,13 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
   const x=document.createElement("button"); x.className="dollx"; x.innerHTML="내려놓기"; x.onclick=()=>{ dollClose(); closeCloseup(); }; wrap.appendChild(x);
   const obj=new THREE.Group(); S.add(obj);
   DV={s,R,S,C,wrap,obj,raf:0,yaw:.35,pitch:0,zoom:1,drag:null,face:0,done:false,cf:{pitch:[-.5,.5]}};
-  const eye=new THREE.PointLight(0xff2a1a,0,.6,2); const eyeDot=new THREE.Mesh(new THREE.SphereGeometry(.011,14,14),new THREE.MeshBasicMaterial({color:0xff2a14,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+  const eye=new THREE.PointLight(0xff2a1a,0,.07,2); const eyeDot=new THREE.Mesh(new THREE.SphereGeometry(.0052,16,16),new THREE.MeshBasicMaterial({color:0xff2a14,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})); eyeDot.scale.z=.45;   // 눈동자 크기, 얼굴에서 튀어나오지 않게 납작하게
   const spk=new THREE.Group(); let spkP=null;
   m3dLoad("doll3d.glb",g=>{ if(!DV) return; dollMatte(g.scene); const m=g.scene.clone(), b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
     m.position.set(-c.x,-c.y,-c.z); const k=.9/sz.y; const p=new THREE.Group(); p.add(m); p.scale.setScalar(k); obj.add(p); p.updateMatrixWorld(true);
     const rc=new THREE.Raycaster(), hitAt=(x,y,z,dz)=>{ rc.set(new THREE.Vector3(x,y,z),new THREE.Vector3(0,0,dz)); const r=rc.intersectObject(p,true)[0]; return r&&r.point; };
-    const H=.45, ey=H*.685, ex=.031;   // 오른쪽 눈(화면 기준)
-    const ep=hitAt(ex,ey,2,-1)||new THREE.Vector3(ex,ey,.07); eyeDot.position.copy(ep).add(new THREE.Vector3(0,0,.002)); eye.position.copy(ep).add(new THREE.Vector3(0,0,.03)); obj.add(eyeDot,eye);
+    const H=.45, ey=.319, ex=.0317;   // 오른쪽 눈(화면 기준) — 모델을 정면에서 재 본 눈동자 중심
+    const ep=hitAt(ex,ey,2,-1)||new THREE.Vector3(ex,ey,.07); eyeDot.position.copy(ep).add(new THREE.Vector3(0,0,.001)); eye.position.copy(ep).add(new THREE.Vector3(0,0,.018)); obj.add(eyeDot,eye);
     let bp=null, yy=H*.22; for(let ix=-2;ix<=2;ix++) for(let iy=-2;iy<=2;iy++){ const h=hitAt(ix*.012,yy+iy*.012,-2,1); if(h&&(!bp||h.z<bp.z)) bp=h; }   // 등 쪽 가장 바깥 면을 찾아 그 밖에 붙인다
     bp=bp?new THREE.Vector3(0,yy,bp.z):new THREE.Vector3(0,.1,-.08); spkP=bp.clone().add(new THREE.Vector3(0,0,-.014));
     const brass=new THREE.MeshStandardMaterial({color:0xb08a45,metalness:.9,roughness:.35});
@@ -1794,7 +1794,7 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
     const dtv=Math.min(.05,(t-(DV.pt2||t))/1000); DV.pt2=t; if(DV.ry===undefined){ DV.ry=DV.yaw; DV.rp=DV.pitch; } const fk=1-Math.pow(.00002,dtv); DV.ry+=(DV.yaw-DV.ry)*fk; DV.rp+=(DV.pitch-DV.rp)*fk;   // 약병처럼 손을 살짝 늦게 따라옴
     obj.rotation.set(DV.rp,DV.ry+(DV.drag||DV.done?0:Math.sin(t/900)*.04),0); const d=2.7*DV.zoom; C.position.set(0,.05*d,d); C.lookAt(0,0,0); obj.updateMatrixWorld(true);
     if(DV.zin){ DV.sz=Math.min(1,(DV.sz||0)+(1-(DV.sz||0))*.07+.002); const e=DV.sz*DV.sz*(3-2*DV.sz); if(spkP){ const sp2=spkP.clone(); obj.localToWorld(sp2); const nn=new THREE.Vector3(0,0,-1).applyQuaternion(obj.getWorldQuaternion(new THREE.Quaternion())); const tp=sp2.clone().add(nn.multiplyScalar(.38)); C.position.lerp(tp,e); C.lookAt(new THREE.Vector3(0,0,0).lerp(sp2,e)); } }
-    const blink=(Math.sin(t/260)>.2)?1:.15; eye.intensity=blink*.25; eyeDot.material.opacity=blink*.7;
+    const blink=(Math.sin(t/260)>.2)?1:.15; eye.intensity=blink*.012; eyeDot.material.opacity=blink*.6;   /* 붉은 빛이 눈두덩·뺨까지 번지지 않게 약하게, 눈 주변에만 */
     if(spkP){ wp.copy(spkP); obj.localToWorld(wp); obj.getWorldQuaternion(q); wn.set(0,0,-1).applyQuaternion(q); tc.copy(C.position).sub(wp).normalize();
       const dt=Math.min(.1,(t-(DV.lt||t))/1000); DV.lt=t; DV.face=wn.dot(tc)>.55?Math.min(1,DV.face+dt*4):Math.max(0,DV.face-dt*6);
       if(!DV.done&&DV.face>=1){ const sp=wp.clone().project(C); spot.style.left=((sp.x+1)/2*100)+"%"; spot.style.top=((1-sp.y)/2*100)+"%"; if(!spot.classList.contains("on")){ spot.classList.add("on"); hit(1800,.05,.08,"bandpass"); } }
@@ -2090,6 +2090,8 @@ function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.
   let R; try{ R=new THREE.WebGLRenderer({antialias:where==="bedside",alpha:false,powerPreference:"low-power"}); }catch(e){ return; }
   R.outputEncoding=THREE.sRGBEncoding; R.physicallyCorrectLights=true; R.toneMapping=THREE.ACESFilmicToneMapping; R.toneMappingExposure=1.05; R.setPixelRatio(1); R.setClearColor(0x060907,1);
   const cv=R.domElement; cv.className="v3room"; host.insertBefore(cv,host.children[1]||null);
+  /* 배경(벽 텍스처·책상 모델)이 준비되고 한 번 그려진 뒤에 증거와 배경을 같이 드러낸다. 늦어도 1.6초 뒤에는 그냥 보여 준다 */
+  wrap.classList.add("bgwait","has3d"); let need=1+(where==="bedside"?1:0), shown=false, drawn=0; const got=()=>{ need--; }, reveal=()=>{ if(shown) return; shown=true; cv.classList.add("rdy"); wrap.classList.remove("bgwait"); }; setTimeout(reveal,1600);
   const S=new THREE.Scene(), C=new THREE.PerspectiveCamera(32,16/9,.05,80); S.fog=new THREE.FogExp2(0x070b08,.05);
   S.add(new THREE.HemisphereLight(0xffe2b8,0x122018,.55)); try{ S.environment=exEnv(R); }catch(e){}
   const CFG={ bedside:{f:4.5,y:-4.7,wz:-1.05,wh:2.8,wy:-.38,tilt:.44}, statue:{f:2.6,y:-1.93,wz:-.37,wh:2.2}, doll:{f:3,y:-1.2,wz:-1.7,wh:2.8,wy:-.5} }[where]||{f:3,y:-1.5,wz:-1.5,wh:2.8};
@@ -2099,7 +2101,7 @@ function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.
   const wood=std(0x2a1710,.55), brass=std(0x9a7638,.4,.8);
   /* 바닥 + 벽 */
   { const ft=woodFloor(); ft.repeat.set(6,6); const fl=add(new THREE.PlaneGeometry(9,9),new THREE.MeshStandardMaterial({map:ft,roughness:.6}),0,0,0); fl.rotation.x=-Math.PI/2;
-    const wt=new THREE.TextureLoader().load("wall_panel.jpg"); wt.encoding=THREE.sRGBEncoding; wt.wrapS=THREE.RepeatWrapping; const pw=CFG.wh*.293; wt.repeat.set(Math.round(8/pw),1); wt.anisotropy=4;
+    const wt=new THREE.TextureLoader().load("wall_panel.jpg",got,undefined,got); wt.encoding=THREE.sRGBEncoding; wt.wrapS=THREE.RepeatWrapping; const pw=CFG.wh*.293; wt.repeat.set(Math.round(8/pw),1); wt.anisotropy=4;
     add(new THREE.PlaneGeometry(8,CFG.wh),new THREE.MeshStandardMaterial({map:wt,roughness:.85}),0,CFG.wh/2+(CFG.wy||0),CFG.wz); }
   /* 빛나는 갓 주변의 번짐 */
   const gc=document.createElement("canvas"); gc.width=gc.height=128; { const g=gc.getContext("2d"), q=g.createRadialGradient(64,64,0,64,64,64); q.addColorStop(0,"rgba(255,214,150,.9)"); q.addColorStop(.3,"rgba(255,170,90,.32)"); q.addColorStop(1,"rgba(255,150,70,0)"); g.fillStyle=q; g.fillRect(0,0,128,128); }
@@ -2153,7 +2155,7 @@ function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.
                 for(let n=0;n<2;n++){ const cx=w/4+n*w/2; g.font="900 118px 'Arial Black',Impact,sans-serif"; g.fillText("TITAN",cx,150,w/2-70); g.font="700 44px Arial,sans-serif"; g.fillText("P A I N T",cx,208,w/2-90); }
                 for(let n=0;n<260;n++){ g.fillStyle=`rgba(${Math.random()<.5?"70,10,8":"240,230,220"},${Math.random()*.18})`; g.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*7,1); } });
             const lm=new THREE.Mesh(new THREE.CylinderGeometry(r*1.015,r*1.015,hh*.36,36,1,true),new THREE.MeshStandardMaterial({map:lab,roughness:.42,metalness:.1})); lm.position.set((x0+x1)/2,y0+hh*.4,(z0+z1)/2); lm.rotation.y=1.75; src.add(lm); } } }
-      T.remove(PT); T.remove(D); T.add(M); });
+      T.remove(PT); T.remove(D); T.add(M); got(); });
     /* 레이스 러너: 구멍이 뚫린 꽃무늬, 뒤에서 앞으로 상판을 가로질러 앞 가장자리 아래로 늘어지고 끝은 물결 */
     const laceT=cvs(384,1024,(g,w,h)=>{ g.clearRect(0,0,w,h); const sc=28;
       g.fillStyle="rgba(232,222,224,.5)"; g.fillRect(6,sc,w-12,h-sc*2);                                  // 성긴 망
@@ -2208,7 +2210,7 @@ function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.
     const rs=where==="bedside"?1:.6, w=Math.round(host.clientWidth*rs),h=Math.round(host.clientHeight*rs); if(w&&h&&(cv.width!==w||cv.height!==h)) R.setSize(w,h,false);
     const c=getCam&&getCam(); if(c){ c.updateMatrixWorld(); C.copy(c); C.near=.05; C.far=80; C.updateProjectionMatrix(); C.updateMatrixWorld(true); }
     lamps.forEach(l=>{ l[0].intensity=l[1]*(1+Math.sin(t/430+l[2])*.05+Math.sin(t/170+l[2])*.025); });   // 램프 불빛이 아주 살짝 흔들림
-    if(!document.hidden) R.render(S,C); requestAnimationFrame(loop); };
+    if(!document.hidden){ R.render(S,C); if(need<=0&&!shown&&++drawn>=1) reveal(); } requestAnimationFrame(loop); };
   requestAnimationFrame(loop); }
 function unmountExam(){ if(!EX) return; cancelAnimationFrame(EX.raf); EX.wrap.remove(); try{ EX.R.dispose(); }catch(e){} EX=null; }
 function cropContent(cv){ const W=cv.width,H=cv.height, t=document.createElement("canvas"); t.width=W; t.height=H; const g=t.getContext("2d"); g.drawImage(cv,0,0);
@@ -3935,7 +3937,7 @@ document.querySelectorAll(".evclip .sk").forEach(el=>{ if(!TEST_SKIP) el.remove(
    const show=n&&(CAMHUB.on||CAMHUB.state==="connecting"||CAMHUB.state==="nocam");
    if(show!==shown){ shown=show; box.classList.toggle("on",show); base=null; } };
  window.__excam=sync; new MutationObserver(sync).observe(I,{attributes:true,attributeFilter:["class"]}); setInterval(sync,300);
- (function pre(){ if(mode==="title"||mode==="intro"){ setTimeout(pre,1500); return; } if(window.THREE&&THREE.GLTFLoader){ m3dLoad(M3D.statue.file,()=>{}); m3dLoad("bottle.json",()=>{}); m3dLoad("chair3d.glb",()=>{}); m3dLoad("rug3d.glb",()=>{}); ["pill","clock","rumble","slide","thud"].forEach(n=>{ try{ new Audio("sfx/"+n+".mp3").preload="auto"; }catch(e){} }); m3dLoad("doll3d.glb",()=>{}); m3dLoad("table3d.json",()=>{}); } else setTimeout(pre,800); })();   // 동상 모델 미리 받아 두기
+ (function pre(){ if(mode==="title"||mode==="intro"){ setTimeout(pre,1500); return; } if(window.THREE&&THREE.GLTFLoader){ m3dLoad(M3D.statue.file,()=>{}); m3dLoad("bottle.json",()=>{}); m3dLoad("chair3d.glb",()=>{}); m3dLoad("rug3d.glb",()=>{}); ["pill","clock","rumble","slide","thud"].forEach(n=>{ try{ new Audio("sfx/"+n+".mp3").preload="auto"; }catch(e){} }); m3dLoad("doll3d.glb",()=>{}); m3dLoad("table3d.json",()=>{}); m3dLoad("bedside3d.glb",()=>{}); ["pro/exam_bg.jpg","wall_panel.jpg","bedside3d_lace.jpg"].forEach(u=>{ try{ new Image().src=u; }catch(e){} }); } else setTimeout(pre,800); })();   // 동상 모델 미리 받아 두기
 })();
 </script>
 
@@ -5022,6 +5024,12 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 /* 3D 방 세트 캔버스: 증거 뒤에서 살짝 아웃포커스 */
 .v3d .v3bg canvas.v3room{position:absolute;inset:0;z-index:auto;width:100%!important;height:100%!important;display:block;filter:blur(2.5px);transform:scale(1.02)}
 .v3d[data-where="bedside"] .v3bg canvas.v3room{filter:blur(1.1px)}
+/* 3D 화면 첫 등장: 배경이 준비될 때까지 증거 캔버스를 감췄다가 배경과 함께 부드럽게 나타냄 */
+.v3d>canvas{transition:opacity .4s ease}
+.v3d.bgwait>canvas{opacity:0}
+.v3d.has3d .v3bg .l1{display:none}   /* 3D 방이 뜰 땐 흐린 사진 대비용 배경을 쓰지 않는다(사진→3D로 바뀌어 보이는 것 방지) */
+.v3d .v3bg canvas.v3room{opacity:0;transition:opacity .4s ease}
+.v3d .v3bg canvas.v3room.rdy{opacity:1}
 @keyframes v3drift{from{transform:scale(1.04) translateX(-1%)}to{transform:scale(1.08) translateX(1%)}}
 @media (prefers-reduced-motion:reduce){.v3d[data-bg="a"] .v3bg .l1{animation:none}}
 .dollv:not(.chair){background:#070a08;-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -5135,10 +5143,10 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .camfx .cam-noise{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;background-image:var(--camNoise);background-size:128px 128px;mix-blend-mode:screen}
 .camfx canvas.cam-hand{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4}
 .camfx .cam-cn{position:absolute;width:9px;height:9px;pointer-events:none;z-index:5;border:0 solid #e2c079}
-.camfx .cam-cn.tl{left:-4px;top:-4px;border-left-width:2px;border-top-width:2px}
-.camfx .cam-cn.tr{right:-4px;top:-4px;border-right-width:2px;border-top-width:2px}
-.camfx .cam-cn.bl{left:-4px;bottom:-4px;border-left-width:2px;border-bottom-width:2px}
-.camfx .cam-cn.br{right:-4px;bottom:-4px;border-right-width:2px;border-bottom-width:2px}
+.camfx .cam-cn.c-tl{left:-4px;top:-4px;border-left-width:2px;border-top-width:2px}
+.camfx .cam-cn.c-tr{right:-4px;top:-4px;border-right-width:2px;border-top-width:2px}
+.camfx .cam-cn.c-bl{left:-4px;bottom:-4px;border-left-width:2px;border-bottom-width:2px}
+.camfx .cam-cn.c-br{right:-4px;bottom:-4px;border-right-width:2px;border-bottom-width:2px}
 .camfx .cam-chip{position:absolute;right:5px;bottom:5px;z-index:5;padding:2px 6px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9px;letter-spacing:.14em;line-height:1.4;color:rgba(236,226,203,.55);background:rgba(0,0,0,.62);border:1px solid rgba(236,226,203,.22);white-space:nowrap;display:none}
 .camfx.live .cam-chip{display:block}
 .camfx .cam-chip.hand{color:#f3dfae;border-color:rgba(226,192,121,.85);box-shadow:0 0 8px rgba(226,192,121,.35)}
@@ -5169,10 +5177,10 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .camfx .cam-bar{position:absolute;left:-1px;right:-1px;bottom:100%;height:var(--cbar);z-index:4;pointer-events:none;background:rgba(6,8,7,.88);border:1px solid rgba(210,173,99,.5);border-bottom:0;display:none}
 .camfx.live .cam-bar{display:block}
 /* 카메라가 꺼져 있을 때(CAMERA OFF): 이름표 줄·REC 없이 창만 깔끔하게, 모서리 꺾쇠는 창에 딱 맞춘다 */
-.camfx:not(.live) .cam-cn.tl,.camfx:not(.live) .cam-cn.tr{top:-4px}
+.camfx:not(.live) .cam-cn.c-tl,.camfx:not(.live) .cam-cn.c-tr{top:-4px}
 .pro .cam.camfx:not(.live) .tag,.excam.camfx:not(.live) .xtag{display:none!important}
 .pro .cam.camfx:not(.live) .htag,.excam.camfx:not(.live) .xhtag{bottom:calc(100% + 8px)!important}
-.camfx .cam-cn.tl,.camfx .cam-cn.tr{top:calc(-4px - var(--cbar))}
+.camfx .cam-cn.c-tl,.camfx .cam-cn.c-tr{top:calc(-4px - var(--cbar))}
 .pro .cam.camfx .tag,.excam.camfx .xtag{left:7px!important;top:auto!important;bottom:calc(100% + 4px)!important;line-height:12px}
 .camfx .cam-id{left:auto;right:auto;bottom:calc(100% + 4px);line-height:12px;font-size:8.5px}
 .pro .cam.camfx .cam-id,.excam.camfx .cam-id{left:58px}
@@ -5198,7 +5206,7 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
     g.putImageData(d,0,0); document.documentElement.style.setProperty("--camNoise",`url(${c.toDataURL("image/png")})`); }
   const boxes=[document.getElementById("proCam"),document.querySelector(".excam"),document.getElementById("scrCam")].filter(Boolean);
   const parts=boxes.map(b=>{ b.classList.add("camfx");
-    b.insertAdjacentHTML("beforeend",'<i class="cam-bar"></i><i class="cam-scan"></i><i class="cam-noise"></i><canvas class="cam-hand"></canvas><i class="cam-cn tl"></i><i class="cam-cn tr"></i><i class="cam-cn bl"></i><i class="cam-cn br"></i><span class="cam-id">CAM 01</span><span class="cam-chip">NO HAND</span>');
+    b.insertAdjacentHTML("beforeend",'<i class="cam-bar"></i><i class="cam-scan"></i><i class="cam-noise"></i><canvas class="cam-hand"></canvas><i class="cam-cn c-tl"></i><i class="cam-cn c-tr"></i><i class="cam-cn c-bl"></i><i class="cam-cn c-br"></i><span class="cam-id">CAM 01</span><span class="cam-chip">NO HAND</span>');
     return {b,cv:b.querySelector("canvas.cam-hand"),chip:b.querySelector(".cam-chip")}; });
   const shown=b=>b.classList.contains("on")&&b.offsetParent!==null;
   const kick=b=>{ b.classList.remove("boot"); void b.offsetWidth; b.classList.add("boot"); setTimeout(()=>b.classList.remove("boot"),1400); };

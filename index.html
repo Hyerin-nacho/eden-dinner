@@ -1,10 +1,17 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Beyond the ORPHEUS</title>
-<meta name="description" content="Beyond the ORPHEUS — an interactive murder mystery aboard the Orpheus Express.">
-<meta property="og:type" content="website"><meta property="og:title" content="Beyond the ORPHEUS">
-<meta property="og:description" content="Beyond the ORPHEUS — an interactive murder mystery aboard the Orpheus Express.">
-<meta property="og:image" content="https://hyerin-nacho.github.io/eden-dinner/og.jpg">
-<meta name="twitter:card" content="summary_large_image"><meta name="apple-mobile-web-app-title" content="Beyond the ORPHEUS">
+<!doctype html><html lang="ko"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Beyond the ORPHEUS · 인터랙티브 미스터리</title>
+<meta name="description" content="오르페우스 특급의 첫날 밤, 열차의 주인이 죽었다. 손으로 단서를 집어 들고, 증거로 거짓말을 깨뜨려라. 10분 체험판.">
+<!-- 링크 미리보기(카카오톡·인스타·디스코드 등): 제목, 설명, 대표 이미지(1200x630) -->
+<meta property="og:type" content="website"><meta property="og:site_name" content="Beyond the ORPHEUS"><meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="Beyond the ORPHEUS · 인터랙티브 미스터리">
+<meta property="og:description" content="오르페우스 특급의 첫날 밤, 열차의 주인이 죽었다. 손으로 단서를 집어 들고, 증거로 거짓말을 깨뜨려라.">
+<meta property="og:image" content="https://hyerin-nacho.github.io/eden-dinner/og-v2.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="beyond the ORPHEUS · EDEN LINE COMPANY">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Beyond the ORPHEUS · 인터랙티브 미스터리">
+<meta name="twitter:description" content="오르페우스 특급의 첫날 밤, 열차의 주인이 죽었다. 손으로 단서를 집어 들고, 증거로 거짓말을 깨뜨려라.">
+<meta name="twitter:image" content="https://hyerin-nacho.github.io/eden-dinner/og-v2.jpg">
+<meta name="apple-mobile-web-app-title" content="Beyond the ORPHEUS"><meta name="theme-color" content="#0b0d0c">
+<link rel="icon" type="image/png" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -2822,8 +2829,8 @@ const SUSPECTS=[
  ["magician","???","전직 정비공 · 마술사","그는 9시 15분에 까마귀만 두고 나갔다. ‘마지막 쇼’는 로크의 비밀을 폭로하려던 그의 계획이었다. 하지만 독이 든 잔을 따른 손은 그의 것이 아니다."],
  ["elena","엘레나 보로딘","27세 · 전담 승무원",null]
 ];
-const CONFESS=[["R","엘레나. 로크를 독살한 건 당신이다."],["E","……제 잘못이긴 해요."],
- ["E","하지만, 저는……  ……아니에요. 됐어요."]];   // 다 말하지 않고 삼킨다 → 끌려가다 돌아서서 외치는 한마디는 엔딩 영상에서
+const CONFESS=[["R","엘레나 보로딘. 로크를 독살한 건 당신이다."],["E","……"],["E","……제 잘못이긴 해요."],
+ ["E","하지만……"]];   // 다 말하지 않고 삼킨다 → 끌려가다 돌아서서 외치는 한마디는 엔딩 영상에서
 const USED=new Set(), USEDBY={}, TRIED={}; let BROKEN=new Set(), comp=100, confessed=false, twistHinted=false, seq=null;
 const talkEl=$("talk"); talkEl.appendChild($("tkOpts"));   // 선택지는 화면 전체 기준으로 배치
 function setObj(a,b){ $("objText").textContent=a; if(b) $("objSub").textContent=b; }
@@ -2909,7 +2916,7 @@ function play(lines,done){
   let i=0;
   const step=()=>{ if(i>=lines.length){ done&&done(); return; }
     const [w,t]=lines[i++]; say(w,t);
-    if(lines===CONFESS){ if(i===2) react("confess"); else if(i===3) react("doubt"); }   // 자백: 고개를 떨구고 눈을 감는다 → "제가 낸 게 아니에요"에서 누군가를 곁눈질
+    if(lines===CONFESS){ if(i===2) react("confess"); else if(i===4) react("doubt"); }   // 말없이 고개를 떨군다 → "제 잘못이긴 해요" → "하지만……"에서 누군가를 곁눈질하고 말을 삼킨다   // 자백: 고개를 떨구고 눈을 감는다 → "제가 낸 게 아니에요"에서 누군가를 곁눈질
     if(w==="E"&&talkEl.classList.contains("press")){ comp=Math.max(45,comp-5); gauge(); const M=$("tkMeter"); M.classList.remove("hitm"); void M.offsetWidth; M.classList.add("hitm"); }
     if(w==="E"&&t.startsWith("……")) { talkEl.classList.remove("shake"); void talkEl.offsetWidth; talkEl.classList.add("shake"); }
     opts([{k:"F",t:i<lines.length?"계속":"확인",f:step}],"next"); };
@@ -3059,10 +3066,10 @@ function ending(){ hbStop(); const E=$("ending"), V=$("endVid");
   vidStop(); mode="end"; E.parentElement.classList.add("ended"); talkEl.hidden=true; E.hidden=false; ambStop();
   /* 엔딩 컷: 엘레나가 끌려가며 돌아보고 → 세 용의자의 안도 → 록의 깨달음 → 엘레나의 씁쓸한 얼굴 클로즈업. 쿵 소리에서 끝나면 바로 CASE CLOSED */
   /* 엔딩 컷: 끌려가던 엘레나가 돌아서서 급하게 외친다 → 누군가의 손이 독약병을 집어 간다 → 세 용의자 → 록의 깨달음 */
-  const cap=$("endCap"), CAP=[2.7,5.7];   // 엘레나가 돌아서서 외치는 구간(초)에만 자막
+  const cap=$("endCap"), CAP=[2.6,5.0];   // 엘레나가 돌아서서 외치는 구간(초)에만 자막
   V.ontimeupdate=()=>{ cap&&cap.classList.toggle("on",V.currentTime>=CAP[0]&&V.currentTime<CAP[1]); };
   let went=false; const go=()=>{ if(went) return; went=true; V.onended=V.onerror=V.onclick=V.ontimeupdate=null; cap&&cap.classList.remove("on"); V.pause(); V.hidden=true; endSeq(); };
-  V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4?v=6"; V.onended=go; V.onerror=go; V.onclick=go;
+  V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4?v=10"; V.onended=go; V.onerror=go; V.onclick=go;
   const p=V.play(); p&&p.catch(go); setTimeout(()=>{ if(!went&&V.currentTime<.1) go(); },6000); }
 function endSeq(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
   E.className="ending"; ng&&ng.classList.remove("on"); ck.textContent="21:47";
@@ -3266,11 +3273,12 @@ function badEnd(){ closeBoard(); vidStop&&vidStop(); talkEl.hidden=true; mode="e
 /* ================= 프롤로그 : 초대장 → 회상 → VIP실 =================
    원본 오르페우스(Joljak_S1 → 봉투 → 찢기 → 명부 → 회중시계 → 회상)를 480p로 옮겨 온 부분.
    연결 영상(아내의 복수 → VIP실 문 앞)이 준비되면 PRO.bridge 에 경로만 넣으면 된다. */
-const STORY_CAPS=[[.2,"He killed my wife.\nI boarded this train for revenge.\n그는 내 아내를 죽였다. 나는 복수하려고 이 열차에 올랐다.",null,3000],
-  [3.4,"“Is anyone there?\nPlease — save me!”\n거기 누구 없어요? 제발 살려주세요.","red",2100],
-  [6.0,"The moment I boarded,\na scream echoed through the train.\n열차에 오르자, 비명소리가 들렸다.",null,2700],
+/* 자막은 영어 한 줄 + 한국어 한 줄(줄바꿈 \n은 영어와 한국어 사이에만 둔다) */
+const STORY_CAPS=[[.2,"He killed my wife. I boarded this train for revenge.\n그는 내 아내를 죽였다. 나는 복수하려고 이 열차에 올랐다.",null,3000],
+  [3.4,"“Is anyone there? Please — save me!”\n거기 누구 없어요? 제발 살려주세요.","red",2100],
+  [6.0,"The moment I boarded, a scream echoed through the train.\n열차에 오르자, 비명소리가 들렸다.",null,2700],
   [9.0,"That voice, begging for help…\n도움을 청하던 그 목소리…",null,2300],
-  [11.4,"…belonged to the one\nwho killed my wife.\n내 아내를 죽인, 바로 그 사람의 것이었다.","red",2800],
+  [11.4,"…belonged to the one who killed my wife.\n내 아내를 죽인, 바로 그 사람의 것이었다.","red",2800],
   [14.4,"Locke is behind that door.\n로크는 저 문 뒤에 있다.",null,1800]];
 const PRO={ intro:"pro/intro_fast.mp4", rewind:"pro/rewind_cut.mp4", memory:"pro/Memory.mp4", corridor:"pro/corridor_cut.mp4", reflect:"pro/memoryReflection.mp4", news:"pro/news.mp4",
   /* VIP실까지 가는 연결 컷 — 순서대로 재생, 빈 칸("")은 건너뜀. [시계·다짐 컷], [VIP실 문 앞 컷]이 준비되면 해당 칸에 경로만 넣으면 된다 */
@@ -4944,7 +4952,14 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .pro .vcap .ln{display:block;font-family:"Noto Serif KR",var(--serif);font-weight:600;font-size:.95em;line-height:1.4;color:#d2ad63;letter-spacing:.01em;text-shadow:0 1px 8px #000,0 0 3px #000,0 0 14px rgba(0,0,0,.8)}
 .pro .vcap .ln:last-of-type{order:-1;margin:0 0 .35em;font-family:inherit;font-weight:500;font-size:1em;line-height:1.5;color:#fff;opacity:1;letter-spacing:0}
 .pro .vcap.red .ln:not(:last-of-type){color:#e07070}
-/* 엔딩 영상 속 엘레나의 외침: 인트로·회상 자막과 같은 모양(한국어 흰색 위, 영어 금색 아래) */
+/* 자막 한 줄 정리: 한 줄로 두되(화면이 아주 좁을 때만 고르게 나뉨), 웹캠 창이 떠 있을 때는 그 왼쪽 영역 안에서 가운데 정렬해 겹치지 않게 한다 */
+.pro .vcap .ln{white-space:nowrap}
+.pro .vcap{text-wrap:balance}
+.pro:has(.cam.on) .vcap{left:0;right:auto;transform:none;width:auto;inset-inline:0 calc(var(--cw,16cqw) + var(--cr,14px) + 1.5cqw);padding:0 3%}
+@media (max-width:640px){.pro .vcap .ln{white-space:normal}}
+.ending .en-cap b,.ending .en-cap i{white-space:nowrap;text-wrap:balance}
+@media (max-width:640px){.ending .en-cap b,.ending .en-cap i{white-space:normal}}
+/* 엔딩 영상 속 엘레나의 외침:인트로·회상 자막과 같은 모양(한국어 흰색 위, 영어 금색 아래) */
 .ending .en-cap{position:absolute!important;left:0;right:0;bottom:9%;z-index:10!important;display:flex;flex-direction:column;align-items:center;gap:.3em;padding:0 6%;pointer-events:none;opacity:0;transition:opacity .25s}
 .ending .en-cap.on{opacity:1}
 .ending .en-cap b{font-family:"Noto Sans KR","Pretendard","Malgun Gothic",sans-serif;font-weight:500;font-size:max(13px,2cqw);line-height:1.5;color:#fff;text-shadow:0 1px 6px #000,0 0 2px #000}
@@ -5011,6 +5026,68 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .talk .tk-opts.m-next .opt{display:flex;align-items:center;gap:.6em;font-size:clamp(13px,1.02vw,19px);color:#efe6d0;padding:6px 10px}
 .talk .tk-opts.m-next .opt .k{display:inline-grid;place-items:center;min-width:1.7em;height:1.7em;padding:0 .35em;border:1px solid rgba(210,173,99,.75);border-radius:3px;background:rgba(8,10,9,.6);font-size:.82em;color:#e2c079}
 .ver{display:none}
+/* ===== 타이틀 화면: 영화 오프닝 순서 =====
+   0.3s  검은 화면 한가운데 "EDENLINE COMPANY PRESENTS" (제작사 카드) → 사라짐
+   1.9s  어둠이 걷히며 방이 드러난다(천천히 다가가는 카메라)
+   3.2s  로고가 초점이 맞아 들어오듯 선명해진다
+   4.9s  로고 아래 가는 금선이 그어지고 부제가 뜬다
+   5.6s  탑승권이 조용히 올라온다 → 6.3s 위아래 작은 글자
+   방은 선명한 채 어둡게, 로고는 작게 여백을 두고, 버튼은 어두운 바탕의 금테 탑승권으로 화면 톤에 맞춘다 */
+.pro .ps[data-s="start"] .title-train{filter:brightness(.36) saturate(.62) contrast(1.12)!important}
+.pro .ps[data-s="start"] .title-vignette{background:linear-gradient(0deg,rgba(2,3,3,.96),rgba(2,3,3,.5) 30%,rgba(2,3,3,.25) 55%,rgba(2,3,3,.7)),radial-gradient(ellipse at 50% 46%,transparent 30%,rgba(0,0,0,.72) 100%)!important}
+.pro .ps[data-s="start"] .tt-grain{z-index:7!important;opacity:.14!important}
+/* 제작사 카드 + 어둠 걷힘 */
+.pro .ps[data-s="start"] .tt-curtain{display:grid!important;place-items:center;animation:ttcur2 2.6s 1.9s cubic-bezier(.4,0,.2,1) both!important}
+@keyframes ttcur2{to{opacity:0}}
+.pro .ps[data-s="start"] .tt-curtain::after{content:"EDENLINE COMPANY   PRESENTS";white-space:pre;font-family:var(--serif);font-size:clamp(11px,1.15cqw,17px);letter-spacing:.5em;margin-right:-.5em;color:rgba(217,178,106,.9);opacity:0;animation:ttcard 1.7s .3s ease-in-out both}
+@keyframes ttcard{0%{opacity:0;letter-spacing:.62em}30%{opacity:1}70%{opacity:1}100%{opacity:0;letter-spacing:.5em}}
+/* 로고 */
+.pro .ps[data-s="start"] .title-content{animation:none!important}
+.pro .ps[data-s="start"] .title-logo{width:min(44cqw,600px)!important;max-height:36cqh!important;filter:brightness(.88) saturate(.74) contrast(1.06) drop-shadow(0 6px 18px rgba(0,0,0,.85))!important;
+  animation:ttFocus 2.6s 3.2s cubic-bezier(.2,.7,.2,1) both!important}
+@keyframes ttFocus{0%{opacity:0;transform:scale(1.04);filter:blur(12px) brightness(1.25) saturate(.74)}100%{opacity:1;transform:none;filter:brightness(.88) saturate(.74) contrast(1.06) drop-shadow(0 6px 18px rgba(0,0,0,.85))}}
+/* 부제: 양옆에 가는 금선 */
+.pro .ps[data-s="start"] .title-sub{display:flex;align-items:center;justify-content:center;gap:1.4em;font-size:clamp(12px,1.15cqw,18px)!important;letter-spacing:.44em!important;margin-top:1.6cqh!important;color:rgba(236,226,207,.62)!important;font-weight:400!important;text-shadow:0 1px 10px #000;
+  animation:tlogo 1.6s 4.9s cubic-bezier(.2,.7,.2,1) both!important}
+.pro .ps[data-s="start"] .title-sub::before,.pro .ps[data-s="start"] .title-sub::after{content:"";width:clamp(26px,5cqw,80px);height:1px;background:linear-gradient(90deg,transparent,rgba(210,173,99,.7));transform:scaleX(0);transform-origin:right;animation:ttrule 1.2s 5.1s cubic-bezier(.3,.7,.2,1) forwards}
+.pro .ps[data-s="start"] .title-sub::after{background:linear-gradient(270deg,transparent,rgba(210,173,99,.7));transform-origin:left;margin-left:-.44em}
+@keyframes ttrule{to{transform:scaleX(1)}}
+/* 탑승권: 어두운 바탕 + 금테 */
+.pro .ps[data-s="start"] .tt-ticket{margin-top:5.5cqh!important;zoom:.86;filter:none!important;background:rgba(9,8,6,.6)!important;border:1px solid rgba(210,173,99,.5)!important;border-radius:2px;color:#e9dcc0!important;box-shadow:0 1.4cqh 3cqh rgba(0,0,0,.55)!important;backdrop-filter:blur(3px);
+  transition:background .4s ease,border-color .4s ease,transform .35s ease,box-shadow .35s ease!important;animation:ttUp 1.4s 5.6s cubic-bezier(.2,.7,.2,1) both!important}
+@keyframes ttUp{from{opacity:0;transform:translateY(1.6cqh)}to{opacity:1;transform:none}}
+.pro .ps[data-s="start"] .tt-ticket .tk-m{background:none!important}
+.pro .ps[data-s="start"] .tt-ticket .tk-m b{color:#f0e6cf!important;font-weight:600!important}
+.pro .ps[data-s="start"] .tt-ticket .tk-m small{color:rgba(236,226,203,.5)!important}
+.pro .ps[data-s="start"] .tt-ticket .tk-l,.pro .ps[data-s="start"] .tt-ticket .tk-r{color:rgba(217,178,106,.85)!important}
+.pro .ps[data-s="start"] .tt-ticket .tk-l{border-right:1px dashed rgba(210,173,99,.38)!important}
+.pro .ps[data-s="start"] .tt-ticket .tk-r{border-left:1px dashed rgba(210,173,99,.38)!important}
+.pro .ps[data-s="start"] .tt-ticket:hover,.pro .ps[data-s="start"] .tt-ticket:focus-visible{background:rgba(210,173,99,.14)!important;border-color:rgba(226,192,121,.95)!important;filter:none!important;transform:translateY(-.4cqh)!important;box-shadow:0 2cqh 4cqh rgba(0,0,0,.6),0 0 3cqh rgba(217,178,106,.18)!important}
+.pro .ps[data-s="start"] .tt-ticket.punched{animation:ttpunch .5s cubic-bezier(.3,.7,.2,1) both!important}
+.pro .ps[data-s="start"] .tt-top,.pro .ps[data-s="start"] .tt-foot{animation:tlogo 1.6s 6.3s ease-out both!important}
+/* ===== 영상 뒤 질문 화면: 타이틀 화면과 같은 말투로 맞춘다 =====
+   엔딩 영상의 마지막 장면(눈 감은 엘레나)을 아주 어둡게 깔고, 위아래 검은 띠 사이 한가운데에
+   가는 금선 · 질문 한 줄(한국어) · 영어 한 줄 · 금테 버튼만 둔다. 증거 목록·통계·사진 카드는 숨긴다 */
+.ending.ending.ending{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:none!important;justify-items:center!important;align-content:center!important;text-align:center!important;padding:0 8%!important;row-gap:0!important}
+.ending.ending.ending::before{background:linear-gradient(0deg,rgba(2,3,3,.96),rgba(2,3,3,.84) 35%,rgba(2,3,3,.84) 65%,rgba(2,3,3,.93)),url(pro/ending_bg.jpg) 50% 30%/cover no-repeat!important;filter:saturate(.55)!important;transform:scale(1.03)!important;opacity:1!important}
+.ending.ending.ending>*{grid-column:1!important;grid-row:auto!important}
+.ending.ending .en-ev,.ending.ending .en-stat,.ending.ending .en-file,.ending.ending .en-clock,.ending.ending #ctaBtn{display:none!important}
+.ending.ending .en-bars{display:block!important}
+.ending.ending .en-bars i{height:7.5%!important}
+.ending.ending.ending .case{order:1;display:flex!important;align-items:center;justify-content:center;gap:1.4em;margin:0 0 clamp(22px,4.4vh,48px)!important;font-family:var(--serif)!important;font-size:clamp(10.5px,.85vw,14px)!important;font-weight:400!important;letter-spacing:.42em!important;color:rgba(217,178,106,.82)!important}
+.ending.ending.ending .case::before,.ending.ending.ending .case::after{content:""!important;display:block!important;width:clamp(26px,5vw,80px);height:1px;background:linear-gradient(90deg,transparent,rgba(210,173,99,.7))}
+.ending.ending.ending .case::after{background:linear-gradient(270deg,transparent,rgba(210,173,99,.7));margin-left:-.42em}
+.ending.ending.ending h2.q{order:2;display:flex!important;flex-direction:column;align-items:center;margin:0!important;text-align:center!important;font-style:normal!important}
+.ending.ending.ending h2.q br{display:none}
+.ending.ending.ending h2.q .kr{order:1;margin:0!important;font-family:"Noto Serif KR","Nanum Myeongjo","Batang",serif!important;font-style:normal!important;font-weight:400!important;font-size:clamp(22px,2.7vw,44px)!important;line-height:1.5!important;letter-spacing:.04em!important;color:#efe6d2!important;opacity:0!important;transform:translateY(8px);filter:blur(5px);transition:opacity 1.6s,transform 1.6s cubic-bezier(.2,.7,.2,1),filter 1.6s!important}
+.ending.ending.ending.e4 h2.q .kr{opacity:1!important;transform:none;filter:none}
+.ending.ending.ending h2.q span{order:2;display:inline!important;font-family:var(--serif)!important;font-style:italic!important;font-weight:400!important;font-size:clamp(12px,1.05vw,17px)!important;letter-spacing:.14em!important;line-height:1.6!important;color:rgba(236,226,207,.5)!important;opacity:0!important;transform:none!important;filter:none!important;transition:opacity 1.4s .2s!important}
+.ending.ending.ending h2.q span:first-of-type{margin-top:clamp(12px,2vh,22px)}
+.ending.ending.ending.e5 h2.q span{opacity:1!important}
+.ending.ending.ending .row{order:3;justify-content:center!important;margin-top:clamp(34px,7vh,80px)!important}
+.ending.ending #againBtn{font-family:var(--serif)!important;font-size:clamp(12px,1vw,16px)!important;font-weight:400!important;letter-spacing:.34em!important;padding:1em 2.4em 1em 2.74em!important;border:1px solid rgba(210,173,99,.5)!important;border-radius:2px!important;background:rgba(9,8,6,.6)!important;color:#e9dcc0!important;box-shadow:0 12px 26px rgba(0,0,0,.5);transition:background .4s,border-color .4s,transform .35s!important}
+.ending.ending #againBtn:hover,.ending.ending #againBtn:focus-visible{background:rgba(210,173,99,.14)!important;border-color:rgba(226,192,121,.95)!important;transform:translateY(-2px)}
+@media(prefers-reduced-motion:reduce){.pro .ps[data-s="start"] .title-logo,.pro .ps[data-s="start"] .title-sub,.pro .ps[data-s="start"] .tt-ticket,.pro .ps[data-s="start"] .tt-curtain{animation:none!important;opacity:1}.pro .ps[data-s="start"] .tt-curtain{opacity:0!important}}
 </style>
 <script>
 /* 손글씨(증거 쪽지·붉은 펜 메모)를 누르면 종이째로 크게 보여 준다. 아무 데나 누르거나 ESC로 닫힘 */

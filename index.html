@@ -3288,11 +3288,12 @@ function badEnd(){ closeBoard(); vidStop&&vidStop(); talkEl.hidden=true; mode="e
    연결 영상(아내의 복수 → VIP실 문 앞)이 준비되면 PRO.bridge 에 경로만 넣으면 된다. */
 /* 자막은 영어 한 줄 + 한국어 한 줄(줄바꿈 \n은 영어와 한국어 사이에만 둔다) */
 const STORY_CAPS=[[.2,"He killed my wife. I boarded this train for revenge.\n그는 내 아내를 죽였다. 나는 복수하려고 이 열차에 올랐다.",null,3000],
-  [3.4,"“Is anyone there? Please — save me!”\n거기 누구 없어요? 제발 살려주세요.","red",2100],
-  [6.0,"The moment I boarded, a scream echoed through the train.\n열차에 오르자, 비명소리가 들렸다.",null,2700],
-  [9.0,"That voice, begging for help…\n도움을 청하던 그 목소리…",null,2300],
-  [11.4,"…belonged to the one who killed my wife.\n내 아내를 죽인, 바로 그 사람의 것이었다.","red",2800],
-  [14.4,"Locke is behind that door.\n로크는 저 문 뒤에 있다.",null,1800]];
+  /* 아래 시각(초)은 영상 컷에 맞춘 것: 3.7~5.5 창에 비친 손 · 5.5~7.4 그림자·아내(자막 없음) · 7.5~ 객실의 주인공 · 13 일어남 · 14.1 복도 · 15.4 문 손잡이 */
+  [3.75,"“Is anyone there? Please — save me!”\n거기 누구 없어요? 제발 살려주세요.","red",1700],
+  [7.6,"The moment I boarded, a scream echoed through the train.\n열차에 오르자, 비명소리가 들렸다.",null,2100],
+  [9.9,"That voice, begging for help…\n도움을 청하던 그 목소리…",null,1700],
+  [11.8,"…belonged to the one who killed my wife.\n내 아내를 죽인, 바로 그 사람의 것이었다.","red",2200],
+  [14.2,"Locke is behind that door.\n로크는 저 문 뒤에 있다.",null,2100]];
 const PRO={ intro:"pro/intro_fast.mp4", rewind:"pro/rewind_cut.mp4", memory:"pro/Memory.mp4", corridor:"pro/corridor_cut.mp4", reflect:"pro/memoryReflection.mp4", news:"pro/news.mp4",
   /* VIP실까지 가는 연결 컷 — 순서대로 재생, 빈 칸("")은 건너뜀. [시계·다짐 컷], [VIP실 문 앞 컷]이 준비되면 해당 칸에 경로만 넣으면 된다 */
   bridge:[ {src:"pro/seated.mp4"}, {src:"pro/16_corridorWalk.mp4",steps:true,caps:[[.4,"VIP실은, 이 복도 끝이다.",null,3000]]}, {src:"pro/bridge_door.mp4"} ] };
@@ -3319,6 +3320,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   addEventListener("keydown",e=>{ if(e.key==="`"&&!/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) goTest("#test"); });
   if(location.hash==="#cold"){ setTimeout(()=>$("proStart").click(),400); }
   if(location.hash==="#door"){ setTimeout(()=>{ show(""); finish(); },300); }
+  if(location.hash==="#story"){ $("title").classList.add("gone"); addEventListener("pointerdown",()=>flashback(),{once:true}); }   // 테스트: 화면을 한 번 누르면 열차 회상 영상(자막 확인용)
   if(location.hash==="#press"){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>{ enterExplore(); EVID.forEach(e=>found.add(e.id)); warmTalk(); setTimeout(()=>{ talkEl.dataset.met=1; openTalk(); },900); },60); return; }   // 테스트: 심문 진술 1 + 추궁 선택지부터
   if(location.hash==="#talk"||location.hash==="#ending"||location.hash==="#statue"||location.hash==="#doll"){ pro.hidden=true; $("title").classList.add("gone");
     setTimeout(()=>{ enterExplore(); const h=location.hash;
@@ -3339,14 +3341,17 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
     const my=++tok; show(""); cap.className="vcap"; cap.textContent="";
     pv.style.display="block";
     $("proVideoSkip").hidden=false;
-    const timers=(caps||[]).map(([t,txt,cls,dur])=>setTimeout(()=>{ if(my!==tok) return; cap.innerHTML=sentBr(txt); cap.className="vcap show"+(cls?" "+cls:""); setTimeout(()=>{ if(my===tok) cap.classList.remove("show"); },dur||3200); },t*1000));
-    let fin=false, wd=0;
-    const end=()=>{ if(fin||my!==tok) return; fin=true; clearTimeout(wd); timers.forEach(clearTimeout); cap.classList.remove("show"); pv.onended=pv.onerror=pv.onclick=pv.ontimeupdate=null; pv.pause(); $("proVideoSkip").hidden=true; onEnd&&onEnd(); };
+    /* 자막은 타이머가 아니라 영상의 실제 재생 위치를 따라간다(로딩으로 영상이 늦어져도 그림과 어긋나지 않게) */
+    let fin=false, wd=0, capI=-1, capRaf=0;
+    const capTick=()=>{ if(fin||my!==tok) return; const t=pv.currentTime; let k=-1; for(let i=0;i<caps.length;i++){ if(t>=caps[i][0]&&t<caps[i][0]+(caps[i][3]||3200)/1000) k=i; }
+      if(k!==capI){ capI=k; if(k<0) cap.classList.remove("show"); else{ cap.innerHTML=sentBr(caps[k][1]); cap.className="vcap show"+(caps[k][2]?" "+caps[k][2]:""); } }
+      capRaf=requestAnimationFrame(capTick); };
+    const end=()=>{ if(fin||my!==tok) return; fin=true; clearTimeout(wd); cancelAnimationFrame(capRaf); cap.classList.remove("show"); pv.onended=pv.onerror=pv.onclick=pv.ontimeupdate=null; pv.pause(); $("proVideoSkip").hidden=true; onEnd&&onEnd(); };
     /* 멈춤 감시: 재생 위치가 10초 동안 전혀 안 움직이면(로딩 멈춤) 다음으로 넘어감 */
     const arm=()=>{ clearTimeout(wd); wd=setTimeout(end,10000); };
      pv.onended=end; pv.onerror=end; pv.ontimeupdate=()=>{ arm(); if(cutAt&&pv.currentTime>=cutAt) end(); };
      pv.src=src; pv.load(); try{ pv.currentTime=0; }catch(e){} if(from) pv.addEventListener("loadedmetadata",()=>{ try{ pv.currentTime=from; }catch(e){} },{once:true}); arm();
-     pv.playbackRate=rate||1; proPlay(pv).catch(end);
+     pv.playbackRate=rate||1; proPlay(pv).catch(end); if(caps&&caps.length) capRaf=requestAnimationFrame(capTick);
   }
   const hideVid=()=>{ tok++; pv.pause(); pv.onended=pv.onerror=pv.onclick=pv.ontimeupdate=null; pv.style.display="none"; cap.classList.remove("show"); $("proVideoSkip").hidden=true; };
   function lines(box,step,after){
@@ -4984,7 +4989,8 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 /* 자막 한 줄 정리: 한 줄로 두되(화면이 아주 좁을 때만 고르게 나뉨), 웹캠 창이 떠 있을 때는 그 왼쪽 영역 안에서 가운데 정렬해 겹치지 않게 한다 */
 .pro .vcap .ln{white-space:nowrap}
 .pro .vcap{text-wrap:balance}
-.pro:has(.cam.on) .vcap{left:0;right:auto;transform:none;width:auto;inset-inline:0 calc(var(--cw,16cqw) + var(--cr,14px) + 1.5cqw);padding:0 3%}
+.pro:has(.cam.on) .vcap{left:0;right:auto;transform:none;width:auto;inset-inline:calc(var(--cw,16cqw) + var(--cr,14px) + 1.5cqw);padding:0}   /* 웹캠 창 너비만큼 양쪽을 똑같이 비워, 겹치지 않으면서 화면 한가운데에 둔다 */
+.pro:has(.cam.on) .vcap .ln{white-space:normal}
 @media (max-width:640px){.pro .vcap .ln{white-space:normal}}
 .ending .en-cap b,.ending .en-cap i{white-space:nowrap;text-wrap:balance}
 @media (max-width:640px){.ending .en-cap b,.ending .en-cap i{white-space:normal}}

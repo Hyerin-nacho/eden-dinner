@@ -3079,7 +3079,7 @@ function ending(){ hbStop(); const E=$("ending"), V=$("endVid");
   V.ontimeupdate=()=>{ if(!cap) return; const t=V.currentTime, k=CAPS.findIndex(c=>t>=c[0]&&t<c[1]);
     if(k!==capK){ capK=k; if(k>=0){ cap.querySelector("b").textContent=CAPS[k][2]; cap.querySelector("i").textContent=CAPS[k][3]; } cap.classList.toggle("on",k>=0); } };
   let went=false; const go=()=>{ if(went) return; went=true; V.onended=V.onerror=V.onclick=V.ontimeupdate=null; cap&&cap.classList.remove("on"); V.pause(); V.hidden=true; endSeq(); };
-  V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4?v=25"; V.onended=go; V.onerror=go; V.onclick=go;
+  V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4?v=26"; V.onended=go; V.onerror=go; V.onclick=go;
   const p=V.play(); p&&p.catch(go); setTimeout(()=>{ if(!went&&V.currentTime<.1) go(); },6000); }
 function endSeq(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
   E.className="ending"; ng&&ng.classList.remove("on"); ck.textContent="21:47";

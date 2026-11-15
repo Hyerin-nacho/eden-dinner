@@ -5342,64 +5342,86 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 }catch(e){ console.warn("camfx",e); } })();
 </script>
 <script id="cam-blur">
-/* 카메라 창 배경 흐림: 맨 앞에 잡힌 사람만 또렷하게, 뒤는 흐리게 (화상회의의 배경 흐림과 같은 방식)
-   - 손 인식은 원래 카메라 화면 그대로 쓴다(여기서는 '보여 주는 화면'만 바꾼다)
-   - 사람 영역은 MediaPipe Selfie Segmentation. 여러 사람이 잡히면 가장 큰(=가장 앞에 있는) 덩어리만 남긴다
+/* 카메라 창 배경 흐림: 맨 앞에 잡힌 사람만 또렷하게, 뒤는 흐리게
+   - 손 인식이 먼저다: 손 인식은 원래 카메라 화면을 그대로 쓰고, 사람 영역 인식은 손 인식이 쉬는 틈에 1초에 몇 번만 돌린다
+     (손 인식이 느려지면 흐림 쪽을 더 줄인다 → 돌리기·집기가 밀리지 않게)
+   - 그리기는 가볍게: 작은 화면(가로 400)에서, 흐림은 아주 작게 줄였다 키우는 방식(필터 없음), 앞사람 고르기는 새 결과가 올 때만
+   - 사람 영역은 MediaPipe Selfie Segmentation(일반 모델). 여러 사람이면 가장 큰(=가장 앞) 덩어리만 남긴다
    - ?blur=0 이면 끈다. 모델을 못 불러오면 원래 화면을 그대로 보여 준다 */
 (()=>{ try{
   if(typeof CAMHUB==="undefined"||window.__MOBILE) return;
   if(new URLSearchParams(location.search).get("blur")==="0") return;
   const D=Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,"srcObject");
   const src=document.createElement("video"); src.muted=true; src.playsInline=true; src.autoplay=true;
-  const c=document.createElement("canvas"), g=c.getContext("2d"); c.width=480; c.height=360;
-  const m=document.createElement("canvas"), mg=m.getContext("2d");
-  const k=document.createElement("canvas"), kg=k.getContext("2d",{willReadFrequently:true}); k.width=96; k.height=72;   // 앞사람 고르기용 작은 마스크
-  let raw=null, out=null, seg=null, segLoad=null, busy=false, loopOn=false, lastRes=null;
+  const OW=400;
+  const c=document.createElement("canvas"), g=c.getContext("2d"); c.width=OW; c.height=300;          // 내보내는 화면
+  const b=document.createElement("canvas"), bg=b.getContext("2d"); b.width=24; b.height=18;          // 흐림용(아주 작게)
+  const md=document.createElement("canvas"), mdg=md.getContext("2d"); md.width=96; md.height=72;      // 줄이고 키울 때 거치는 중간 크기(계단 무늬 없이 부드럽게)
+  const m=document.createElement("canvas"), mg=m.getContext("2d"); m.width=OW; m.height=300;         // 사람만 오려 낸 화면
+  const k=document.createElement("canvas"), kg=k.getContext("2d",{willReadFrequently:true}); k.width=64; k.height=48;   // 앞사람 마스크
+  let raw=null, out=null, seg=null, segLoad=null, busy=false, loopOn=false, haveMask=false, lastSeg=0, segFrame=null;
   const loadJS=s=>new Promise((ok,no)=>{ const t=document.createElement("script"); t.src=s; t.crossOrigin="anonymous"; t.onload=ok; t.onerror=no; document.head.appendChild(t); });
+  const V="0.1.1675465747";
   const loadSeg=()=>segLoad||(segLoad=(async()=>{
-    if(!window.SelfieSegmentation) await loadJS("https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/selfie_segmentation.js");
-    const s=new SelfieSegmentation({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/${f}`});
-    s.setOptions({modelSelection:1, selfieMode:false});
-    s.onResults(r=>{ lastRes=r; });
+    if(!window.SelfieSegmentation) await loadJS(`https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@${V}/selfie_segmentation.js`);
+    const s=new SelfieSegmentation({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@${V}/${f}`});
+    s.setOptions({modelSelection:0, selfieMode:false});
+    s.onResults(r=>{ try{ frontMask(r.segmentationMask); haveMask=true; }catch(e){} });
     await s.initialize(); seg=s; })().catch(e=>{ console.warn("cam blur off",e); seg=null; }));
-  /* 마스크에서 가장 큰 덩어리(앞사람)만 남기는 작은 알파 지도 */
+  /* 새 결과가 올 때만: 마스크에서 가장 큰 덩어리(앞사람)만 남긴다 */
   function frontMask(mask){
-    kg.clearRect(0,0,96,72); kg.drawImage(mask,0,0,96,72);
-    const d=kg.getImageData(0,0,96,72), px=d.data, n=96*72, lab=new Int32Array(n), on=i=>px[i*4]>110;
+    const W=64,H=48,n=W*H; kg.globalCompositeOperation="copy"; kg.drawImage(mask,0,0,W,H);
+    const d=kg.getImageData(0,0,W,H), px=d.data, lab=new Int32Array(n), on=i=>px[i*4]>100;
     let best=0, bestSize=0, id=0; const st=[];
     for(let i=0;i<n;i++){ if(lab[i]||!on(i)) continue; id++; let size=0; st.push(i); lab[i]=id;
-      while(st.length){ const p=st.pop(); size++; const x=p%96, y=(p/96)|0;
-        for(const q of [x>0?p-1:-1,x<95?p+1:-1,y>0?p-96:-1,y<71?p+96:-1]) if(q>=0&&!lab[q]&&on(q)){ lab[q]=id; st.push(q); } }
+      while(st.length){ const p=st.pop(); size++; const x=p%W, y=(p/W)|0;
+        if(x>0&&!lab[p-1]&&on(p-1)){ lab[p-1]=id; st.push(p-1); } if(x<W-1&&!lab[p+1]&&on(p+1)){ lab[p+1]=id; st.push(p+1); }
+        if(y>0&&!lab[p-W]&&on(p-W)){ lab[p-W]=id; st.push(p-W); } if(y<H-1&&!lab[p+W]&&on(p+W)){ lab[p+W]=id; st.push(p+W); } }
       if(size>bestSize){ bestSize=size; best=id; } }
-    if(id>1) for(let i=0;i<n;i++) if(lab[i]&&lab[i]!==best){ px[i*4]=px[i*4+1]=px[i*4+2]=0; px[i*4+3]=0; }
-    kg.putImageData(d,0,0); return k; }
+    const al=new Uint8ClampedArray(n); for(let i=0;i<n;i++) al[i]=(lab[i]===best&&best>0)?Math.min(255,px[i*4]*1.4):0;
+    // 살짝 넓힌다(1칸): 인식이 띄엄띄엄이라 움직일 때 가장자리가 흐려지지 않게
+    for(let i=0;i<n;i++){ const x=i%W, y=(i/W)|0; let v=al[i]; if(x>0) v=Math.max(v,al[i-1]); if(x<W-1) v=Math.max(v,al[i+1]); if(y>0) v=Math.max(v,al[i-W]); if(y<H-1) v=Math.max(v,al[i+W]);
+      px[i*4]=px[i*4+1]=px[i*4+2]=255; px[i*4+3]=v; }
+    kg.putImageData(d,0,0); }
   function paint(){
-    const w=src.videoWidth, h=src.videoHeight; if(!w||!h) return;
-    if(c.width!==w||c.height!==h){ c.width=m.width=w; c.height=m.height=h; }
-    if(!seg||!lastRes){ g.globalCompositeOperation="copy"; g.filter="none"; g.drawImage(src,0,0,w,h); return; }
-    const r=lastRes;
-    // 사람(앞사람 덩어리만) 영역을 또렷한 화면으로 오려 낸다
-    mg.globalCompositeOperation="copy"; mg.filter="blur(3px)"; mg.drawImage(frontMask(r.segmentationMask),0,0,w,h);
-    mg.filter="none"; mg.globalCompositeOperation="source-in"; mg.drawImage(r.image,0,0,w,h);
-    // 뒤: 흐리고 살짝 어둡게
-    g.globalCompositeOperation="copy"; g.filter=`blur(${Math.round(w/40)}px) brightness(.82)`; g.drawImage(r.image,-8,-8,w+16,h+16);
-    g.filter="none"; g.globalCompositeOperation="source-over"; g.drawImage(m,0,0); }
+    const vw=src.videoWidth, vh=src.videoHeight; if(!vw||!vh) return;
+    const W=OW, H=Math.round(OW*vh/vw); if(c.height!==H){ c.height=m.height=H; }
+    if(!seg||!haveMask){ g.globalCompositeOperation="copy"; g.drawImage(src,0,0,W,H); return; }
+    // 뒤: 아주 작게 줄였다가 키워서 흐리게, 살짝 어둡게
+    mdg.globalCompositeOperation="copy"; mdg.drawImage(src,0,0,md.width,md.height); bg.globalCompositeOperation="copy"; bg.drawImage(md,0,0,b.width,b.height);
+    mdg.drawImage(b,0,0,md.width,md.height);
+    g.globalCompositeOperation="copy"; g.imageSmoothingEnabled=true; g.imageSmoothingQuality="high"; g.drawImage(md,0,0,W,H);
+    g.globalCompositeOperation="source-over"; g.fillStyle="rgba(0,0,0,.18)"; g.fillRect(0,0,W,H);
+    // 앞사람: 마스크(부드럽게 키운 것)로 또렷한 화면을 오려 얹는다
+    mg.globalCompositeOperation="copy"; mg.imageSmoothingEnabled=true; mg.drawImage(k,0,0,W,H);
+    // 손은 항상 또렷하게: 손 인식 위치(가장 최근 것)를 넉넉히 감싸 마스크에 더한다 (빨리 움직이는 손이 흐려지지 않게)
+    if(lastLm&&performance.now()-lastLmT<400){ let x0=1,y0=1,x1=0,y1=0; lastLm.forEach(q=>{ x0=Math.min(x0,q.x); y0=Math.min(y0,q.y); x1=Math.max(x1,q.x); y1=Math.max(y1,q.y); });
+      const pw=(x1-x0)*.45+.04, ph=(y1-y0)*.45+.04, cx=(x0+x1)/2*W, cy=(y0+y1)/2*H, rx=((x1-x0)/2+pw)*W, ry=((y1-y0)/2+ph)*H;
+      mg.globalCompositeOperation="source-over"; const gr=mg.createRadialGradient(cx,cy,0,cx,cy,1); gr.addColorStop(0,"#fff"); gr.addColorStop(.75,"#fff"); gr.addColorStop(1,"rgba(255,255,255,0)");
+      mg.save(); mg.translate(cx,cy); mg.scale(rx,ry); mg.translate(-cx,-cy); mg.fillStyle=gr; mg.beginPath(); mg.arc(cx,cy,1,0,6.283); mg.fill(); mg.restore(); }
+    mg.globalCompositeOperation="source-in"; mg.drawImage(src,0,0,W,H);
+    g.drawImage(m,0,0); }
   function loop(){
     if(!raw||!raw.active){ loopOn=false; return; }
     paint();
-    if(seg&&!busy&&src.readyState>=2){ busy=true; seg.send({image:src}).catch(()=>{}).finally(()=>{ busy=false; }); }
-    setTimeout(loop,1000/30); }
+    // 사람 영역 인식: 손 인식이 빠를 땐 1초에 약 8번, 느려지면 3~4번
+    const now=performance.now(), hc=CAMHUB.cost||14, every=hc>30?300:hc>20?200:125;
+    if(seg&&!busy&&src.readyState>=2&&now-lastSeg>=every){ lastSeg=now; busy=true;
+      seg.send({image:src}).catch(()=>{}).finally(()=>{ busy=false; }); }
+    setTimeout(loop,40); }
   function processed(s){
     if(!s) return null;
     if(s===raw&&out) return out;
-    raw=s; lastRes=null; D.set.call(src,s); src.play().catch(()=>{});
-    if(!out) out=c.captureStream(30);
+    raw=s; haveMask=false; D.set.call(src,s); src.play().catch(()=>{});
+    if(!out) out=c.captureStream(25);
     loadSeg();
     if(!loopOn){ loopOn=true; loop(); }
     return out; }
   const hook=el=>{ if(!el||el.__camBlur) return; el.__camBlur=1; let cur=null;
     Object.defineProperty(el,"srcObject",{configurable:true, get(){ return cur; },
       set(s){ cur=s; D.set.call(el,s?processed(s):null); }}); };
+  let lastLm=null, lastLmT=0; const ot=CAMHUB.tap;
+  CAMHUB.tap=lm=>{ if(lm){ lastLm=lm; lastLmT=performance.now(); } return ot&&ot(lm); };
   const ob=CAMHUB.bind.bind(CAMHUB);
   CAMHUB.bind=el=>{ hook(el); return ob(el); };
 }catch(e){ console.warn("cam blur",e); } })();
@@ -5449,6 +5471,52 @@ html.mobile .excam,html.mobile #scrCam{display:none!important}
   const lock=()=>{ try{ screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{}); }catch(e){} };
   addEventListener("pointerdown",lock,{once:true});
 }catch(e){ console.warn("mobile",e); } })();
+</script>
+<style id="mobile-more-style">
+/* ===== 모바일 다듬기 =====
+   - 화면을 꽉 채운다(위아래 여백·테두리 없음)
+   - 모바일은 카메라를 안 쓰므로 'CAMERA OFF' 창을 숨긴다
+   - 자막은 줄바꿈해서 잘리지 않게, 키보드 안내(Q·E·F·ESC)는 숨긴다
+   - 조사 화면: 목표는 한 줄로 크고 또렷하게, 사건 개요는 오른쪽 위 작은 버튼(누르면 펼침) */
+html.mobile body{padding:0!important;min-height:100dvh}
+html.mobile .stage{width:min(100vw,calc(100dvh * 16 / 9))!important;border:0!important}
+/* 캠 창: 틀·영상·CAMERA OFF는 숨기고, 창 위 안내 문구(htag)만 남긴다 */
+html.mobile #proCam{background:none!important;border:0!important;box-shadow:none!important}
+html.mobile #proCam>:not(.htag){display:none!important}
+html.mobile #proCam::before,html.mobile #proCam::after{display:none!important}
+html.mobile .vcap,html.mobile .vcap *{white-space:normal!important}
+html.mobile .vcap{width:min(78%,860px)!important;font-size:clamp(12px,2.4cqw,17px)!important;line-height:1.45!important}
+html.mobile .key,html.mobile .keys,html.mobile .keys2{display:none!important}
+/* 목표 */
+html.mobile .hud .quest{top:15%!important;max-width:52%!important;padding:6px 12px 6px 8px!important;gap:8px!important;background:rgba(8,10,9,.86)!important;border-color:rgba(226,192,121,.35)!important}
+html.mobile .hud .quest .qi{width:22px!important;height:22px!important;flex:none}
+html.mobile .hud .quest b{font-size:13px!important;line-height:1.35!important;color:#f3e6c8!important}
+html.mobile .hud .quest small{font-size:10.5px!important;color:rgba(236,226,203,.7)!important}
+/* 사건 개요: 접힌 버튼 ↔ 펼친 카드 */
+html.mobile .hud .brief{pointer-events:auto;cursor:pointer;top:22%!important;right:3%!important;width:auto!important;max-width:44%!important;padding:6px 12px!important;font-size:0!important;line-height:0!important;background:rgba(8,10,9,.86)!important;border:1px solid rgba(226,192,121,.45)!important}
+html.mobile .hud .brief b{display:block;font-size:12.5px!important;line-height:1.4!important;margin:0!important;color:#e9c77d}
+html.mobile .hud .brief b::after{content:"  ▾";font-size:10px;opacity:.75}
+html.mobile .hud .brief.open{font-size:12.5px!important;line-height:1.6!important;padding:9px 13px!important;width:44%!important;color:rgba(236,226,203,.95)!important}
+html.mobile .hud .brief.open b{margin-bottom:4px!important}
+html.mobile .hud .brief.open b::after{content:"  ▴"}
+/* 위쪽 탭과 프로필은 조금 작게, 글자는 또렷하게 */
+html.mobile .hud .tabs .tab{font-size:13px!important}
+html.mobile .hud .prof .box{font-size:11px!important}
+</style>
+<script>
+/* 모바일: '클릭' 문구 → '터치', 사건 개요 접기·펼치기 */
+(()=>{ try{
+  if(!window.__MOBILE) return;
+  const fix=t=>t.replace(/클릭해서/g,"눌러서").replace(/클릭하세요/g,"터치하세요").replace(/클릭/g,"터치");
+  const walk=n=>{ if(n.nodeType===3){ if(n.nodeValue.includes("클릭")) n.nodeValue=fix(n.nodeValue); return; }
+    if(n.nodeType!==1||n.tagName==="SCRIPT"||n.tagName==="STYLE") return; for(const c of n.childNodes) walk(c); };
+  walk(document.body);
+  try{ new MutationObserver(ms=>{ for(const m of ms){ if(m.type==="characterData") walk(m.target); else m.addedNodes.forEach(walk); } }).observe(document.body,{subtree:true,childList:true,characterData:true}); }catch(e){}
+  const br=document.querySelector(".hud .brief");
+  if(br){ br.setAttribute("role","button"); br.tabIndex=0;
+    const tg=e=>{ e.stopPropagation(); e.preventDefault(); br.classList.toggle("open"); };
+    br.addEventListener("pointerdown",e=>e.stopPropagation()); br.addEventListener("click",tg); }
+}catch(e){ console.warn("mobile more",e); } })();
 </script>
 <style id="title-sound-style">
 /* 타이틀 소리: 브라우저는 사용자가 한 번 누르기 전엔 소리를 막는다.

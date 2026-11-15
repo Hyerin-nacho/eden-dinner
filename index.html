@@ -2962,6 +2962,7 @@ function react(k){
   rv.src=src; rv.muted=!soundOn; rv.volume=.65; rv.currentTime=0;
   rv.play().then(()=>{ rv.classList.add("on"); act.muted=true; const my=rv.src;
     const out=()=>{ if(rv.src!==my||!rv.classList.contains("on")) return; rv.classList.remove("on"); act.muted=!soundOn; setTimeout(()=>{ if(!rv.classList.contains("on")) rv.pause(); },700); };
+    if(k==="doubt"){ rv._out=()=>{ try{ rv.pause(); }catch(e){} }; return; }   // 마지막 "하지만……": 다가간 화면 그대로 멈춰 있다가 엔딩으로(다시 넓은 화면으로 돌아가지 않는다)
     rv._out=out; setTimeout(out,Math.max(1600,((rv.duration||4)-.75)*1000)); }).catch(()=>{});
 }
 rv.addEventListener("ended",()=>{ rv._out&&rv._out(); });

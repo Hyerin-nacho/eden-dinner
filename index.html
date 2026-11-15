@@ -3636,7 +3636,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   let handOn=false, handCenter=null;
   let ry=0, rx=0, vy=0, rd=false, rlx=0, rly=0, moved=false, sx=0, t0=0, raf=0, holdT=0, flash=false;
   (function spin(){ if(pro.hidden) return; if(!rd && !(handOn && handCenter!==null)){ ry+=vy; vy*=.94; ry*=.985; rx*=.94; }
-    if(window.__relic3d&&window.__relic3d(ry,rx)) W.style.transform="none"; else W.style.transform=`rotateY(${ry}deg) rotateX(${rx}deg)`; shine.style.backgroundPosition=`${50+ry*1.2}% 50%`;
+    if(window.__relic3d&&relic.closest(".ps.on")&&window.__relic3d(ry,rx)) W.style.transform="none";   // 3D 시계는 시계 장면이 보일 때만 띄운다(첫 화면에서 1.2MB 모델을 미리 받지 않게) else W.style.transform=`rotateY(${ry}deg) rotateX(${rx}deg)`; shine.style.backgroundPosition=`${50+ry*1.2}% 50%`;
     requestAnimationFrame(spin); })();
   const cancelHold=()=>{ clearTimeout(holdT); cancelAnimationFrame(raf); ring.classList.remove("show"); ring.style.setProperty("--p",0); glow.style.opacity=""; };
   function holdStep(){ if(moved) return; const p=Math.min(1,(performance.now()-t0)/PRO_HOLD_MS); ring.style.setProperty("--p",p); glow.style.opacity=String(1+p*1.4); if(p<1) raf=requestAnimationFrame(holdStep); }
@@ -5341,6 +5341,31 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
   CAMHUB.tap=draw;
 }catch(e){ console.warn("camfx",e); } })();
 </script>
+<style id="hand-help-style">
+/* 손 인식이 막힐 때: 캠 창 위 안내 아래에 한 줄 덧붙임 */
+.hh-help{display:block;margin-top:4px;font-family:var(--sans,sans-serif);font-size:11px;letter-spacing:.02em;white-space:normal;color:#f3dfae;opacity:0;animation:hhIn .6s ease forwards}
+@keyframes hhIn{to{opacity:.95}}
+</style>
+<script>
+/* 손 인식이 막힐 때 안내: 카메라가 켜져 있고, 캠 창 위 안내 문구가 10초 넘게 그대로면(=진행이 안 됨)
+   "손이 잘 안 잡히면 마우스로 끌어도 돼요"를 덧붙인다. 안내 문구가 바뀌면(다음 단계) 저절로 사라진다 */
+(()=>{ try{
+  if(typeof CAMHUB==="undefined"||window.__MOBILE) return;
+  const WAIT=10000, MSG="손이 잘 안 잡히면 마우스로 끌어도 돼요", ACT=/잡|돌리|돌려|끌|내리|내려|찢|집|기울/;
+  const own=el=>{ let s=""; el.childNodes.forEach(n=>{ if(!(n.nodeType===1&&n.classList.contains("hh-help"))) s+=n.textContent; }); return s.trim(); };
+  const seen=new Map();
+  setInterval(()=>{ try{
+    const live=["cam","hands","nohands"].includes(CAMHUB.state);
+    document.querySelectorAll(".htag,.xhtag").forEach(el=>{
+      const txt=own(el), now=performance.now(), r=seen.get(el);
+      if(!r||r.txt!==txt){ seen.set(el,{txt,t:now}); el.querySelectorAll(".hh-help").forEach(x=>x.remove()); return; }
+      const visible=el.offsetParent!==null&&ACT.test(txt)&&!/마우스/.test(txt);   // 손으로 무언가 해야 하는 안내일 때만(영상을 볼 때 등은 제외)
+      if(live&&visible&&now-r.t>=WAIT&&!el.querySelector(".hh-help")){ const s=document.createElement("span"); s.className="hh-help"; s.textContent=MSG; el.appendChild(s); }
+      if(!live||!visible) el.querySelectorAll(".hh-help").forEach(x=>x.remove());
+    });
+  }catch(e){} },1000);
+}catch(e){ console.warn("hand help",e); } })();
+</script>
 <script id="cam-blur">
 /* 카메라 창 배경 흐림: 맨 앞에 잡힌 사람만 또렷하게, 뒤는 흐리게
    - 손 인식이 먼저다: 손 인식은 원래 카메라 화면을 그대로 쓰고, 사람 영역 인식은 손 인식이 쉬는 틈에 1초에 몇 번만 돌린다
@@ -5359,7 +5384,7 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
   const md=document.createElement("canvas"), mdg=md.getContext("2d"); md.width=96; md.height=72;      // 줄이고 키울 때 거치는 중간 크기(계단 무늬 없이 부드럽게)
   const m=document.createElement("canvas"), mg=m.getContext("2d"); m.width=OW; m.height=300;         // 사람만 오려 낸 화면
   const k=document.createElement("canvas"), kg=k.getContext("2d",{willReadFrequently:true}); k.width=64; k.height=48;   // 앞사람 마스크
-  let raw=null, out=null, seg=null, segLoad=null, busy=false, loopOn=false, haveMask=false, lastSeg=0, segFrame=null;
+  let raw=null, out=null, seg=null, segLoad=null, busy=false, loopOn=false, haveMask=false, lastSeg=0, segFrame=null, blurOff=false, slowSince=0;
   const loadJS=s=>new Promise((ok,no)=>{ const t=document.createElement("script"); t.src=s; t.crossOrigin="anonymous"; t.onload=ok; t.onerror=no; document.head.appendChild(t); });
   const V="0.1.1675465747";
   const loadSeg=()=>segLoad||(segLoad=(async()=>{
@@ -5386,7 +5411,7 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
   function paint(){
     const vw=src.videoWidth, vh=src.videoHeight; if(!vw||!vh) return;
     const W=OW, H=Math.round(OW*vh/vw); if(c.height!==H){ c.height=m.height=H; }
-    if(!seg||!haveMask){ g.globalCompositeOperation="copy"; g.drawImage(src,0,0,W,H); return; }
+    if(blurOff||!seg||!haveMask){ g.globalCompositeOperation="copy"; g.drawImage(src,0,0,W,H); return; }
     // 뒤: 아주 작게 줄였다가 키워서 흐리게, 살짝 어둡게
     mdg.globalCompositeOperation="copy"; mdg.drawImage(src,0,0,md.width,md.height); bg.globalCompositeOperation="copy"; bg.drawImage(md,0,0,b.width,b.height);
     mdg.drawImage(b,0,0,md.width,md.height);
@@ -5406,7 +5431,9 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
     paint();
     // 사람 영역 인식: 손 인식이 빠를 땐 1초에 약 8번, 느려지면 3~4번
     const now=performance.now(), hc=CAMHUB.cost||14, every=hc>30?300:hc>20?200:125;
-    if(seg&&!busy&&src.readyState>=2&&now-lastSeg>=every){ lastSeg=now; busy=true;
+    // 느린 기기: 손 인식 한 번에 35ms 넘게 걸리는 상태가 3초 이어지면 흐림을 끄고 원래 화면으로(돌리기·집기가 먼저)
+    if(hc>35){ if(!slowSince) slowSince=now; else if(now-slowSince>3000&&!blurOff){ blurOff=true; console.info("cam blur: 느린 기기라 배경 흐림을 껐습니다"); } } else slowSince=0;
+    if(!blurOff&&seg&&!busy&&src.readyState>=2&&now-lastSeg>=every){ lastSeg=now; busy=true;
       seg.send({image:src}).catch(()=>{}).finally(()=>{ busy=false; }); }
     setTimeout(loop,40); }
   function processed(s){

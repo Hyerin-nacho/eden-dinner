@@ -5394,7 +5394,7 @@ html.mobile .excam,html.mobile #scrCam{display:none!important}
   const sc=document.querySelector('.pro .ps[data-s="start"]'), btn=document.getElementById("proStart"), pro=document.getElementById("pro");
   if(!sc||!btn) return;
   const mk=(src,vol,loop)=>{ const a=new Audio(src); a.preload="auto"; a.volume=vol; a.loop=!!loop; return a; };
-  const whoosh=mk("sfx/title_in.mp3",.75), loop=mk("sfx/title_loop.mp3",0,true), hov=mk("sfx/title_hover.mp3",.5);
+  const whoosh=mk("sfx/title_in.mp3",.8), loop=mk("sfx/title_loop.mp3?v=2",0,true), hov=mk("sfx/title_hover.mp3",.5);
   let started=false, leaving=false, fadeT=0;
   const fadeTo=(a,to,ms)=>{ clearInterval(fadeT); const from=a.volume, t0=performance.now();
     fadeT=setInterval(()=>{ const k=Math.min(1,(performance.now()-t0)/ms); a.volume=Math.max(0,Math.min(1,from+(to-from)*k)); if(k>=1){ clearInterval(fadeT); if(to===0) a.pause(); } },40); };
@@ -5402,7 +5402,7 @@ html.mobile .excam,html.mobile #scrCam{display:none!important}
   const begin=()=>{ if(started) return true; if(typeof soundOn!=="undefined"&&!soundOn) return false;
     started=true; try{ whoosh.currentTime=0; }catch(e){}
     const p=whoosh.play(); loop.volume=0; loop.play().catch(()=>{});
-    setTimeout(()=>{ if(!leaving) fadeTo(loop,.32,1800); },650);   // 열차가 지나간 뒤 객차 덜컹거림이 이어진다
+    setTimeout(()=>{ if(!leaving) fadeTo(loop,.6,1500); },650);   // 열차가 지나간 뒤 객차 덜컹거림이 이어진다
     return p; };
   /* 시작하기에 마우스를 올리면 표 종이 소리 */
   btn.addEventListener("pointerenter",()=>{ if(!started||leaving||btn.disabled) return; try{ const c=hov.cloneNode(); c.volume=.45; c.play().catch(()=>{}); }catch(e){} });

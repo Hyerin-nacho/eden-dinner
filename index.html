@@ -14,6 +14,16 @@
 <link rel="icon" type="image/png" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<script>
+/* 전체 소리 크기: 모든 효과음·배경음·영상 소리를 한 번에 줄인다(각 소리끼리의 비율은 그대로). ?vol=0.8 처럼 바꿔 볼 수 있다 */
+(()=>{ try{
+  const q=parseFloat(new URLSearchParams(location.search).get("vol")); const M=window.MASTER_VOL=isFinite(q)?Math.max(0,Math.min(1,q)):.5;
+  const P=HTMLMediaElement.prototype, d=Object.getOwnPropertyDescriptor(P,"volume"), play=P.play;
+  Object.defineProperty(P,"volume",{configurable:true,get(){ return this._lv!==undefined?this._lv:d.get.call(this); },
+    set(v){ this._lv=v; d.set.call(this,Math.max(0,Math.min(1,v*M))); }});
+  P.play=function(){ if(this._lv===undefined) this.volume=1; return play.apply(this,arguments); };
+}catch(e){} })();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
@@ -3080,7 +3090,7 @@ function ending(){ hbStop(); const E=$("ending"), V=$("endVid");
   V.ontimeupdate=()=>{ if(!cap) return; const t=V.currentTime, k=CAPS.findIndex(c=>t>=c[0]&&t<c[1]);
     if(k!==capK){ capK=k; if(k>=0){ cap.querySelector("b").textContent=CAPS[k][2]; cap.querySelector("i").textContent=CAPS[k][3]; } cap.classList.toggle("on",k>=0); } };
   let went=false; const go=()=>{ if(went) return; went=true; V.onended=V.onerror=V.onclick=V.ontimeupdate=null; cap&&cap.classList.remove("on"); V.pause(); V.hidden=true; endSeq(); };
-  V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4?v=29"; V.onended=go; V.onerror=go; V.onclick=go;
+  V.hidden=false; V.muted=!soundOn; V.volume=.65; V.src="pro/ending_cut.mp4?v=30"; V.onended=go; V.onerror=go; V.onclick=go;
   const p=V.play(); p&&p.catch(go); setTimeout(()=>{ if(!went&&V.currentTime<.1) go(); },6000); }
 function endSeq(){ const E=$("ending"), ng=$("endNag"), ck=$("endClock");
   E.className="ending"; ng&&ng.classList.remove("on"); ck.textContent="21:47";
@@ -5330,6 +5340,69 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
       [[x0,y0,1,1],[x1,y0,-1,1],[x0,y1,1,-1],[x1,y1,-1,-1]].forEach(([x,y,sx,sy])=>{ g.moveTo(x+sx*L,y); g.lineTo(x,y); g.lineTo(x,y+sy*L); }); g.stroke(); }); }
   CAMHUB.tap=draw;
 }catch(e){ console.warn("camfx",e); } })();
+</script>
+<script id="cam-blur">
+/* 카메라 창 배경 흐림: 맨 앞에 잡힌 사람만 또렷하게, 뒤는 흐리게 (화상회의의 배경 흐림과 같은 방식)
+   - 손 인식은 원래 카메라 화면 그대로 쓴다(여기서는 '보여 주는 화면'만 바꾼다)
+   - 사람 영역은 MediaPipe Selfie Segmentation. 여러 사람이 잡히면 가장 큰(=가장 앞에 있는) 덩어리만 남긴다
+   - ?blur=0 이면 끈다. 모델을 못 불러오면 원래 화면을 그대로 보여 준다 */
+(()=>{ try{
+  if(typeof CAMHUB==="undefined"||window.__MOBILE) return;
+  if(new URLSearchParams(location.search).get("blur")==="0") return;
+  const D=Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,"srcObject");
+  const src=document.createElement("video"); src.muted=true; src.playsInline=true; src.autoplay=true;
+  const c=document.createElement("canvas"), g=c.getContext("2d"); c.width=480; c.height=360;
+  const m=document.createElement("canvas"), mg=m.getContext("2d");
+  const k=document.createElement("canvas"), kg=k.getContext("2d",{willReadFrequently:true}); k.width=96; k.height=72;   // 앞사람 고르기용 작은 마스크
+  let raw=null, out=null, seg=null, segLoad=null, busy=false, loopOn=false, lastRes=null;
+  const loadJS=s=>new Promise((ok,no)=>{ const t=document.createElement("script"); t.src=s; t.crossOrigin="anonymous"; t.onload=ok; t.onerror=no; document.head.appendChild(t); });
+  const loadSeg=()=>segLoad||(segLoad=(async()=>{
+    if(!window.SelfieSegmentation) await loadJS("https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/selfie_segmentation.js");
+    const s=new SelfieSegmentation({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/${f}`});
+    s.setOptions({modelSelection:1, selfieMode:false});
+    s.onResults(r=>{ lastRes=r; });
+    await s.initialize(); seg=s; })().catch(e=>{ console.warn("cam blur off",e); seg=null; }));
+  /* 마스크에서 가장 큰 덩어리(앞사람)만 남기는 작은 알파 지도 */
+  function frontMask(mask){
+    kg.clearRect(0,0,96,72); kg.drawImage(mask,0,0,96,72);
+    const d=kg.getImageData(0,0,96,72), px=d.data, n=96*72, lab=new Int32Array(n), on=i=>px[i*4]>110;
+    let best=0, bestSize=0, id=0; const st=[];
+    for(let i=0;i<n;i++){ if(lab[i]||!on(i)) continue; id++; let size=0; st.push(i); lab[i]=id;
+      while(st.length){ const p=st.pop(); size++; const x=p%96, y=(p/96)|0;
+        for(const q of [x>0?p-1:-1,x<95?p+1:-1,y>0?p-96:-1,y<71?p+96:-1]) if(q>=0&&!lab[q]&&on(q)){ lab[q]=id; st.push(q); } }
+      if(size>bestSize){ bestSize=size; best=id; } }
+    if(id>1) for(let i=0;i<n;i++) if(lab[i]&&lab[i]!==best){ px[i*4]=px[i*4+1]=px[i*4+2]=0; px[i*4+3]=0; }
+    kg.putImageData(d,0,0); return k; }
+  function paint(){
+    const w=src.videoWidth, h=src.videoHeight; if(!w||!h) return;
+    if(c.width!==w||c.height!==h){ c.width=m.width=w; c.height=m.height=h; }
+    if(!seg||!lastRes){ g.globalCompositeOperation="copy"; g.filter="none"; g.drawImage(src,0,0,w,h); return; }
+    const r=lastRes;
+    // 사람(앞사람 덩어리만) 영역을 또렷한 화면으로 오려 낸다
+    mg.globalCompositeOperation="copy"; mg.filter="blur(3px)"; mg.drawImage(frontMask(r.segmentationMask),0,0,w,h);
+    mg.filter="none"; mg.globalCompositeOperation="source-in"; mg.drawImage(r.image,0,0,w,h);
+    // 뒤: 흐리고 살짝 어둡게
+    g.globalCompositeOperation="copy"; g.filter=`blur(${Math.round(w/40)}px) brightness(.82)`; g.drawImage(r.image,-8,-8,w+16,h+16);
+    g.filter="none"; g.globalCompositeOperation="source-over"; g.drawImage(m,0,0); }
+  function loop(){
+    if(!raw||!raw.active){ loopOn=false; return; }
+    paint();
+    if(seg&&!busy&&src.readyState>=2){ busy=true; seg.send({image:src}).catch(()=>{}).finally(()=>{ busy=false; }); }
+    setTimeout(loop,1000/30); }
+  function processed(s){
+    if(!s) return null;
+    if(s===raw&&out) return out;
+    raw=s; lastRes=null; D.set.call(src,s); src.play().catch(()=>{});
+    if(!out) out=c.captureStream(30);
+    loadSeg();
+    if(!loopOn){ loopOn=true; loop(); }
+    return out; }
+  const hook=el=>{ if(!el||el.__camBlur) return; el.__camBlur=1; let cur=null;
+    Object.defineProperty(el,"srcObject",{configurable:true, get(){ return cur; },
+      set(s){ cur=s; D.set.call(el,s?processed(s):null); }}); };
+  const ob=CAMHUB.bind.bind(CAMHUB);
+  CAMHUB.bind=el=>{ hook(el); return ob(el); };
+}catch(e){ console.warn("cam blur",e); } })();
 </script>
 
 <style id="mobile-style">

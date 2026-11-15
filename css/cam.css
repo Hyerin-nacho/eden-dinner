@@ -1,0 +1,106 @@
+/* 웹캠 창: 프롤로그 캠·살펴보기 캠·손 인식 표시·안내 문구. */
+
+.excam.on{display:block}
+.excam{position:absolute;right:2.5%;bottom:4%;width:15%;aspect-ratio:4/3;border:1px solid #6b5630;background:#000;box-shadow:0 10px 30px rgba(0,0,0,.6);display:none;pointer-events:none;z-index:60}
+.dollv{position:absolute;inset:0;z-index:5;background:radial-gradient(ellipse at 50% 50%,rgba(40,26,14,.2),rgba(6,4,3,.85) 78%);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.dollv .v3hint{z-index:6;white-space:normal;text-align:center;width:max-content;max-width:60%;bottom:4%;padding:.8em 1.8em;font-size:15px;line-height:1.6;border:1px solid rgba(210,173,99,.35)}
+.dollx{position:absolute;right:3%;top:4%;z-index:4;background:rgba(10,8,6,.7);border:1px solid rgba(210,173,99,.5);color:#eee;font-size:13px;padding:6px 12px;cursor:pointer;display:flex;gap:8px;align-items:center}
+/* 카메라가 없을 때의 표시는 조용하게 */
+.excam.nocam{border:0;background:none;box-shadow:none;min-width:0;padding:0;opacity:.6;height:auto;aspect-ratio:auto;width:auto}
+.excam.nocam .off{font-size:9.5px;letter-spacing:.18em;color:rgba(236,226,203,.7);justify-content:flex-end;position:static}
+.excam.nocam .xtag{display:none}
+.excam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);filter:sepia(.7) contrast(1.1) brightness(.8)}
+.excam .off{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 8%;font-family:var(--mono);letter-spacing:.1em;font-size:11px;line-height:1.6;color:#f6b00d}
+.excam .xtag{position:absolute;left:0;bottom:calc(100% + 6px + 1.4em);font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:#d64545;white-space:nowrap}
+.excam .xhtag{position:absolute;right:0;bottom:calc(100% + 4px);font-family:var(--mono);font-size:10.5px;color:var(--brass);white-space:nowrap}
+.excam .hcur{position:absolute;width:14px;height:14px;margin:-7px;border:2px solid #ffe2a8;border-radius:50%;display:none;box-shadow:0 0 8px #ffd28a}
+
+.talk .tk-por{position:absolute;inset:0}
+.tk-tag{position:absolute;left:3%;top:4%;z-index:2;display:flex;flex-direction:column;gap:2px;text-shadow:0 1px 4px #000}
+.talk .tk-box{left:50%;width:min(880px,56%);margin:0}
+/* 진술 카드 */
+.tk-case{left:50%!important;top:4.5%!important;width:auto!important;transform:translateX(-50%);flex-direction:row!important;align-items:center;gap:14px!important;padding:8px 18px;background:rgba(8,6,4,.55);border-radius:999px;backdrop-filter:blur(6px);position:absolute;z-index:3;display:flex}
+.tc-h{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid rgba(210,173,99,.4);padding-bottom:6px;margin-bottom:2px}
+.tcard .k{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;background:#1d1a17;color:#efe6d0;display:grid;place-items:center;font-family:var(--serif);font-weight:800;font-size:13px}
+/* 평정 게이지 */
+.tk-meter{position:absolute;right:3.5%;top:22%;height:38%;width:46px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px}
+.tk-opts.m-next{left:50%;transform:translateX(-50%)}
+.tk-opts.m-menu{right:3.5%;bottom:5%;display:flex;flex-direction:column;align-items:flex-end;gap:8px;max-width:26%}
+.tk-opts.m-act{right:3.5%;bottom:20%;display:flex;flex-direction:column;align-items:stretch;gap:8px;width:min(260px,22%)}
+.tk-opts.m-ev{left:50%;bottom:4%;transform:translateX(-50%);display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:18px;width:min(1000px,70%)}
+.polar .cap{font-family:"Nanum Pen Script",cursive;font-size:21px;font-weight:400;line-height:1}
+.polar .k{position:absolute;right:-8px;top:-8px;width:22px;height:22px;border-radius:50%;background:#1d1a17;color:#efe6d0;font-family:var(--mono);font-size:11px;display:grid;place-items:center}
+
+.curl .cclone{position:absolute!important;left:0;top:0;margin:0!important;overflow:hidden!important}
+.curl .csh{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none}
+.under2{position:absolute!important;z-index:5;margin:0;pointer-events:none}
+
+/* 모순이 깨질수록 엘레나에게 다가감 */
+.talk .tk-lamp{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 55% 70% at 50% 18%,rgba(255,214,150,.10),transparent 60%),radial-gradient(ellipse at 50% 50%,transparent calc(48% - var(--p,0)*16%),rgba(0,0,0,.85) 100%);animation:tklamp 6s infinite}
+
+.testmenu{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:rgba(4,3,2,.82);backdrop-filter:blur(6px)}
+
+.v3bg{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;display:none}
+
+.dpb{position:absolute;inset:0;z-index:8;pointer-events:none;opacity:0;transition:opacity 1s .6s}
+
+.dollv .v3bar{left:50%;right:auto;transform:translateX(-50%);top:9%;bottom:auto;width:min(300px,50%);height:6px;border-radius:3px;border:1px solid rgba(210,173,99,.45);z-index:6}
+
+/* 추궁 연출 */
+.talk .tk-press{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .7s ease;
+  background:radial-gradient(ellipse 22% 20% at 50% 2%,rgba(255,226,180,.22),transparent 70%),radial-gradient(ellipse 34% 46% at 50% 34%,transparent 30%,rgba(0,0,0,.72) 66%,rgba(0,0,0,.96) 100%)}
+/* 거짓 진술 붉은 줄: 가운데 정렬, 문장을 짧게 끊어 줄맞춤, 줄은 글자 높이 가운데로 */
+.talk .tk-lie{width:min(620px,64%)!important;top:60%!important;position:absolute;left:50%;transform:translate(-50%,-50%) scale(.96);text-align:center;z-index:18;pointer-events:none;opacity:0;transition:opacity .35s,transform .5s cubic-bezier(.2,.8,.2,1)}
+.hwz{position:fixed;inset:0;z-index:300;display:grid;place-items:center;background:rgba(6,4,3,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .25s;cursor:zoom-out}
+.evc-tag{position:absolute;right:6px;top:6px;z-index:3;font-style:normal;font-family:var(--mono);font-size:clamp(10px,.8vw,15px);letter-spacing:.08em;padding:3px 7px;border-radius:2px;background:rgba(10,12,11,.82);color:#e0c27c;border:1px solid rgba(210,173,99,.5);pointer-events:none}
+.pro:has(.cam.on) .vcap{left:0;right:auto;transform:none;width:auto;inset-inline:calc(var(--cw,16cqw) + var(--cr,14px) + 1.5cqw);padding:0}
+/* 웹캠 창 너비만큼 양쪽을 똑같이 비워, 겹치지 않으면서 화면 한가운데에 둔다 */
+.pro:has(.cam.on) .vcap .ln{white-space:normal}
+
+.camfx video{filter:sepia(.55) contrast(1.12) brightness(.82) saturate(.8)!important}
+.camfx .cam-scan{position:absolute;inset:0;pointer-events:none;z-index:2;background:repeating-linear-gradient(0deg,rgba(0,0,0,.26) 0 1px,transparent 1px 3px),radial-gradient(ellipse at 50% 50%,transparent 52%,rgba(0,0,0,.6) 100%)}
+.camfx .cam-noise{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;background-image:var(--camNoise);background-size:128px 128px;mix-blend-mode:screen}
+.camfx canvas.cam-hand{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4}
+.camfx .cam-cn{position:absolute;width:9px;height:9px;pointer-events:none;z-index:5;border:0 solid #e2c079}
+.camfx .cam-cn.c-tl{left:-4px;top:-4px;border-left-width:2px;border-top-width:2px}
+.camfx .cam-cn.c-tr{right:-4px;top:-4px;border-right-width:2px;border-top-width:2px}
+.camfx .cam-cn.c-bl{left:-4px;bottom:-4px;border-left-width:2px;border-bottom-width:2px}
+.camfx .cam-cn.c-br{right:-4px;bottom:-4px;border-right-width:2px;border-bottom-width:2px}
+.camfx .cam-chip.hand{color:#f3dfae;border-color:rgba(226,192,121,.85);box-shadow:0 0 8px rgba(226,192,121,.35)}
+.camfx.live .cam-id{display:block}
+@keyframes camRec{0%,60%{opacity:1}61%,100%{opacity:.35}}
+.pro .cam.camfx .htag:empty,.excam.camfx .xhtag:empty{display:none!important}
+.excam.camfx.nocam .cam-scan,.excam.camfx.nocam .cam-cn,.excam.camfx.nocam .cam-chip,.excam.camfx.nocam .cam-id,.excam.camfx.nocam canvas.cam-hand{display:none!important}
+.excam.camfx.nocam{border:0!important;background:none!important;box-shadow:none!important}
+.excam.camfx .hcur{display:none!important}
+/* 손 위치 동그라미 대신 손 뼈대를 그린다 */
+/* 켜질 때: 가로줄 → 화면 열림 → 잡음 걷힘 */
+.camfx.boot video{animation:camOpen .9s cubic-bezier(.2,.8,.2,1) both}
+.camfx.boot .cam-noise{animation:camNoise 1.25s steps(1) both}
+@keyframes camOpen{0%{transform:scaleX(-.02) scaleY(.012);filter:brightness(6) contrast(1.4)}18%{transform:scaleX(-1) scaleY(.012);filter:brightness(5) contrast(1.4)}46%{transform:scaleX(-1) scaleY(1.04);filter:brightness(2.2) sepia(.55)}62%{transform:scaleX(-1) scaleY(.98);filter:brightness(1.3) sepia(.55)}100%{transform:scaleX(-1) scaleY(1);filter:sepia(.55) contrast(1.12) brightness(.82) saturate(.8)}}
+@keyframes camNoise{0%{opacity:.95;background-position:0 0}8%{opacity:.9;background-position:-37px 21px}16%{opacity:.95;background-position:14px -48px}24%{opacity:.8;background-position:-60px -9px}32%{opacity:.85;background-position:43px 30px}40%{opacity:.6;background-position:-12px 55px}50%{opacity:.7;background-position:28px -17px}60%{opacity:.4;background-position:-51px 40px}70%{opacity:.5;background-position:7px 12px}80%{opacity:.2;background-position:-25px -33px}90%{opacity:.28;background-position:36px 4px}100%{opacity:0;background-position:0 0}}
+@keyframes camFlick{0%{opacity:.2}6%{opacity:1}12%{opacity:.5}18%{opacity:1}40%{opacity:.85}46%{opacity:1}100%{opacity:1}}
+.camfx .cam-bar{position:absolute;left:-1px;right:-1px;bottom:100%;height:var(--cbar);z-index:4;pointer-events:none;background:rgba(6,8,7,.88);border:1px solid rgba(210,173,99,.5);border-bottom:0;display:none}
+.camfx.live .cam-bar{display:block}
+/* 카메라가 꺼져 있을 때(CAMERA OFF): 이름표 줄·REC 없이 창만 깔끔하게, 모서리 꺾쇠는 창에 딱 맞춘다 */
+.camfx:not(.live) .cam-cn.c-tl,.camfx:not(.live) .cam-cn.c-tr{top:-4px}
+.pro .cam.camfx:not(.live) .tag,.excam.camfx:not(.live) .xtag{display:none!important}
+.pro .cam.camfx:not(.live) .htag,.excam.camfx:not(.live) .xhtag{bottom:calc(100% + 8px)!important}
+.camfx .cam-cn.c-tl,.camfx .cam-cn.c-tr{top:calc(-4px - var(--cbar))}
+/* ● REC : 창 안 왼쪽 위 */
+.pro .cam.camfx .tag,.excam.camfx .xtag{right:auto!important;z-index:5;text-align:left!important;font-size:9px!important;letter-spacing:.16em!important;color:#ff6a5c!important;text-shadow:0 0 6px rgba(0,0,0,.9);animation:camRec 1.6s steps(1) infinite;left:7px!important;top:auto!important;bottom:calc(100% + 4px)!important;line-height:12px}
+.pro .cam.camfx .cam-id,.excam.camfx .cam-id{left:58px}
+.scam.camfx .cam-id{left:7px}
+.camfx .cam-id{position:absolute;z-index:5;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.2em;color:rgba(236,226,203,.4);pointer-events:none;left:auto;right:auto;bottom:calc(100% + 4px);line-height:12px;font-size:8.5px;display:none!important}
+.camfx.live .cam-chip{display:block!important;opacity:1!important;transform:none!important;animation:none!important}
+/* 프롤로그: 웹캠 창이 떠 있을 때 아래쪽 안내 문구가 창 밑으로 파고들지 않게, 양옆을 창 너비만큼 비우고 가운데에서 줄을 나눈다 */
+.pro:has(.cam.on) .ps .cap2{max-width:calc(100% - 2*(var(--cw,16cqw) + var(--cr,14px) + 2cqw));margin-left:auto;margin-right:auto;text-align:center;text-wrap:balance;white-space:normal}
+.camfx .cam-chip.grab{color:#fff;border-color:#e0564a;box-shadow:0 0 10px rgba(224,86,74,.55);background:rgba(184,53,43,.9)}
+/* 손 안내: 창 위에 어두운 띠 한 줄 */
+.pro .cam.camfx .htag,.excam.camfx .xhtag{left:auto!important;right:-1px!important;width:max-content;max-width:min(62vw,380px);white-space:normal!important;text-align:right!important;padding:5px 10px!important;font-family:var(--sans)!important;font-size:clamp(10.5px,.85vw,13px)!important;line-height:1.45!important;letter-spacing:0!important;color:#efe6d0!important;background:rgba(6,8,7,.82);border-right:2px solid rgba(226,192,121,.85);box-shadow:0 6px 18px rgba(0,0,0,.45);bottom:calc(100% + var(--cbar) + 8px)!important}
+.excam.camfx.nocam .cam-bar{display:none!important}
+.excam.camfx.nocam .xhtag{position:static!important;max-width:none;background:none;border:0;box-shadow:none;padding:0!important;bottom:auto!important}
+
+/* 손 인식이 막힐 때: 캠 창 위 안내 아래에 한 줄 덧붙임 */
+.hh-help{display:block;margin-top:4px;font-family:var(--sans,sans-serif);font-size:11px;letter-spacing:.02em;white-space:normal;color:#f3dfae;opacity:0;animation:hhIn .6s ease forwards}
+@keyframes hhIn{to{opacity:.95}}

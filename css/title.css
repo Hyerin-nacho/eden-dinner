@@ -1,0 +1,129 @@
+/* 타이틀 화면: 밤 열차 탑승권·로고 등장·'눌러서 입장' 막. */
+
+/* .ending.ending{display:grid!important}가 위 규칙을 이기므로 ID로 고정 */
+/* 타이틀 첫 프레임 튐 방지: 로고 크기·등장 애니메이션 CSS가 문서 뒤쪽에 있어, 그 전엔 로고가 원본 크기로 잠깐 그려짐.
+   크기를 미리 잡고 등장 요소를 투명으로 시작(뒤쪽 애니메이션이 fill:both로 1까지 올려 줌) */
+.pro .ps[data-s="start"] .title-logo,.pro .ps[data-s="start"] .title-sub,.pro .ps[data-s="start"] .title-start{opacity:0}
+
+.pro .ps[data-s="start"].playing .title-train{filter:brightness(.78) saturate(.85);opacity:1;transform:scale(1);transition:filter .7s,opacity .7s,transform 9s ease-out}
+.pro .ps[data-s="start"].playing .title-vignette{opacity:.28;transition:opacity .7s}
+.pro .ps[data-s="start"] .title-topline,.pro .ps[data-s="start"] .title-bottomline{position:absolute!important;left:4%;right:4%;z-index:3;display:flex;align-items:center;justify-content:space-between;color:#bca978;font:clamp(9px,.9cqw,12px) var(--mono);letter-spacing:.2em}
+.pro .ps[data-s="start"] .title-topline{top:5%;border-top:1px solid rgba(209,173,103,.48);padding-top:1.5cqh}
+.pro .ps[data-s="start"] .title-bottomline{bottom:5%;border-bottom:1px solid rgba(209,173,103,.48);padding-bottom:1.4cqh}
+.pro .ps[data-s="start"] .title-content{width:min(78cqw,1100px)}
+.pro .ps[data-s="start"].playing .title-content{opacity:0;pointer-events:none;animation:none;transition:opacity .45s ease}
+.pro .ps[data-s="start"] .title-kicker{color:#d5b26d;font:clamp(9px,1cqw,13px) var(--mono);letter-spacing:.4em;margin-bottom:1.5cqh}
+.pro .ps[data-s="start"] .title-divider{width:12cqw;height:1px;background:linear-gradient(90deg,transparent,#cba968,transparent);margin:2.8cqh auto 1.8cqh}
+.pro .ps[data-s="start"] .title-copy{font-family:var(--serif);font-size:clamp(13px,1.3cqw,19px);color:#d3c9b6;letter-spacing:.1em;margin:0}
+.pro .ps[data-s="start"] .title-start{letter-spacing:.08em;backdrop-filter:blur(8px)}
+.pro .ps[data-s="start"] .title-start span{margin-left:1.7cqw;font-family:var(--mono)}
+.pro .ps[data-s="start"] #proSoundPreview{background:none;border:0;color:#ceb88c;font:inherit;letter-spacing:.06em;padding:0;cursor:pointer;text-align:left}
+.pro .ps[data-s="start"] #proSoundPreview:hover{color:#fff0c9}
+@media(max-width:650px){
+  .pro .ps[data-s="start"] .title-content{width:92cqw}
+  .pro .ps[data-s="start"] .title-logo{width:84cqw;max-height:39cqh}
+  .pro .ps[data-s="start"] .title-topline span:last-child{display:none}
+  .pro .ps[data-s="start"] .title-kicker{letter-spacing:.18em}
+  .pro .ps[data-s="start"] .title-sub{margin-top:0}
+}
+.pro .ps[data-s="start"] .tt-slats{background:repeating-linear-gradient(100deg,transparent 0 9%,rgba(255,206,140,.0) 9%,rgba(255,206,140,.22) 11.5%,rgba(255,226,180,.32) 12.5%,rgba(255,206,140,.0) 15%,transparent 15% 24%)}
+@keyframes ttrock{0%,100%{translate:0 0;rotate:0deg}22%{translate:.18% .25%;rotate:.08deg}48%{translate:-.1% -.1%;rotate:-.05deg}71%{translate:.06% .3%;rotate:.04deg}}
+@keyframes ttslat{0%{opacity:0;background-position:100% 0}15%{opacity:1}85%{opacity:1}100%{opacity:0;background-position:0 0}}
+@keyframes ttslat2{0%,78%{opacity:0;background-position:100% 0}80%{opacity:.75}96%{opacity:.75}100%{opacity:0;background-position:0 0}}
+.pro .ps[data-s="start"] .tt-bars{position:absolute!important;inset:0;pointer-events:none;z-index:5}
+@keyframes ttgrain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+.pro .ps[data-s="start"] .tt-bars i{position:absolute;left:0;right:0;height:7.5cqh;background:#000;z-index:5;pointer-events:none;animation:ttbar 1.4s cubic-bezier(.6,0,.2,1) both}
+.pro .ps[data-s="start"] .tt-bars i:first-child{top:0;transform-origin:top}
+.pro .ps[data-s="start"] .tt-bars i:last-child{bottom:0;transform-origin:bottom}
+@keyframes ttbar{from{transform:scaleY(7)}to{transform:scaleY(1)}}
+.pro .ps[data-s="start"] .tt-top{top:calc(7.5cqh - 2.8em)}
+.pro .ps[data-s="start"] .tt-top span+span::before,.pro .ps[data-s="start"] .tt-foot span+span::before{content:"◆";margin-right:2.4em;opacity:.45;font-size:.7em}
+.pro .ps[data-s="start"] .tt-logo{position:relative;display:inline-block;line-height:0}
+.pro .ps[data-s="start"] .tt-sheen{-webkit-mask:url(../pro/orpheus-title-warm.webp) center/contain no-repeat}
+@keyframes ttsheen{0%{background-position:160% 0}22%,100%{background-position:-60% 0}}
+/* 탑승권 버튼 */
+.pro .ps[data-s="start"] .tt-ticket,.title-content .tt-ticket{cursor:pointer;-webkit-mask:radial-gradient(circle at 0 50%,transparent .9cqh,#000 calc(.9cqh + .5px)) left/51% 100% no-repeat,radial-gradient(circle at 100% 50%,transparent .9cqh,#000 calc(.9cqh + .5px)) right/51% 100% no-repeat}
+@keyframes ttspace{from{letter-spacing:.6em}to{letter-spacing:.24em}}
+.pro .ps[data-s="start"] .tt-ticket>span,.title-content .tt-ticket>span{display:flex;flex-direction:column;justify-content:center;padding:1.5cqh 1.6cqw;font-family:var(--serif);line-height:1.15}
+.pro .ps[data-s="start"] .tt-ticket .tk-l small,.pro .ps[data-s="start"] .tt-ticket .tk-r small,.title-content .tt-ticket .tk-l small,.title-content .tt-ticket .tk-r small{font-size:max(8px,.7cqw);letter-spacing:.3em}
+.pro .ps[data-s="start"] .tt-ticket .tk-l b,.pro .ps[data-s="start"] .tt-ticket .tk-r b,.title-content .tt-ticket .tk-l b,.title-content .tt-ticket .tk-r b{font-size:max(13px,1.35cqw);letter-spacing:.12em}
+.pro .ps[data-s="start"] .tt-ticket.punched .tk-hole,.title-content .tt-ticket.punched .tk-hole{animation:tthole .18s .05s cubic-bezier(.3,1.6,.5,1) both}
+.pro .ps[data-s="start"].playing .tt-top,.pro .ps[data-s="start"].playing .tt-foot{opacity:0!important;transition:opacity .45s}
+@keyframes ttpunch{0%{transform:scale(1.03)}25%{transform:scale(.96) rotate(1deg)}55%{transform:scale(1.04) rotate(-1.5deg)}100%{transform:translateY(-1cqh) rotate(-2deg) scale(1.02);filter:brightness(1.15)}}
+@keyframes tthole{to{transform:scale(1);opacity:1}}
+@media(max-width:650px){
+  .pro .ps[data-s="start"] .tt-foot span:last-child,.pro .ps[data-s="start"] .tt-top span:last-child{display:none}
+  .pro .ps[data-s="start"] .tt-ticket .tk-m small{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .pro .ps[data-s="start"] .title-train,.pro .ps[data-s="start"] .tt-grain,.pro .ps[data-s="start"] .tt-slats,.pro .ps[data-s="start"] .tt-sheen{animation:none!important}
+}
+@keyframes ttcur{to{opacity:0}}
+.pro .ps[data-s="start"] .title-start{margin-top:3cqh;font-family:var(--sans);font-size:clamp(12px,1.25cqw,18px);font-weight:600;padding:1.5cqh 3.5cqw;background:rgba(13,21,16,.74);color:#e7d3a6;animation:tlogo 1.8s 3.8s cubic-bezier(.2,.7,.2,1) both!important}
+
+/* 타이틀 정리: 로고 반짝임 제거, 아래 문구는 작고 담백하게 */
+.pro .ps[data-s="start"] .tt-sheen{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;background:linear-gradient(105deg,transparent 35%,rgba(255,240,200,.0) 42%,rgba(255,244,214,.85) 50%,rgba(255,240,200,0) 58%,transparent 65%) 160% 0/250% 100% no-repeat;mask:url(../pro/orpheus-title-warm.webp) center/contain no-repeat;animation:ttsheen 7s 4.2s ease-in-out infinite!important;display:none!important}
+.pro .ps[data-s="start"] .tt-foot{bottom:calc(7.5cqh - 2.8em);font-family:var(--serif)!important;font-size:max(10px,.8cqw)!important;letter-spacing:.12em!important;color:rgba(236,226,203,.38)!important}
+.pro .ps[data-s="start"] .tt-foot span::before{content:none!important}
+
+/* ===== 타이틀 '시작하기': 아르데코 황동 명판 — 모서리를 깎은 이중 금선 테, 금빛 세리프 글자, 양옆 마름모 장식 ===== */
+/* --- 조정: 시작 버튼은 작고 차분하게(양옆 문구 숨김·폭 축소·밝기 낮춤), 누르면 눌렸다 빛나며 사라짐 --- */
+/* ===== 타이틀 '시작하기': 옛 판지 승차권 — 바랜 담황색 종이, 세피아 잉크 활자, 붉은 일련번호. 누르면 검표 펀치로 구멍이 뚫리고 표가 조용히 사라진다 ===== */
+.pro .ps[data-s="start"] .tt-ticket.tt-card{zoom:1;display:flex!important;flex-direction:column;align-items:stretch;gap:0;width:clamp(232px,21cqw,330px);margin-top:4.6cqh!important;padding:.85cqw 1.25cqw .8cqw!important;border:0!important;border-radius:4px!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;overflow:visible!important;position:relative;color:#2b1d12!important;font-family:"Noto Serif KR",var(--serif)!important;letter-spacing:0!important;background:repeating-linear-gradient(92deg,rgba(90,70,40,.06) 0 1px,transparent 1px 3px),linear-gradient(118deg,transparent 0 46%,rgba(150,40,30,.09) 46% 57%,transparent 57%),linear-gradient(180deg,#cbbc97 0%,#b8a67e 100%)!important;box-shadow:inset 0 0 0 1px rgba(60,42,20,.55),inset 0 0 0 4px #c4b48e,inset 0 0 0 5px rgba(60,42,20,.32),0 1.2cqh 2.2cqh rgba(0,0,0,.65)!important;filter:brightness(.84) saturate(.9)!important;transform:rotate(-1deg);transition:transform .25s cubic-bezier(.2,.9,.3,1),filter .25s!important}
+.pro .ps[data-s="start"] .tt-ticket.tt-card:hover,.pro .ps[data-s="start"] .tt-ticket.tt-card:focus-visible{transform:rotate(0deg) translateY(-.4cqh)!important;filter:brightness(1) saturate(1)!important;opacity:1!important;border:0!important;background:repeating-linear-gradient(92deg,rgba(90,70,40,.06) 0 1px,transparent 1px 3px),linear-gradient(118deg,transparent 0 46%,rgba(150,40,30,.09) 46% 57%,transparent 57%),linear-gradient(180deg,#d3c49f 0%,#c0ae86 100%)!important;box-shadow:inset 0 0 0 1px rgba(60,42,20,.55),inset 0 0 0 4px #ccbc96,inset 0 0 0 5px rgba(60,42,20,.32),0 1.8cqh 3cqh rgba(0,0,0,.72),0 0 2.4cqw rgba(226,186,110,.22)!important}
+/* 호버: 종이는 불투명한 그대로, 살짝 밝아지며 떠오르기만 한다 */
+.pro .ps[data-s="start"] .tt-ticket.tt-card:active{transform:rotate(0deg) scale(.99)}
+.pro .ps[data-s="start"] .tt-ticket.tt-card::before,.pro .ps[data-s="start"] .tt-ticket.tt-card::after{display:none!important}
+.pro .ps[data-s="start"] .tt-ticket.tt-card i{font-style:normal}
+.pro .ps[data-s="start"] .tt-ticket.tt-card>span{display:flex!important;flex-direction:row;padding:0!important;margin:0!important;background:none!important;border:0!important;line-height:1.2}
+.pro .ps[data-s="start"] .tt-ticket.tt-card .tc-top,.pro .ps[data-s="start"] .tt-ticket.tt-card .tc-bot{justify-content:space-between;align-items:baseline;font-family:"Cormorant Garamond","Noto Serif KR",var(--serif);font-weight:600;font-size:max(8.5px,.72cqw);letter-spacing:.2em;text-transform:uppercase;color:#3a2917}
+.pro .ps[data-s="start"] .tt-ticket.tt-card .tc-top{padding-bottom:.35cqw!important;border-bottom:1px solid rgba(60,42,20,.5)!important}
+.pro .ps[data-s="start"] .tt-ticket.tt-card .tc-top .no{font-family:ui-monospace,Menlo,Consolas,monospace;color:#8a2a1c;letter-spacing:.1em;font-weight:700}
+.pro .ps[data-s="start"] .tt-ticket.tt-card .tc-mid{flex-direction:column;align-items:center;padding:.55cqw 0 .5cqw!important}
+.pro .ps[data-s="start"] .tt-ticket.tt-card .tc-mid b{font-weight:800;font-size:max(18px,1.85cqw);letter-spacing:.42em;margin-right:-.42em;color:#22160c}
+.pro .ps[data-s="start"] .tt-ticket.tt-card .tc-mid small{margin-top:.25cqw;font-family:"Cormorant Garamond","Noto Serif KR",var(--serif);font-weight:600;font-size:max(8px,.66cqw);letter-spacing:.24em;color:rgba(50,34,16,.82)}
+.pro .ps[data-s="start"] .tt-ticket.tt-card .tc-bot{padding-top:.35cqw!important;border-top:1px solid rgba(60,42,20,.5)!important}
+.pro .ps[data-s="start"] .tt-ticket.tt-card .tk-hole{display:block!important;position:absolute;left:auto!important;right:11%!important;top:50%!important;width:1.5cqw!important;height:1.5cqw!important;min-width:15px;min-height:15px;margin:-.75cqw 0 0!important;border-radius:50%;background:#080604!important;box-shadow:inset 0 2px 3px rgba(0,0,0,.9),0 0 0 1px rgba(60,42,20,.6)!important;transform:scale(0);opacity:0;animation:none}
+.pro .ps[data-s="start"] .tt-ticket.tt-card.punched{animation:tcpunch .95s ease-out forwards!important;pointer-events:none}
+.pro .ps[data-s="start"] .tt-ticket.tt-card.punched .tk-hole{animation:tchole .16s .05s cubic-bezier(.3,1.7,.5,1) forwards!important}
+/* 타이틀 등장을 빠르게: 로고 0.3초 뒤, 문구 0.9초 뒤, 시작 버튼 1.3초 뒤에 나타난다(예전 1.9 / 3.0 / 3.8초) */
+.pro .ps[data-s="start"] .title-content .title-logo{animation-delay:.3s!important;animation-duration:1.5s!important}
+.pro .ps[data-s="start"] .title-content .title-sub{animation-delay:.9s,.9s!important;animation-duration:1.3s,2s!important}
+.pro .ps[data-s="start"] .title-content .title-start:not(.punched){animation-delay:1.3s!important;animation-duration:1s!important}
+.pro .title-content.leaving>*:not(#proStart):not(.tt-half){transition:opacity .6s ease,transform .6s ease!important;opacity:0!important;transform:translateY(-1.2cqh)!important}
+
+/* 타이틀 자연스럽게: 번쩍이는 빛줄기·밝기 플래시 제거, 은은한 램프 숨결 + 담백한 탑승권 */
+.pro .ps[data-s="start"] .tt-slats{position:absolute!important;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;opacity:0;background-size:260% 100%;animation:ttslat 1.6s 1.3s cubic-bezier(.4,0,.6,1) both,ttslat2 8s 5s linear infinite!important;display:none!important}
+.pro .ps[data-s="start"] .tt-fx{position:absolute!important;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:.45}
+@keyframes ttlogo{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---- 오프닝 연출 ---- */
+/* ===== 타이틀 화면: 영화 오프닝 순서 =====
+   0.3s  검은 화면 한가운데 "EDENLINE COMPANY PRESENTS" (제작사 카드) → 사라짐
+   1.9s  어둠이 걷히며 방이 드러난다(천천히 다가가는 카메라)
+   3.2s  로고가 초점이 맞아 들어오듯 선명해진다
+   4.9s  로고 아래 가는 금선이 그어지고 부제가 뜬다
+   5.6s  탑승권이 조용히 올라온다 → 6.3s 위아래 작은 글자
+   방은 선명한 채 어둡게, 로고는 작게 여백을 두고, 버튼은 어두운 바탕의 금테 탑승권으로 화면 톤에 맞춘다 */
+.pro .ps[data-s="start"] .title-train{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:transparent;transform:scale(1.04);z-index:0;opacity:1!important;animation:ttpush 28s ease-in-out infinite alternate,ttrock 3.4s ease-in-out infinite;filter:brightness(.36) saturate(.62) contrast(1.12)!important}
+.pro .ps[data-s="start"] .title-vignette{position:absolute!important;inset:0;z-index:1;pointer-events:none;background:linear-gradient(0deg,rgba(2,3,3,.96),rgba(2,3,3,.5) 30%,rgba(2,3,3,.25) 55%,rgba(2,3,3,.7)),radial-gradient(ellipse at 50% 46%,transparent 30%,rgba(0,0,0,.72) 100%)!important}
+.pro .ps[data-s="start"] .tt-grain{position:absolute!important;inset:-50%;pointer-events:none;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");animation:ttgrain .9s steps(6) infinite;z-index:7!important;opacity:.14!important}
+/* ===== 타이틀 등장 순서 다시: 어둠 → 배경 → 불빛이 훑음 → 로고 → 부제 → 탑승권 → 위아래 문구 ===== */
+/* 제작사 카드 + 어둠 걷힘 */
+.pro .ps[data-s="start"] .tt-curtain{position:absolute!important;inset:0;z-index:4;background:#000;pointer-events:none;display:grid!important;place-items:center;animation:ttcur2 2.6s 1.9s cubic-bezier(.4,0,.2,1) both!important}
+.pro .ps[data-s="start"] .tt-curtain::after{content:"EDENLINE COMPANY   PRESENTS";white-space:pre;font-family:var(--serif);font-size:clamp(11px,1.15cqw,17px);letter-spacing:.5em;margin-right:-.5em;color:rgba(217,178,106,.9);opacity:0;animation:ttcard 1.7s .3s ease-in-out both}
+/* 로고 */
+.pro .ps[data-s="start"] .title-content{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;text-align:center;padding:4cqh 2cqw 2cqh;translate:calc(var(--mx)*-10px) calc(var(--my)*-6px);transition:translate .6s cubic-bezier(.2,.7,.2,1);animation:none!important}
+.pro .ps[data-s="start"] .title-logo{display:block;object-fit:contain;width:min(44cqw,600px)!important;max-height:36cqh;filter:brightness(.88) saturate(.74) contrast(1.06) drop-shadow(0 6px 18px rgba(0,0,0,.85))!important;animation:ttFocus 2.6s 3.2s cubic-bezier(.2,.7,.2,1) both!important}
+/* 부제: 양옆에 가는 금선 */
+.pro .ps[data-s="start"] .title-sub{font-family:var(--serif);display:flex;align-items:center;justify-content:center;gap:1.4em;font-size:clamp(12px,1.15cqw,18px)!important;letter-spacing:.44em!important;margin-top:1.6cqh!important;color:rgba(236,226,207,.62)!important;font-weight:400!important;text-shadow:0 1px 10px #000;animation:tlogo 1.6s 4.9s cubic-bezier(.2,.7,.2,1) both!important}
+.pro .ps[data-s="start"] .title-sub::before,.pro .ps[data-s="start"] .title-sub::after{content:"";width:clamp(26px,5cqw,80px);height:1px;background:linear-gradient(90deg,transparent,rgba(210,173,99,.7));transform:scaleX(0);transform-origin:right;animation:ttrule 1.2s 5.1s cubic-bezier(.3,.7,.2,1) forwards}
+.pro .ps[data-s="start"] .title-sub::after{background:linear-gradient(270deg,transparent,rgba(210,173,99,.7));transform-origin:left;margin-left:-.44em}
+.pro .ps[data-s="start"] .tt-top,.pro .ps[data-s="start"] .tt-foot{position:absolute!important;left:0;right:0;z-index:6;display:flex;justify-content:center;gap:2.4em;pointer-events:none;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:max(9px,.85cqw);letter-spacing:.42em;color:rgba(217,178,106,.62);opacity:0;animation:tlogo 1.6s 6.3s ease-out both!important}
+@media(prefers-reduced-motion:reduce){
+  .pro .ps[data-s="start"] .tt-curtain{opacity:0!important}
+}
+.pro .ps .tt-gate{position:absolute!important;inset:0!important;width:auto!important;height:auto!important;margin:0!important;transform:none!important;z-index:60!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.6cqh;background:#000;cursor:pointer;
+  color:rgba(236,226,203,.78);font-family:"Cormorant Garamond","Noto Serif KR",var(--serif);letter-spacing:.32em;font-size:max(12px,1.05cqw);transition:opacity .5s ease}
+.tt-gate.out{opacity:0;pointer-events:none}
+@keyframes ttGateBlink{0%,100%{opacity:.45}50%{opacity:1}}

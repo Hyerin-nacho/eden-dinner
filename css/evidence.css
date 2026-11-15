@@ -1,0 +1,226 @@
+/* 증거: 증거 수첩·증거 카드·용의자 보드·회중시계 장면. */
+
+.ending p{margin:0;max-width:46ch;color:#cfc6b2;font-family:var(--serif);font-size:15px;line-height:1.8;text-wrap:balance}
+.badend p{margin:0;max-width:46ch;color:#cfc6b2;font-family:var(--serif);font-size:15px;line-height:1.8}
+
+.pro .relic .r3d{position:absolute;inset:-14%;pointer-events:none;filter:drop-shadow(0 22px 30px rgba(0,0,0,.75))}
+.pro .relic .r3d canvas{width:100%!important;height:100%!important;display:block}
+.pro .relic.has3d .w{visibility:hidden}
+
+/* 증거 고르기 v2: 어둡게 깔고 좌우로 넘기는 카드 */
+.talk::after{content:"";position:absolute;inset:0;background:rgba(3,2,1,.84);opacity:0;pointer-events:none;transition:opacity .4s;z-index:4}
+.talk[data-m="ev"]::after{opacity:1}
+.talk[data-m="ev"] .tk-box{z-index:6;top:9%;bottom:auto}
+.talk .tk-opts.m-ev{width:auto}
+.tk-opts.m-ev .opt-h{text-align:center;margin-bottom:4px;width:auto;font-size:11px}
+.carou .polar:hover{box-shadow:0 18px 34px rgba(0,0,0,.7)}
+.carou .polar.focus{box-shadow:0 0 0 2px rgba(210,173,99,.9),0 24px 44px rgba(0,0,0,.8)}
+.carou .polar .cap{font-size:24px}
+.cnav{display:flex;align-items:center;gap:16px;color:rgba(239,230,208,.6);font-size:12px;letter-spacing:.06em}
+.cnav button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(210,173,99,.5);background:rgba(10,8,6,.6);color:#efe6d0;font-size:20px;line-height:1;cursor:pointer}
+.cnav button:hover{background:rgba(210,173,99,.2)}
+.talk[data-m="ev"] .tk-meter{opacity:.25}
+
+/* 기존 서체는 유지하고 증거·용의자 화면의 배치만 정돈한다. */
+.carou{position:relative;width:100%;perspective:1300px;transform-style:preserve-3d;touch-action:pan-y;height:min(300px,44cqh)}
+.carou .polar{position:absolute;left:50%;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .4s,box-shadow .3s;transform-origin:50% 60%;top:2%;width:clamp(150px,19vw,230px)}
+.carou .polar .ph{background-position:center;background-repeat:no-repeat;border:1px solid rgba(48,43,34,.28)}
+/* 증거 고르기: 카드를 위로 끌어올려 화면 중앙~상단에 (사용자 표시 위치) */
+.talk .tk-opts.m-ev{top:20%!important;bottom:auto!important;position:absolute;left:0;right:0;transform:none;display:flex;flex-direction:column;align-items:center;z-index:6;gap:8px}
+.sboard .sc{transform:none;padding:4%;border:1px solid rgba(113,89,54,.5);box-shadow:0 8px 22px rgba(0,0,0,.35);overflow:hidden}
+.sboard .sc:hover{transform:translateY(-3px)}
+.sboard .sc::before{display:none}
+.sboard .sc .rl{font-family:var(--sans);letter-spacing:0;color:#c8ae78;font:clamp(10px,.85vw,12px) var(--sans);margin:0 8% .5em;min-height:0;font-size:clamp(10px,.8vw,12px);line-height:1.4;margin-bottom:auto}
+.hud .tab[aria-selected="true"]{color:#f0e3c9;background:rgba(10,17,13,.74);border-bottom:2px solid var(--brass)}
+.hud .tab[aria-selected="true"]::before{display:none}
+.hud .tab{font-size:clamp(12px,1.35vw,30px);min-height:clamp(38px,2.8vw,64px);text-shadow:0 1px 6px #000}
+.hud .prof .box{font-size:clamp(11.5px,.95vw,21px);padding:clamp(6px,.5vw,12px) clamp(12px,.95vw,22px);background:rgba(8,14,10,.86);border-color:rgba(210,173,99,.35)}
+.prompt{transform:translate(-50%,6px);font-size:clamp(14px,1.8vw,21px);color:#fff;white-space:nowrap;align-items:center;opacity:0;transition:opacity .2s,transform .2s;background:rgba(8,15,11,.9);border:1px solid rgba(210,173,99,.48);letter-spacing:.08em}
+@keyframes titleRise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+/* 범인 지목: 방 안에 인물을 세우는 영화 포스터형 배열 */
+.sboard{background-image:linear-gradient(90deg,rgba(3,6,4,.93),rgba(3,7,5,.58) 50%,rgba(3,6,4,.93)),var(--suspect-room);background-position:center;background-size:cover;backdrop-filter:none}
+.sboard .j-head{top:5%;left:5%;align-items:center;gap:20px}
+.sboard .j-title{font-size:clamp(24px,3.2vw,44px);font-weight:700;letter-spacing:-.04em;padding-left:0}
+.sboard .j-title::before,.sboard .j-title::after{display:none}
+.sboard .j-count{font-family:var(--sans);font-size:12px;color:#c4ad7f;font:clamp(10px,.9vw,13px) var(--mono);letter-spacing:.11em}
+.sboard .sb-grid{left:5%;top:18%;bottom:16%;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible}
+.sboard .sc.paper{border:1px solid rgba(202,171,113,.25)}
+.sboard .sc.paper:hover{transform:translateY(-8px) scale(1.025);border-color:#d2ad63;z-index:2}
+.sboard .sb-grid:has(.sc:hover) .sc:not(:hover){opacity:.64}
+/* 사진을 키워 이름과 버튼 사이의 빈 공간을 채운다 */
+.sboard .sc .ph .pi{background-size:cover;background-position:center 22%;inset:0;width:100%;height:100%;aspect-ratio:auto;transform:none;filter:sepia(.28) contrast(1.08) brightness(.78);-webkit-mask-image:linear-gradient(#000 65%,transparent);mask-image:linear-gradient(#000 65%,transparent)}
+.sboard .sc .ph .play{left:8px;right:auto;top:8px;bottom:auto;transform:none;font-size:clamp(10.5px,.8vw,13px);padding:.35em .75em;background:rgba(10,9,7,.78);border:1px solid rgba(236,226,203,.22);position:absolute;z-index:2;white-space:nowrap}
+.sboard .sc .mo{font-family:var(--sans);font-size:12px;line-height:1.5;color:#c5c4b6;font:clamp(10px,.9vw,13px)/1.5 var(--sans);margin:0 8% auto;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sboard .sc ul{overflow:auto;font-family:var(--sans);font-size:11px;line-height:1.45;scrollbar-width:thin;display:none}
+.sboard .sc .row button.on{background:#d2ad63;color:#11180f}
+.pro .ps{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .9s;z-index:1}
+.pro .ps.on{opacity:1;pointer-events:auto;z-index:3}
+/* 자막: 인트로·회상 영상에 박힌 자막과 같은 모양으로 통일 — 한국어(흰색 고딕)가 위, 영어(금색 세리프)가 아래, 배경 띠 없음.
+   (이전 스타일: 영어 큼직하게 이탤릭 + 한국어 작게. 되돌리려면 이 블록만 예전 3줄로 바꾸면 된다) */
+.pro .vcap{position:absolute;text-align:center;opacity:0;transition:opacity .8s;pointer-events:none;display:flex;flex-direction:column;align-items:center;bottom:7.5%;padding:0 6%;background:none;font-family:"Noto Sans KR","Pretendard","Malgun Gothic",sans-serif;font-style:normal;font-weight:500;font-size:max(13px,2cqw);line-height:1.5;letter-spacing:0;color:#fff;text-shadow:0 1px 6px #000,0 0 2px #000;text-wrap:balance;z-index:4;left:50%;right:auto;transform:translateX(-50%);width:min(84%,860px);box-sizing:border-box}
+.sboard .j-title,.sboard .sc .nm,.sb-detail h4{font-weight:700;letter-spacing:-.035em}
+.pro .cta{position:absolute;transform:translateX(-50%);bottom:auto;white-space:nowrap;padding:.35em 1.2em;background:rgba(8,6,4,.72);border:1px solid rgba(210,173,99,.45);z-index:3;text-align:center;font-family:var(--serif);color:rgba(236,226,203,.8);text-shadow:0 2px 10px #000;pointer-events:none;font-size:clamp(12px,1.25cqw,18px);letter-spacing:.08em!important}
+.sboard .sc.paper{background:linear-gradient(180deg,rgba(18,26,19,.23),rgba(7,11,8,.92) 59%);clip-path:none!important;border-bottom:2px solid rgba(202,171,113,.65);padding:0 0 12px;box-shadow:0 15px 35px rgba(0,0,0,.45);color:#e8dfc9;transition:transform .3s,border-color .3s,opacity .3s;min-height:0;overflow:hidden}
+.sboard .sc .ph{aspect-ratio:auto;filter:none;background:transparent;border:0;box-shadow:none;overflow:hidden;max-height:50%;flex:0 0 auto}
+.sboard .sc .nm{color:#f1e5c9;margin:0 8% .2em;font-family:var(--serif);font-size:clamp(15px,1.45vw,22px);line-height:1.3;margin-top:9px}
+.sboard .sc .history{display:block;width:84%;margin:8px 8% 0;padding:7px 4px;border:1px solid rgba(210,173,99,.45);background:rgba(9,14,10,.76);color:#ebd8b3;font:500 clamp(11px,.95vw,13px) var(--sans);cursor:pointer;text-align:center}
+.sboard .sc .history:hover,.sboard .sc .history:focus-visible{background:#d2ad63;color:#121a13}
+.sboard .sc .row{margin:8px 8% 0;margin-top:7px}
+.sboard .sc .row button{font-size:11px;color:#d5cab2;border-color:rgba(210,173,99,.38);background:rgba(4,8,5,.54);min-height:30px}
+.sboard .sc .acc{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0;width:84%;margin:8px 8% 0;background:#ad8a51;color:#13170f;min-height:34px;margin-top:7px}
+.sb-detail{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;background:rgba(3,7,5,.82);padding:24px}
+.sb-detail-panel{position:relative;width:min(600px,90vw);max-height:min(80vh,700px);overflow:auto;box-sizing:border-box;border:1px solid rgba(210,173,99,.7);background:linear-gradient(135deg,#19231b,#0a0f0c);box-shadow:0 24px 70px rgba(0,0,0,.7);padding:clamp(22px,4vw,42px);color:#eee3c9}
+.sb-detail-x{position:absolute;right:16px;top:12px;border:0;background:none;color:#eee3c9;font-size:30px;cursor:pointer}
+.sb-detail-kicker{color:#d2ad63;font:12px var(--mono);letter-spacing:.16em}
+.sb-detail h4{margin:14px 0 2px;font:700 clamp(25px,3vw,38px) var(--serif)}
+.sb-detail-role{color:#c9ae77;font:13px var(--sans)}
+.sb-detail p{font:15px/1.8 var(--sans);margin:24px 0 16px}
+.sb-detail ul{list-style:none;padding:0;margin:0 0 22px;font:14px/1.7 var(--sans)}
+.sb-detail li{padding:8px 0;border-top:1px solid rgba(210,173,99,.23)}
+.sb-detail li i{font-style:normal;color:#d2ad63;margin-right:8px}
+.sb-detail-video{padding:11px 18px;border:1px solid #d2ad63;background:rgba(210,173,99,.14);color:#eee3c9;font:600 13px var(--sans);cursor:pointer}
+.sb-detail-video:hover{background:#d2ad63;color:#11180f}
+.doll-lift{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(ellipse at center,rgba(24,20,15,.65),rgba(5,5,4,.94));text-align:center;color:#eee3c9;padding:20px}
+.doll-lift img{width:min(34%,250px);max-height:52%;object-fit:contain;filter:drop-shadow(0 18px 24px #000);animation:dollPickup .65s cubic-bezier(.18,.75,.28,1) both}
+.doll-lift p{font:15px/1.7 var(--serif);margin:0}
+.doll-lift button{border:1px solid #d2ad63;background:rgba(13,18,14,.85);color:#eee3c9;padding:11px 20px;font:600 13px var(--sans);cursor:pointer}
+.doll-lift button:hover{background:#d2ad63;color:#11180f}
+.sboard .sb-case{left:5%;right:5%;bottom:5%;color:#e3d9c2}
+@keyframes dollPickup{from{opacity:0;transform:translateY(75px) scale(.68) rotate(-9deg)}to{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
+.sboard .sb-case span{background:rgba(4,8,5,.6);border-color:rgba(210,173,99,.36)}
+@media(max-width:760px){
+  .sboard .sc.paper{min-height:360px}
+  .sboard .sc .ph{height:50%;max-height:none}
+  .sboard .j-count{display:none}
+}
+.pro .proskip,.evclip .ev-video-skip{position:absolute;right:3%;bottom:4%;z-index:55;background:rgba(8,12,10,.82);color:#f0e4cb;border:1px solid rgba(210,173,99,.8);padding:10px 16px;font-family:var(--sans);font-size:12px;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(6px)}
+.pro .proskip:hover,.evclip .ev-video-skip:hover{background:#d2ad63;color:#101810}
+.evclip .ev-video-skip{bottom:auto;top:4%}
+.pro .proskip{right:auto;left:3%}
+@media(max-width:760px){
+  .carou{height:min(235px,38cqh)}
+  .carou .polar{width:clamp(125px,31vw,180px)}
+  .polar .cap{font-size:15px}
+  .sboard .sb-grid{grid-template-columns:repeat(2,minmax(0,1fr));overflow:auto;bottom:13%}
+  .sboard .sc{min-height:380px}
+}
+.excam .hcur.pinch{background:#ffe2a8}
+#cuLayer .reach{position:absolute;overflow:hidden}
+#cuLayer .reach::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:calc(var(--p,0)*100%);background:#d2ad63}
+.pro .cam .htag:empty{display:none}
+.talk .tk-case .tcard{background:#e9dfc8!important;background-image:none!important;color:#2a211a;filter:drop-shadow(0 6px 10px rgba(0,0,0,.6))!important;opacity:.95}
+.talk .tk-case .tcard b{color:#2a211a}
+.talk .tk-case .tcard em{color:#7a6c58}
+.talk .tk-case .tcard.cur{box-shadow:inset 0 0 0 2px rgba(210,173,99,.9)}
+.talk .tk-case .tcard.cur em{color:#b8352b}
+.talk .tk-case .tcard.done{opacity:.6}
+.evp{width:min(1360px,97%);display:flex;flex-direction:column;align-items:center;gap:12px}
+.evp-h{font-family:var(--mono);font-size:12.5px;letter-spacing:.16em;color:#d2ad63;text-shadow:0 1px 10px #000;text-align:center}
+.evp-row{display:flex;justify-content:center;gap:clamp(10px,1.5vw,24px);width:100%;padding:22px 16px 26px;overflow-x:auto;scrollbar-width:none}
+.evp-row::-webkit-scrollbar{display:none}
+.evc{flex:0 0 clamp(140px,15vw,240px);box-sizing:border-box;position:relative;border:0;border-radius:2px;padding:8px 8px 11px;background:#efe6d0;color:#2a211a;display:flex;flex-direction:column;gap:6px;text-align:left;cursor:pointer;font:inherit;transform:rotate(var(--r,0deg));transition:transform .22s cubic-bezier(.2,.9,.3,1.2),box-shadow .22s,opacity .3s,filter .3s;box-shadow:0 10px 22px rgba(0,0,0,.6)}
+.evc-ph{display:block;width:100%;aspect-ratio:16/10;overflow:hidden;background-color:#16130f;background-position:center;background-repeat:no-repeat;box-shadow:inset 0 0 0 1px rgba(48,43,34,.4)}
+.evc.tall .evc-ph{background-size:auto 96%!important}
+.evc.focus,.evc:hover{transform:translateY(-14px) rotate(0) scale(1.05);box-shadow:0 0 0 2px rgba(210,173,99,.95),0 22px 38px rgba(0,0,0,.75);z-index:2;outline:none}
+.evc .cap{font-family:"Nanum Pen Script",cursive;font-weight:400;font-size:clamp(20px,1.7vw,27px);line-height:1}
+.evc .k{position:absolute;left:-7px;top:-7px;width:22px;height:22px;border-radius:50%;background:#1d1a17;color:#efe6d0;font-family:var(--mono);font-size:11px;display:grid;place-items:center;z-index:3}
+.evc.picked{transform:translateY(-34vh) rotate(-4deg) scale(1.25);opacity:0;transition:transform .5s cubic-bezier(.3,.7,.2,1),opacity .5s;z-index:9}
+.evp-hint{font-size:12.5px;letter-spacing:.06em;color:rgba(239,230,208,.7)}
+.evp-hint span{opacity:.7}
+@media(max-width:760px){
+  .evp-row{justify-content:flex-start;scroll-snap-type:x proximity;padding:12px 10px 14px}
+  .evc{flex-basis:104px;padding:5px 5px 7px;scroll-snap-align:center}
+  .evc .cap{font-size:15px}
+  .evp-hint span{display:none}
+  .evp-h{font-size:10px}
+}
+@keyframes ttpush{from{transform:scale(1.04)}to{transform:scale(1.14) translateX(-1.2%)}}
+/* --- 시작 버튼이 휑하지 않게: 폭은 그대로 두고 위아래로 승차권 문구와 마름모 장식을 넣는다 --- */
+/* ===== 최종: 시작 버튼은 처음 만든 금빛 탑승권으로 되돌림(양옆 반달 홈·절취선·ADMIT ONE / VIP No.). 클릭 반응(눌렸다 빛나며 사라짐)은 유지 ===== */
+/* ===== 최종: 플립 시계 뒤 객차 벽은 유지하되 훨씬 어둡게 눌러 시계만 보이게 ===== */
+/* ===== 플립 시계: 1900년대 초의 플립 시계처럼 — 상아색 숫자판에 검은 세리프 숫자, 황동 경첩, 마호가니·황동 케이스 ===== */
+.pro .cold{gap:2.8cqh!important;transition:opacity .9s ease!important;background:
+  radial-gradient(ellipse 34% 30% at 50% 45%,rgba(255,196,120,.07),transparent 72%),
+  radial-gradient(ellipse 80% 78% at 50% 48%,rgba(0,0,0,.35) 18%,rgba(0,0,0,.97) 92%),
+  linear-gradient(rgba(5,4,3,.82),rgba(5,4,3,.82)),
+  url(../wall_panel.jpg) center 30%/auto 150% repeat-x #060504!important;position:absolute;inset:0;z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none}
+@keyframes tlogo{from{opacity:0;filter:blur(10px)}to{opacity:1;filter:none}}
+.pro .cold.on{display:flex;opacity:1}
+.pro .cold.out{opacity:0}
+.pro .cold-s{opacity:0;animation:coldin 1s .7s ease-out forwards;font-size:clamp(11px,1.3cqw,18px);letter-spacing:.5em;color:#8f8467}
+@keyframes coldin{to{opacity:1}}
+.pro .vcap.stamp{display:block;bottom:auto;top:8%;background:none;padding:0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:max(11px,1.35cqw);letter-spacing:.34em;color:#d9b26a}
+@keyframes nagf{0%,92%,100%{opacity:.9}94%{opacity:.25}96%{opacity:.9}98%{opacity:.4}}
+
+.ending .en-vid{position:absolute;inset:0;margin:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:9;cursor:pointer}
+.ending .en-stamp{display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;transform:rotate(-7deg) scale(2.6);position:absolute;z-index:5;left:3%;bottom:30%;margin:0;transform-origin:left bottom;zoom:.62}
+@media(max-width:760px){
+  .ending .en-stamp{left:50%;margin-left:-26vw;bottom:2%;zoom:.5}
+}
+.testmenu button{display:flex;align-items:center;gap:14px;width:100%;text-align:left;margin:0 0 8px;padding:10px 12px;background:rgba(210,173,99,.06);border:1px solid rgba(210,173,99,.22);color:#efe6d0;font:inherit;cursor:pointer}
+.testmenu button:hover{background:rgba(210,173,99,.18);border-color:var(--brass)}
+.testmenu p{margin:8px 0 0;font-size:12px;color:rgba(239,230,208,.5)}
+
+.b-body .note{font-size:1.02em;border-left:3px solid #b8352b;transform:rotate(-.4deg)}
+.b-body .stamp2{position:relative;right:auto;bottom:auto;align-self:flex-end;margin:-.2em .4em 0 0;transform:rotate(-6deg);font-size:.85em}
+.board:not(.exam) .b-card .photo{aspect-ratio:2.25/1!important}
+.board:not(.exam) .b-card .photo[data-ev="doll"],.hcard .hph[data-ev="doll"]{background-size:cover!important;background-position:center 60%!important}
+.board:not(.exam) .b-card .photo[data-ev="doll"]{aspect-ratio:16/9!important}
+.b-body .hand{line-height:1.5;margin:.2em 0 0;color:#8f2a22;padding-right:0;font-size:1.12em!important}
+.b-body .stamp2.hit{animation:stampIn .5s cubic-bezier(.2,1.5,.4,1) .3s both}
+/* 인형 사진(16:9)은 잘리거나 여백 없이 꽉 차게 */
+.b-body{display:flex;flex-direction:column;min-height:6em;gap:.5em!important;padding-bottom:1.6em!important}
+.b-card .strip h3{letter-spacing:.02em}
+.b-rlabel{letter-spacing:.16em;font-size:.74em;padding-left:.2em;display:flex;align-items:center;gap:.7em}
+.b-rlabel::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(210,173,99,.6),transparent)}
+.hcard:disabled{cursor:default;background:linear-gradient(160deg,rgba(30,24,18,.86),rgba(14,11,8,.9))}
+.hcard:disabled::after{content:"";position:absolute;inset:9px;border:1px dashed rgba(210,173,99,.38);pointer-events:none}
+.hcard:disabled .hstrip{background:none;color:rgba(210,173,99,.8);font-family:var(--mono);letter-spacing:.35em;font-size:.8em;box-shadow:none}
+.hcard:disabled .lock{stroke:rgba(210,173,99,.75);margin-top:.2em}
+.hcard:disabled .hsub{color:rgba(232,223,201,.78);font-size:.82em;padding:0 1.2em;line-height:1.5}
+.hcard.got{box-shadow:0 0 0 2px rgba(159,211,174,.55),0 8px 22px rgba(0,0,0,.5)}
+.hcard.half .hsub{color:#ecc9a0}
+.newtag{color:#fff4e8;font-weight:700;transform:rotate(6deg);font-size:.8em;padding:.25em .95em;box-shadow:0 3px 10px rgba(0,0,0,.45)}
+.ov-hints{gap:1.6em;color:#e8dfc9;font-size:.78em;opacity:.9}
+.ov-hints .kc{border-color:rgba(210,173,99,.7);color:#f0e4cb}
+
+.sb-msg button{margin-top:1.3em;min-width:8em;padding:.55em 1.6em;background:var(--brass);color:#14100a;border:0;font-weight:700;letter-spacing:.12em;cursor:pointer}
+.sb-ded .ft button.go{font-family:var(--serif);letter-spacing:.1em;background:var(--red-ink);color:#fff4e8;border-color:var(--red-ink);font-weight:700}
+
+.dpb-top span{margin-left:12px;letter-spacing:.12em;opacity:.75;font-family:var(--serif)}
+
+.tk-slam .sl .u{align-self:stretch;margin-top:.32em;padding-top:.34em;border-top:.09em solid #c8332a;text-align:center;font-family:var(--mono);font-size:.42em;letter-spacing:.34em;margin-right:-.34em;color:#ee8478}
+
+.ending .nag{margin:clamp(16px,2.6vh,28px) 0 0!important}
+.en-file .en-stamp{position:absolute!important;right:-14px!important;left:auto!important;top:150px!important;bottom:auto!important;margin:0!important;zoom:.62;transform-origin:center;display:flex;flex-direction:column;align-items:center;mix-blend-mode:multiply;opacity:0;z-index:4}
+@media(min-width:761px){
+  .talk .evc .cap{font-size:clamp(24px,2.2vw,34px)}
+  .talk .evc .k{width:28px;height:28px;font-size:13px;left:-9px;top:-9px}
+  .talk .evp-h{font-size:clamp(14px,1.25vw,18px);letter-spacing:.2em}
+}
+.hwz .hwz-p>*{margin:0!important;font-size:clamp(28px,4.4vw,60px)!important;line-height:1.35!important;opacity:1!important;filter:none!important;transform:none!important;max-width:none!important;cursor:inherit}
+.en-file .ef-photo{margin:0!important;border:0!important;padding:0!important}
+.en-file .ef-name{margin-top:14px!important;border:0!important;padding:0!important;text-align:left}
+/* 녹음 재생 칸이 잘리지 않게: 사진은 낮추고, 칸이 열리면 그 칸이 보이도록 스크롤 */
+.board:not(.exam) .b-card:has(.rec) .photo{aspect-ratio:4.2/1!important}
+
+/* 3D 방이 뜰 땐 흐린 사진 대비용 배경을 쓰지 않는다(사진→3D로 바뀌어 보이는 것 방지) */
+/* 3D 방 세트 캔버스: 증거 뒤에서 살짝 아웃포커스 */
+.v3d .v3bg canvas.v3room{opacity:0;transition:opacity .4s ease;position:absolute;inset:0;z-index:auto;width:100%!important;height:100%!important;display:block;filter:blur(2.5px);transform:scale(1.02)}
+.sboard .sc .ph{height:clamp(150px,42cqh,400px)}
+/* 탑승권: 어두운 바탕 + 금테 */
+.pro .ps[data-s="start"] .tt-ticket,.title-content .tt-ticket{display:flex;align-items:stretch;gap:0;padding:0!important;letter-spacing:0;-webkit-backdrop-filter:none;transform-origin:50% 60%;mask:radial-gradient(circle at 0 50%,transparent .9cqh,#000 calc(.9cqh + .5px)) left/51% 100% no-repeat,radial-gradient(circle at 100% 50%,transparent .9cqh,#000 calc(.9cqh + .5px)) right/51% 100% no-repeat;margin-top:5.5cqh!important;zoom:.86;filter:none!important;background:rgba(9,8,6,.6)!important;border:1px solid rgba(210,173,99,.5)!important;border-radius:2px;color:#e9dcc0!important;box-shadow:0 1.4cqh 3cqh rgba(0,0,0,.55)!important;backdrop-filter:blur(3px);transition:background .4s ease,border-color .4s ease,transform .35s ease,box-shadow .35s ease!important;animation:ttUp 1.4s 5.6s cubic-bezier(.2,.7,.2,1) both!important}
+@media(prefers-reduced-motion:reduce){
+  .pro .ps[data-s="start"] .title-logo,.pro .ps[data-s="start"] .title-sub,.pro .ps[data-s="start"] .tt-ticket,.pro .ps[data-s="start"] .tt-curtain{animation:none!important;opacity:1}
+}
+.camfx .off,.pro .cam.camfx .off{z-index:1;font-size:9.5px!important;letter-spacing:.2em!important;color:rgba(246,176,13,.75)!important}
+@media (prefers-reduced-motion:reduce){
+  .camfx.boot,.camfx.boot video,.camfx.boot .cam-noise{animation:none!important}
+}
+/* 좁은 창에서 상태 칩과 붙어 보여서 뺀다 */
+.camfx .cam-chip{left:auto!important;top:auto!important}
+.camfx .cam-chip{position:absolute;z-index:5;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em;color:rgba(236,226,203,.55);border:1px solid rgba(236,226,203,.22);white-space:nowrap;width:auto!important;height:auto!important;inset:auto 4px calc(100% + 2px) auto!important;font-size:9px!important;line-height:13px!important;padding:1px 6px!important;display:none;right:4px;bottom:calc(100% + 2px);background:none;border-color:rgba(236,226,203,.25)}
+
+/* 타이틀 소리: 브라우저는 사용자가 한 번 누르기 전엔 소리를 막는다.
+   막혀 있으면 첫 화면 위에 '눌러서 입장' 막을 잠깐 띄우고, 누르는 순간 열차가 '슝' 지나가며 타이틀 연출이 시작된다 */
+.pro .ps[data-s="start"].tt-wait *{animation-play-state:paused!important}

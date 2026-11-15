@@ -1,0 +1,56 @@
+/* 모바일(html.mobile): 화면 꽉 채움·세로 화면 안내. 가장 마지막에 읽혀서 위 파일들을 덮는다. */
+
+/* ===== 모바일 =====
+   - 세로로 들고 있으면 화면 전체를 덮는 안내("화면을 가로로 돌려 주세요")만 보인다. 가로로 돌리면 사라진다
+   - 카메라는 쓰지 않는다: 손 인식 대신 손가락으로 끌어서 진행 (CAMHUB.start 가 모바일에서는 바로 '카메라 없음'을 돌려준다)
+   - 주소창 높이가 변하는 모바일 브라우저에 맞춰 무대 크기를 dvh 기준으로 잡는다 */
+#rotateGate{display:none}
+html.mobile body::after{content:none!important}
+@media (orientation:portrait){
+  html.mobile #rotateGate{display:flex;position:fixed;inset:0;z-index:2147483000;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;text-align:center;background:radial-gradient(ellipse at 50% 42%,#14110d 0%,#060606 62%,#000 100%);color:#efe6d2;touch-action:none}
+  html.mobile #rotateGate .rg-phone{width:54px;height:92px;border:2px solid rgba(226,192,121,.9);border-radius:10px;position:relative;animation:rgTurn 2.6s cubic-bezier(.6,0,.3,1) infinite}
+  html.mobile #rotateGate .rg-phone::before{content:"";position:absolute;left:50%;top:6px;width:16px;height:2px;margin-left:-8px;border-radius:2px;background:rgba(226,192,121,.7)}
+  html.mobile #rotateGate .rg-phone::after{content:"";position:absolute;inset:14px 5px 10px;background:linear-gradient(160deg,rgba(226,192,121,.22),rgba(226,192,121,.05))}
+  html.mobile #rotateGate b{font-family:"Noto Serif KR","Nanum Myeongjo",serif;font-weight:400;font-size:20px;letter-spacing:.06em}
+  html.mobile #rotateGate small{font-family:var(--sans,sans-serif);font-size:12.5px;line-height:1.7;letter-spacing:.04em;color:rgba(236,226,203,.55)}
+  html.mobile #rotateGate .rg-logo{width:min(62vw,280px);opacity:.9;margin-bottom:6px}
+}
+/* 모바일에서는 검문 화면의 '카메라로 체험'을 감춘다 */
+html.mobile #proAllow{display:none!important}
+@keyframes rgTurn{0%,18%{transform:rotate(0)}48%,78%{transform:rotate(-90deg)}100%{transform:rotate(-90deg)}}
+html.mobile .excam,html.mobile #scrCam{display:none!important}
+@media (prefers-reduced-motion:reduce){
+  html.mobile #rotateGate .rg-phone{animation:none;transform:rotate(-90deg)}
+}
+/* ===== 모바일 다듬기 =====
+   - 화면을 꽉 채운다(위아래 여백·테두리 없음)
+   - 모바일은 카메라를 안 쓰므로 'CAMERA OFF' 창을 숨긴다
+   - 자막은 줄바꿈해서 잘리지 않게, 키보드 안내(Q·E·F·ESC)는 숨긴다
+   - 조사 화면: 목표는 한 줄로 크고 또렷하게, 사건 개요는 오른쪽 위 작은 버튼(누르면 펼침) */
+html.mobile body{padding:0!important;min-height:100dvh}
+html.mobile .stage{width:min(100vw,calc(100dvh * 16 / 9))!important;border:0!important}
+/* 캠 창: 틀·영상·CAMERA OFF는 숨기고, 창 위 안내 문구(htag)만 남긴다 */
+html.mobile #proCam{background:none!important;border:0!important;box-shadow:none!important}
+html.mobile #proCam>:not(.htag){display:none!important}
+html.mobile #proCam::before,html.mobile #proCam::after{display:none!important}
+html.mobile .vcap,html.mobile .vcap *{white-space:normal!important}
+html.mobile .vcap{width:min(78%,860px)!important;font-size:clamp(12px,2.4cqw,17px)!important;line-height:1.45!important}
+html.mobile .key,html.mobile .keys,html.mobile .keys2{display:none!important}
+/* 목표 */
+html.mobile .hud .quest{top:15%!important;max-width:52%!important;padding:6px 12px 6px 8px!important;gap:8px;background:rgba(8,10,9,.86)!important;border-color:rgba(226,192,121,.35)!important}
+html.mobile .hud .quest .qi{width:22px!important;height:22px!important;flex:none}
+html.mobile .hud .quest b{font-size:13px!important;line-height:1.35!important;color:#f3e6c8!important}
+html.mobile .hud .quest small{font-size:10.5px!important;color:rgba(236,226,203,.7)!important}
+/* 사건 개요: 접힌 버튼 ↔ 펼친 카드 */
+html.mobile .hud .brief{pointer-events:auto;cursor:pointer;top:22%!important;right:3%!important;width:auto!important;max-width:44%!important;padding:6px 12px!important;font-size:0!important;line-height:0!important;background:rgba(8,10,9,.86)!important;border:1px solid rgba(226,192,121,.45)!important}
+html.mobile .hud .brief b{display:block;font-size:12.5px!important;line-height:1.4!important;margin:0!important;color:#e9c77d}
+html.mobile .hud .brief b::after{content:"  ▾";font-size:10px;opacity:.75}
+html.mobile .hud .brief.open{font-size:12.5px!important;line-height:1.6!important;padding:9px 13px!important;width:44%!important;color:rgba(236,226,203,.95)!important}
+html.mobile .hud .brief.open b{margin-bottom:4px!important}
+html.mobile .hud .brief.open b::after{content:"  ▴"}
+/* 위쪽 탭과 프로필은 조금 작게, 글자는 또렷하게 */
+html.mobile .hud .tabs .tab{font-size:13px!important}
+html.mobile .hud .prof .box{font-size:11px!important}
+
+.ending.ending.ending .en-ev li{display:block!important;padding:.42em 1em!important;border:1px solid rgba(210,173,99,.38)!important;border-radius:2px;background:rgba(210,173,99,.05);
+  font-size:clamp(11px,.85vw,13px);letter-spacing:.06em;color:rgba(236,226,203,.86);opacity:0;transform:translateY(6px);transition:opacity .6s var(--d,0s),transform .6s var(--d,0s)}

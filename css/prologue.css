@@ -1,0 +1,109 @@
+/* 프롤로그(.pro): 콜드 오픈 플립 시계·봉투·초대장·종이 넘김. */
+
+.board.exam .b-card-wrap{left:0;top:0;width:100%;height:100%;transform:none;filter:none}
+
+/* 종이 넘김 v2 — 모서리부터 말려 넘어감 */
+.curl{position:absolute;z-index:6;pointer-events:none}
+.curl.mir{transform:scaleX(-1)}
+.curl .cw{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;transform-origin:0 0}
+.curl .cw.rev{overflow:hidden}
+.curl .cclone.flipx{transform:scaleX(-1)}
+.curl .fr .csh{background:linear-gradient(90deg,rgba(40,24,8,0),rgba(40,24,8,.18) 70%,rgba(30,18,6,.42))}
+.curl .bk .csh{background:linear-gradient(90deg,rgba(60,38,14,.5),rgba(255,246,222,.16) 18%,rgba(255,246,222,.06) 45%,rgba(40,24,8,.18))}
+.curl .rev .csh{background:linear-gradient(90deg,rgba(15,8,2,.5),rgba(15,8,2,0))}
+.page.right,.page.left{cursor:grab}
+
+.pro .env.opening.noanim,.pro .env.opening.noanim *{animation:none!important;transition:none!important}
+.pro .env.opening.noanim{transform:none!important}
+
+/* 봉투 장면 · 초대장 장면: 인트로 영상 마지막 방을 흐리게 깔기, 안내 문구는 손 아래로 */
+.pro .ps[data-s="hand"],.pro .ps[data-s="env"] .bg{background:linear-gradient(180deg,rgba(6,4,3,.25),rgba(6,4,3,.55)),url(../pro/room_blur.jpg) center/cover no-repeat}
+.pro .ps[data-s="env"] .bg{filter:none}
+.pro .ps[data-s="hand"] .cta{top:auto!important;bottom:10%}
+.pro .ps[data-s="env"] .cap2{color:rgba(236,226,203,.75)}
+
+/* 회중시계 장면: 시계를 쥔 남자를 뒤에 깔기 (얼굴은 시계 오른쪽에 보이게) */
+.pro .ps[data-s="relic"] .bg{background:radial-gradient(ellipse at 50% 48%,rgba(8,6,4,.35),rgba(6,4,3,.82) 70%),linear-gradient(90deg,rgba(6,4,3,.75),rgba(6,4,3,.15) 55%,rgba(6,4,3,.45)),url(../pro/relic_bg.jpg) 0% 40%/150% auto no-repeat;filter:none}
+
+/* ===== 타이틀 v2 : 밤 열차 1등석 탑승권 =====
+   레터박스 → 창밖 불빛이 훑으며 로고가 드러남 → 열차 흔들림·증기·먼지·그레인이 살아 있는 배경 → 금박 반짝임 → 탑승권 버튼 */
+/* 초대장 첫 화면 — 원본 영상과 제공된 로고를 사용한 타이틀 */
+.pro .ps[data-s="start"]{--mx:0;--my:0;background:#080806;isolation:isolate}
+.pro .ps[data-s="start"] .bg{background:#090b0a}
+
+.pro .ps[data-s="start"] .tt-ticket .tk-hole,.title-content .tt-ticket .tk-hole{position:absolute;right:calc(2.2cqw + 1.2cqh);top:50%;width:2.2cqh;height:2.2cqh;margin-top:-1.1cqh;border-radius:50%;background:#0b0705;box-shadow:inset 0 .3cqh .4cqh rgba(0,0,0,.8),0 0 0 1px rgba(90,60,25,.5);transform:scale(0);opacity:0}
+
+/* ===== 콜드 오픈 v2 : 플립 시계 ===== */
+.pro .cold-k{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(10px,1.1cqw,15px);letter-spacing:.6em;color:#6f6450;opacity:0;animation:coldin 1s .2s ease-out forwards}
+.pro .cold-t .fl.flip b{animation:flapb .32s cubic-bezier(.3,1.4,.5,1)}
+@keyframes flapb{0%{transform:rotateX(-90deg);filter:brightness(.4)}60%{transform:rotateX(12deg)}100%{transform:none;filter:none}}
+@keyframes clb{50%{opacity:.25}}
+.pro .cold.jolt{animation:cjolt .5s cubic-bezier(.3,.7,.3,1)}
+.pro .cold .cold-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+@keyframes cjolt{15%{transform:translateY(.9cqh)}35%{transform:translateY(-.4cqh)}60%{transform:translateY(.2cqh)}100%{transform:none}}
+.pro .cold.out .cold-flash{animation:cflash .45s ease-out}
+/* ===== 심문 v2 ===== */
+.talk .tk-por svg,.talk .ph-note{display:none!important}
+@keyframes cflash{0%{opacity:0}20%{opacity:.85}100%{opacity:0}}
+.talk:not(.hasvid) .tk-vid{opacity:0}
+.talk .tk-vid:not(.tk-react){transform:scale(calc(1 + var(--p,0)*.14));transform-origin:50% 30%}
+.talk .tk-line.in{animation:tkin .45s cubic-bezier(.2,.7,.2,1)}
+@keyframes tklamp{0%,90%,100%{opacity:1}92%{opacity:.6}94%{opacity:1}96%{opacity:.75}}
+/* 위쪽 진행 표시 (왼쪽 종이 카드 대신) */
+.tk-case{border:1px solid rgba(210,173,99,.28)}
+@keyframes tkin{from{opacity:0;transform:translateY(8px);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+.tk-case .tp-pips{display:flex;gap:7px}
+.tk-case .tp-pips i{width:9px;height:9px;border-radius:50%;border:1px solid rgba(210,173,99,.7)}
+.tk-case .tp-pips i.cur{background:rgba(210,173,99,.35);box-shadow:0 0 8px rgba(210,173,99,.6)}
+.tk-case .tp-pips i.done{background:#b8352b;border-color:#b8352b}
+.tk-case .tp-t{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+.tk-case .tp-t small{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--brass)}
+.tk-case .tp-t b{font-family:var(--serif);font-size:15px;color:#efe6d0;letter-spacing:.04em}
+/* 선택지 */
+.talk .tk-opts.m-act{right:calc(3.5% + 64px)!important}
+.talk.hitf::after{content:"";position:absolute;inset:0;z-index:19;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(194,58,44,.35),transparent 70%);animation:tkhit .7s ease-out forwards}
+@keyframes tkslam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-9deg) scale(2.4)}12%{opacity:1;transform:translate(-50%,-50%) rotate(-6deg) scale(.96)}20%{transform:translate(-50%,-50%) rotate(-6deg) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) rotate(-6deg) scale(1)}}
+@keyframes tkhit{from{opacity:1}to{opacity:0}}
+@keyframes evhint{50%{box-shadow:0 0 0 2px #d2ad63,0 0 34px rgba(210,173,99,.9)}}
+@keyframes enstamp{0%{opacity:0;transform:rotate(-7deg) scale(2.6)}60%{opacity:1;transform:rotate(-5deg) scale(.95)}100%{opacity:.92;transform:rotate(-5deg) scale(1)}}
+
+.pro .cold-t .fl .h{position:absolute;left:0;right:0;height:50%;overflow:hidden;background:#1b1611;backface-visibility:hidden}
+.pro .cold-t .fl .t,.pro .cold-t .fl .ft{top:0;border-radius:5px 5px 0 0!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 0 0 1px rgba(120,96,60,.25);background:linear-gradient(180deg,#ddd2b4 0%,#cabd9b 100%)!important}
+.pro .cold-t .fl .t b,.pro .cold-t .fl .ft b{top:0}
+.pro .cold-t .fl .b b,.pro .cold-t .fl .fb b{top:-100%}
+/* 가운데 이음매 */
+.pro .cold-t .fl .ft{transform-origin:50% 100%;z-index:2;visibility:hidden}
+.pro .cold-t .fl .fb{transform-origin:50% 0;z-index:2;visibility:hidden}
+.pro .cold-t .fl.go .ft{visibility:visible;animation:flipT .07s ease-in forwards}
+.pro .cold-t .fl.go .fb{visibility:visible;animation:flipB .07s .07s ease-out both}
+.pro .cold-t .fl b{font-weight:600;display:block;transform-origin:50% 50%;animation:none!important}
+@keyframes flipT{from{transform:rotateX(0);filter:brightness(1)}to{transform:rotateX(-90deg);filter:brightness(.5)}}
+@keyframes flipB{from{transform:rotateX(90deg);filter:brightness(1.4)}to{transform:rotateX(0);filter:brightness(1)}}
+.pro .cold-k::before,.pro .cold-k::after,.pro .cold-s::before,.pro .cold-s::after{content:"";width:clamp(30px,6cqw,96px);height:5px;background:linear-gradient(90deg,transparent,rgba(201,164,94,.6)) center/100% 1px no-repeat,radial-gradient(circle,#c9a45e 0 1.6px,transparent 2px) right center/5px 5px no-repeat}
+.pro .cold-k::after,.pro .cold-s::after{transform:scaleX(-1)}
+.pro .cold-t::before,.pro .cold-t::after{content:"";position:absolute;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f6dfa6,#8a6426 65%,#3d2a0e);box-shadow:0 1px 2px #000}
+.pro .cold-t::before{left:1cqw}
+.pro .cold-t::after{right:1cqw}
+.pro .cold-t .fl .h b{position:absolute;left:0;right:0;height:200%;display:grid;place-items:center;line-height:1;font-weight:700;color:#1c130b!important}
+.pro .cold-t .fl .t::after,.pro .cold-t .fl .ft::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px!important;background:#2a1a0c!important;box-shadow:0 1px 0 rgba(255,255,255,.35)}
+.pro .cold-t .fl::before,.pro .cold-t .fl::after{content:"";position:absolute;top:50%;width:5px;height:10%;margin-top:-5%;background:linear-gradient(180deg,#e6c780,#8a6426);z-index:3;border-radius:1px;box-shadow:0 0 0 1px rgba(30,18,6,.7)}
+.pro .cold-t .fl::before{left:-3px}
+.pro .cold-t .fl::after{right:-3px}
+.pro .cold-line{min-height:1.6em;font-size:clamp(15px,1.7cqw,24px);letter-spacing:.14em;margin-top:1.4cqh;font-family:"Noto Serif KR",var(--serif)!important;color:#efe2c4!important;text-shadow:0 2px 14px rgba(0,0,0,.9)}
+@keyframes tchole{0%{transform:scale(0);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes tcpunch{0%{transform:rotate(-1deg);opacity:1}7%{transform:rotate(-1deg) translateY(.4cqh) scale(.985);opacity:1}17%{transform:rotate(-1.5deg) translateY(0) scale(1);opacity:1}50%{transform:rotate(-1.3deg);opacity:1}100%{transform:rotate(-1.3deg) translateY(-.6cqh);opacity:0}}
+#pro.pro .ps[data-s="start"] .tt-top,#pro.pro .ps[data-s="start"] .tt-foot{animation-delay:2s!important;animation-duration:1.2s!important}
+/* ===== 플립 시계 v2 : 진짜 스플릿 플랩 ===== */
+.pro .cold-t .fl{position:relative;display:grid;place-items:center;opacity:0;animation:coldin .5s .35s ease-out forwards;background:none!important;perspective:300px;overflow:visible;border-radius:5px!important;color:#1c130b!important;font-family:"Noto Serif KR",var(--serif)!important;font-variant-numeric:lining-nums tabular-nums;font-feature-settings:"lnum" 1,"tnum" 1;font-size:.92em;box-shadow:0 1cqh 2cqh rgba(0,0,0,.7),0 0 0 1px rgba(40,24,10,.9);width:clamp(42px,5.8cqw,90px)!important;height:clamp(62px,8.7cqw,134px)!important}
+.pro .cold-t .fl .b,.pro .cold-t .fl .fb{bottom:0;border-radius:0 0 5px 5px!important;box-shadow:inset 0 -1px 0 rgba(90,70,40,.45),inset 0 0 0 1px rgba(120,96,60,.25);background:linear-gradient(180deg,#bdb08d 0%,#cdc09e 100%)!important}
+.pro .cold-t .cl{font-family:ui-monospace,Menlo,Consolas,monospace;opacity:0;animation:coldin .5s .35s ease-out forwards,clb 1s 1s steps(2) infinite;color:transparent!important;width:1.4cqw;margin:0 .45cqw;text-shadow:none!important;font-size:0!important;background:radial-gradient(circle at 40% 35%,#f6dfa6,#8a6426 68%,#3d2a0e) center 22%/.9cqw .9cqw no-repeat,radial-gradient(circle at 40% 35%,#f6dfa6,#8a6426 68%,#3d2a0e) center 78%/.9cqw .9cqw no-repeat;height:4cqw!important}
+.pro .cold-t.lock{filter:brightness(.86) saturate(.85);transition:filter .5s}
+.pro .cold-t.lock .fl{transition:box-shadow .4s,color .4s;animation:fllock .5s ease-out;color:#1c130b!important;box-shadow:0 1cqh 2cqh rgba(0,0,0,.7),0 0 0 1px rgba(40,24,10,.9)!important}
+/* --- 플립 시계 뒤 배경: 객차 벽(초록 다마스크 벽지 + 나무 징두리널)에 걸린 시계처럼. 어둡게 누르고 시계 위로 등불 빛만 번지게 --- */
+.pro .cold-t{display:flex;align-items:center;letter-spacing:0!important;opacity:1!important;animation:none!important;text-shadow:none!important;perspective:600px;position:relative;gap:.55cqw!important;border-radius:10px;background:linear-gradient(180deg,#4a2a1a 0%,#2e170d 46%,#1c0d07 100%);box-shadow:inset 0 1px 0 rgba(255,214,160,.14),inset 0 0 0 2px #1a0c06,inset 0 0 0 3px rgba(201,164,94,.5),inset 0 0 0 7px #120a06,inset 0 0 0 8px rgba(201,164,94,.18),0 2.4cqh 3.4cqh rgba(0,0,0,.85),0 .4cqh .8cqh rgba(0,0,0,.6)!important;font-size:clamp(32px,5.2cqw,82px)!important;padding:2cqh 2cqw!important;font-family:ui-monospace,Menlo,Consolas,monospace;color:#d9b26a}
+.pro .cold-k,.pro .cold-s{display:flex;align-items:center;gap:1.2cqw;font-family:"Cormorant Garamond","Noto Serif KR",var(--serif)!important;letter-spacing:.42em!important;padding-left:.42em;text-transform:uppercase;color:#8f7b52!important;font-size:clamp(10px,.95cqw,13px)!important;text-shadow:0 1px 6px rgba(0,0,0,.95)}
+@keyframes fllock{0%{filter:brightness(1.8)}100%{filter:brightness(1)}}
+
+.pro .ps[data-s="start"] .tt-ticket:hover,.title-content .tt-ticket:hover{transform:translateY(-.4cqh);box-shadow:0 1.8cqh 3.4cqh rgba(0,0,0,.7),0 0 3cqh rgba(217,178,106,.18)}
+
+.pro .ps.behind>:not(.consent){filter:blur(9px) brightness(.62) saturate(1.05)}

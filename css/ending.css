@@ -1,0 +1,164 @@
+/* 엔딩: 사건 기록 카드·영상 뒤 질문 화면. */
+
+.ending h2{font-family:var(--serif);font-weight:800;font-size:clamp(22px,4vw,44px);margin:0;line-height:1.25;text-wrap:balance}
+.ending .row{display:flex;justify-content:flex-start!important;gap:22px!important;margin-top:clamp(28px,5vh,60px)!important;align-items:center}
+.sc .row{display:flex;gap:.4em;margin-top:.4em;flex:none}
+.badend h2{font-family:var(--serif);font-weight:800;font-size:clamp(22px,4vw,44px);margin:0;line-height:1.25}
+
+/* 엔딩: 조사 화면 UI가 비치지 않게 완전히 덮고, 시계를 쥔 Rook을 흐리게 깔기 */
+.ending{display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;overflow:hidden;animation:none;z-index:70;gap:min(12px,1.6vh)!important;padding:9% 24px!important}
+.ended>:not(.ending):not(.pro){visibility:hidden!important}
+
+.ending #ctaBtn[disabled]{background:rgba(210,173,99,.15);border:1px solid rgba(210,173,99,.45);color:#b8aa90;cursor:default;animation:none;opacity:.85}
+.ending #ctaBtn[disabled]:hover{filter:none;transform:none}
+.ending .nag{text-align:left;line-height:1.7;font-family:var(--serif);opacity:0;transition:opacity 2.4s;border-left:0!important;padding-left:0!important;color:rgba(255,255,255,.5)!important;font-size:clamp(13px,1.05vw,19px)!important;letter-spacing:.01em!important;margin-top:clamp(14px,2.2vh,24px)!important}
+.ending .nag.on{opacity:.9;animation:nagf 5s 2.4s infinite}
+
+.ending::before{content:"";position:absolute;inset:-4%;z-index:-1;background:radial-gradient(ellipse at 50% 45%,rgba(14,10,6,.6),rgba(0,0,0,.95) 75%),url(../pro/relic_bg.jpg) 70% 40%/cover no-repeat;opacity:0;transform:scale(1.12);transition:opacity 2.4s,transform 14s cubic-bezier(.2,.6,.2,1)}
+.ending.e1::before{opacity:1;transform:scale(1)}
+.ending .en-bars i:first-child{top:0;transform-origin:top}
+.ending .en-bars i:last-child{bottom:0;transform-origin:bottom}
+.ending.e1 .en-bars i{transform:scaleY(1)}
+.ending.e3 .en-clock{opacity:1}
+.ending .en-clock.flip{animation:flapb .35s}
+.ending .en-stamp small{font-family:var(--mono);font-size:11px;letter-spacing:.4em;color:rgba(230,176,166,.75)}
+.ending.e2 .en-stamp{animation:enstamp .7s cubic-bezier(.2,.9,.3,1) forwards}
+.ending.e2{animation:cjolt .5s cubic-bezier(.3,.7,.3,1)}
+.ending.e3 .case{opacity:.85}
+.ending.e4 h2.q span:first-child,.ending.e5 h2.q span:last-child{opacity:1;transform:none;filter:none}
+.ending.e6 p.en,.ending.e6 .row{opacity:1;pointer-events:auto}
+.ending>*:not(.en-bars):not(.en-clock):not(.en-vid):not(.en-stamp){position:relative;z-index:2}
+
+.ending h2.q span{opacity:0;transform:translateY(10px);filter:blur(6px);transition:opacity 1.8s,transform 1.8s cubic-bezier(.2,.7,.2,1),filter 1.8s;display:inline-block}
+/* 사건 기록 카드 */
+.en-file{grid-column:2!important;grid-row:1/span 6;justify-self:center;align-self:center;position:relative;width:min(330px,100%);padding:16px 20px 18px;color:#2a1f14;background:linear-gradient(160deg,#eadfc6,#d9ccae);border-radius:2px;box-shadow:0 30px 60px rgba(0,0,0,.6),0 2px 0 rgba(255,255,255,.35) inset;opacity:0;transform:translateY(24px) rotate(2.4deg);transition:opacity 1.2s .2s,transform 1.4s .2s cubic-bezier(.2,.7,.2,1);z-index:3}
+.ending.e1 .en-file{opacity:1;transform:rotate(1.6deg)}
+.en-file::before{content:"";position:absolute;left:50%;top:-10px;width:70px;height:20px;margin-left:-35px;background:rgba(190,180,150,.55);border:1px solid rgba(120,100,70,.25);transform:rotate(-2deg)}
+.ef-top{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.26em;color:#7a5a30;padding-bottom:10px;border-bottom:1px solid rgba(90,64,34,.4)}
+.ef-photo{margin:12px 0 10px;aspect-ratio:16/10;overflow:hidden;background:#222;border:1px solid rgba(60,40,20,.5);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.ef-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 8%;filter:sepia(.35) contrast(1.05) saturate(.85)}
+.ef-name b{display:block;font-family:var(--serif);font-weight:800;font-size:22px;letter-spacing:.04em}
+.ef-rows{margin:10px 0 0;display:grid;gap:0}
+.ef-rows>div{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px dashed rgba(90,64,34,.4);font-size:13px}
+.ef-rows dt{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#7a5a30;align-self:center}
+.ef-rows dd{margin:0;font-family:var(--serif);font-weight:700}
+.en-file .en-stamp b{color:#b3261e!important;border-color:#b3261e!important;background:rgba(240,225,200,.0);mix-blend-mode:normal;font-size:clamp(26px,3vw,44px)!important}
+.en-file .en-stamp small{color:#b3261e!important;opacity:.85}
+.ending.e2 .en-file .en-stamp{animation:enstamp .7s cubic-bezier(.2,.9,.3,1) forwards}
+@media(max-width:860px){
+  .ending.ending{grid-template-columns:1fr;padding:12% 7% 6%!important}
+  .en-file{display:none}
+}
+/* 엔딩 사건 파일: 도장이 사진 위·카드 밖에 걸려 거의 안 보이던 것을 아래쪽 종이 위로 */
+.ending .en-file .en-stamp{right:7%!important;top:auto!important;bottom:13%!important}
+/* 휴대폰 세로: 게임이 가운데 얇은 띠로만 보이니 아래 빈 곳에 가로 보기 안내 */
+.ending p.en,.ending .row{opacity:0;pointer-events:none;transition:opacity .9s!important}
+.ending .en-file{transition:opacity .8s .1s,transform .9s .1s cubic-bezier(.2,.7,.2,1)!important}
+.ending.e3 .en-ev{opacity:1}
+.ending.e3 .en-ev li{opacity:1;transform:none}
+/* ---- 엔딩 v4: 장식을 걷어내고 글씨 위주로 단정하게 (카드·테이프·도장·글로우 제거) ---- */
+/* ===== 엔딩 페이지 v3: 사건 기록 카드 + 에디토리얼 타이포 ===== */
+.ending.ending{grid-template-rows:repeat(6,auto);display:grid!important;justify-items:start;text-align:left;gap:0!important;column-gap:clamp(40px,6vw,120px)!important;padding-left:8%!important;padding-right:8%!important;padding:0 9%!important;align-content:center!important;row-gap:0!important;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr)!important}
+.ending .case::before{content:"";width:44px;height:1px;background:var(--brass);opacity:.8;display:none!important}
+.ending .en-ev li{border-left:0!important}
+.ending .en-ev small{font-family:var(--sans)!important;font-size:clamp(12px,.95vw,17px)!important;letter-spacing:.02em!important;color:rgba(255,255,255,.5)!important}
+.ending p.en{max-width:none;text-align:left;font-family:var(--sans);font-style:normal;font-weight:400;letter-spacing:.02em!important;font-size:clamp(12px,.95vw,17px)!important;color:rgba(255,255,255,.4)!important;margin-top:clamp(28px,5vh,56px)!important}
+.ending p.en em{text-decoration-color:rgba(210,173,99,.45);text-underline-offset:.25em;color:inherit!important;font-style:normal!important;text-decoration:none;font-weight:500!important;color:rgba(255,255,255,.7)!important}
+.ending #againBtn:hover{color:#fff!important;border-bottom-color:#fff!important}
+.ending .en-clock{position:absolute;z-index:4;font-size:clamp(13px,1.4vw,18px);opacity:0;transition:opacity 1.2s;right:6%;top:calc(8% + 18px);font-family:var(--sans)!important;letter-spacing:.12em!important;color:rgba(255,255,255,.45)!important}
+.ending.e1 .en-file.en-file{transform:none!important}
+.ending.ending>*:not(.en-bars):not(.en-clock):not(.en-vid):not(.en-file){grid-column:1;max-width:none!important}
+.ending h2.q,.ending .nag,.ending p.en{text-shadow:none!important}
+.ending #ctaBtn,.ending #againBtn{font-size:clamp(13px,1vw,18px)!important}
+/* 엔딩 v5: 글씨를 최소로 — 라벨 · 질문 · 증거 한 줄 · 버튼, 오른쪽엔 사진과 이름만 */
+.ending .nag,.ending p.en,.ending .en-ev small,.ending .en-clock{display:none!important}
+.ending .en-ev li+li::before{content:"·";margin:0 12px;color:rgba(255,255,255,.3)}
+/* 엔딩 v6: 흐린 사진을 아주 어둡게 깔고, 질문은 명조 계열로 차분하게 */
+.ending.ending::before{background:linear-gradient(rgba(0,0,0,.74),rgba(0,0,0,.84)),url(../pro/relic_bg.jpg) 70% 40%/cover no-repeat!important;filter:blur(7px)!important;transform:scale(1.06)}
+.ending .case{font-family:"Gowun Batang","Batang",serif!important}
+.ending .en-ev b{letter-spacing:.02em;font-weight:500!important;font-size:clamp(14px,1.1vw,20px)!important;color:rgba(255,255,255,.82)!important;font-family:"Gowun Batang","Batang",serif!important}
+.ending .en-ev::before{content:"밝혀낸 증거";font-size:clamp(12px,.95vw,17px);color:rgba(255,255,255,.4);margin-right:16px;font-family:"Gowun Batang","Batang",serif}
+/* 엔딩 v7: 질문 글씨를 대비가 뚜렷한 정통 명조(Noto Serif KR)로 */
+.ending h2.q span:last-child{font-weight:400!important}
+.ending .case,.ending .en-ev b,.ending .en-ev::before{font-family:"Noto Serif KR","Nanum Myeongjo","Batang",serif!important;font-weight:400!important}
+.ending h2.q{text-shadow:0 2px 24px rgba(0,0,0,.8);text-align:left;color:#efe6d2!important;word-break:keep-all;font-family:"Cormorant Garamond","Noto Serif KR",serif;font-weight:400;font-style:italic;letter-spacing:.02em!important;line-height:1.3!important;font-size:clamp(34px,4vw,72px)!important}
+.ending h2.q span:first-child{color:rgba(239,230,210,.6)!important;font-size:.78em}
+.ending h2.q span:nth-of-type(2){font-weight:500!important}
+.ending.e5 h2.q span:nth-of-type(2){opacity:1;transform:none;filter:none}
+.ending h2.q .kr{display:block;margin-top:1.8em;font-style:normal;font-family:"Noto Serif KR","Nanum Myeongjo",serif;font-weight:300;font-size:clamp(13px,1.05vw,20px);letter-spacing:.08em;color:rgba(239,230,210,.62);opacity:0;transition:opacity 1.8s .6s}
+.ending.e5 h2.q .kr{opacity:1}
+.ending .en-bars{display:none!important}
+.ending .case{opacity:0;transition:opacity 1.4s;margin-top:1.4vh;display:flex;align-items:center;gap:14px;margin:0 0 clamp(18px,3vh,32px)!important;font-size:clamp(12px,.95vw,18px)!important;letter-spacing:.3em!important;color:rgba(217,178,106,.85)!important;margin-bottom:clamp(18px,3vh,40px)!important}
+/* 엔딩: 밝혀낸 증거 목록 (글씨로만) */
+.ending .en-ev{list-style:none;padding:0;display:flex;opacity:0;transition:opacity .8s;width:auto!important;flex-direction:row!important;flex-wrap:wrap;align-items:baseline;gap:6px 0!important;border-top:0!important;margin:clamp(10px,1.8vh,20px) 0 clamp(26px,4.5vh,48px)!important;margin-bottom:clamp(28px,5vh,64px)!important}
+.ending .case,.ending .en-ev li,.ending h2.q span,.ending h2.q .kr,.ending .row,.ending .en-file{transition-duration:.7s!important;transition-delay:0s!important}
+.ending .en-ev li{flex-direction:column;padding-left:12px;opacity:0;transform:translateX(-8px);transition:opacity .6s var(--d,0s),transform .6s var(--d,0s);align-items:baseline;gap:16px;border-bottom:1px solid rgba(255,255,255,.16);grid-template-columns:clamp(150px,12vw,300px) 1fr;display:block!important;border:0!important;padding:0!important;animation-duration:.6s!important}
+.ending .en-cap b,.ending .en-cap i{white-space:nowrap;text-wrap:balance}
+@media (max-width:640px){
+  .ending .en-cap b,.ending .en-cap i{white-space:normal}
+}
+/* 엔딩 영상 속 엘레나의 외침:인트로·회상 자막과 같은 모양(한국어 흰색 위, 영어 금색 아래) */
+.ending .en-cap{position:absolute!important;left:0;right:0;bottom:9%;z-index:10!important;display:flex;flex-direction:column;align-items:center;gap:.3em;padding:0 6%;pointer-events:none;opacity:0;transition:opacity .25s}
+.ending .en-cap.on{opacity:1}
+.ending .en-cap b{font-family:"Noto Sans KR","Pretendard","Malgun Gothic",sans-serif;font-weight:500;font-size:max(13px,2cqw);line-height:1.5;color:#fff;text-shadow:0 1px 6px #000,0 0 2px #000}
+.ending .en-cap i{font-style:normal;font-family:"Noto Serif KR",var(--serif);font-weight:600;font-size:max(12px,1.9cqw);line-height:1.4;color:#d2ad63;text-shadow:0 1px 8px #000,0 0 3px #000}
+/* 엔딩 마무리: 플레이 결과 한 줄 · 남은 용의자 세 명(물음표) · 한국어 질문을 읽기 좋게 · '다시 조사하기'를 주 버튼으로 */
+.ending .en-stat{grid-column:1;margin:.5em 0 0;font-family:var(--mono);font-size:clamp(10.5px,.85vw,12.5px);letter-spacing:.16em;color:rgba(210,173,99,.82);opacity:0;transition:opacity 1.4s}
+.ending.e3 .en-stat{opacity:1}
+.ending .q .kr{font-size:clamp(16px,1.45vw,22px)!important;opacity:.95!important;color:var(--paper)!important;letter-spacing:.02em}
+.ending.e6 .en-file .en-sus{opacity:1;transform:none}
+.ending.e6 .en-file .en-sus-cap{opacity:.8}
+.ending .row{flex-wrap:wrap}
+.ending #againBtn{position:static;background:none!important;font-size:13px;border-radius:0;border-bottom:1px solid rgba(255,255,255,.5)!important;letter-spacing:.04em!important;order:1;border:1px solid var(--brass)!important;padding:.95em 1.7em!important;color:var(--paper)!important;cursor:pointer;transition:background .25s}
+.ending #againBtn:hover,.ending #againBtn:focus-visible{background:rgba(210,173,99,.2)}
+.ending #ctaBtn{margin:0;border-radius:2px;color:rgba(255,255,255,.55)!important;font-weight:500!important;letter-spacing:.04em!important;order:2;border:0!important;padding:0!important;background:none!important;font-size:12px!important;opacity:.55!important;min-height:0}
+
+/* ===== 영상 뒤 질문 화면: 타이틀 화면과 같은 말투로 맞춘다 =====
+   엔딩 영상의 마지막 장면(눈 감은 엘레나)을 아주 어둡게 깔고, 위아래 검은 띠 사이 한가운데에
+   가는 금선 · 질문 한 줄(한국어) · 영어 한 줄 · 금테 버튼만 둔다. 증거 목록·통계·사진 카드는 숨긴다 */
+.ending.ending.ending{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:none!important;justify-items:center!important;align-content:center!important;text-align:center!important;padding:0 8%!important;row-gap:0!important}
+.ending.ending.ending::before{background:linear-gradient(0deg,rgba(2,3,3,.96),rgba(2,3,3,.84) 35%,rgba(2,3,3,.84) 65%,rgba(2,3,3,.93)),url(../pro/ending_bg.jpg) 50% 30%/cover no-repeat!important;filter:saturate(.55)!important;transform:scale(1.03)!important;opacity:1!important}
+.ending.ending.ending>*{grid-column:1!important;grid-row:auto!important}
+.ending.ending .en-ev,.ending.ending .en-stat,.ending.ending .en-file,.ending.ending .en-clock,.ending.ending #ctaBtn{display:none!important}
+.ending.ending .en-bars{display:block!important}
+.ending.ending .en-bars i{height:7.5%!important}
+.ending.ending.ending .case{order:1;display:flex!important;align-items:center;justify-content:center;gap:1.4em;margin:0 0 clamp(22px,4.4vh,48px)!important;font-family:var(--serif)!important;font-size:clamp(10.5px,.85vw,14px)!important;font-weight:400!important;letter-spacing:.42em!important;color:rgba(217,178,106,.82)!important}
+.ending.ending.ending .case::before,.ending.ending.ending .case::after{content:""!important;display:block!important;width:clamp(26px,5vw,80px);height:1px;background:linear-gradient(90deg,transparent,rgba(210,173,99,.7))}
+.ending.ending.ending .case::after{background:linear-gradient(270deg,transparent,rgba(210,173,99,.7));margin-left:-.42em}
+.ending.ending.ending h2.q br{display:none}
+.ending.ending.ending.e4 h2.q .kr{opacity:1!important;transform:none;filter:none}
+.ending.ending.ending.e5 h2.q span{opacity:1!important}
+.ending.ending #againBtn{font-family:var(--serif)!important;font-size:clamp(12px,1vw,16px)!important;font-weight:400!important;letter-spacing:.34em!important;padding:1em 2.4em 1em 2.74em!important;border:1px solid rgba(210,173,99,.5)!important;border-radius:2px!important;background:rgba(9,8,6,.6)!important;color:#e9dcc0!important;box-shadow:0 12px 26px rgba(0,0,0,.5);transition:background .4s,border-color .4s,transform .35s!important}
+.ending.ending #againBtn:hover,.ending.ending #againBtn:focus-visible{background:rgba(210,173,99,.14)!important;border-color:rgba(226,192,121,.95)!important;transform:translateY(-2px)}
+
+/* --- 겹침 정리: 영상 위에는 손 뼈대만 둔다. ● REC · CAM 01 · 상태 칩은 영상 바로 위 '이름표 줄'로 올리고, 손 안내 띠는 그 위에 쌓는다 --- */
+/* ===== 카메라 창 정리 + 켜질 때 연출 + 손 인식 표시 =====
+   세 군데 카메라 창(프롤로그 .cam, 살펴보기 .excam, 털기 .scam)에 같은 모양을 입힌다.
+   - 창: 어두운 감시 모니터. 금색 모서리 꺾쇠, 가는 주사선, 가장자리 어둠
+   - 안내 글자: 창 위에 둥둥 떠 있던 것을 정리. ● REC 는 창 안 왼쪽 위, 손 안내는 창 위에 어두운 띠로
+   - 켜질 때: 가로줄 하나가 번쩍 벌어지며 화면이 열리고 잡음이 치지직 걷힌다
+   - 손 인식: 손 뼈대(관절·선)를 화면 위에 그리고, 오른쪽 아래에 상태 칩(손 없음 / 손 인식 / 집기) */
+.camfx{--cbar:20px;border:1px solid rgba(210,173,99,.5)!important;background:#040404!important;box-shadow:0 12px 32px rgba(0,0,0,.65)!important;overflow:visible}
+.camfx.boot{animation:camFlick 1.1s steps(1) both}
+
+.tt-gate b{font-weight:500;animation:ttGateBlink 2.4s ease-in-out infinite}
+
+/* 영상 뒤 질문 화면: 질문 아래에 원래 있던 것들(21:47 한 줄, 밝혀낸 증거, 플레이 기록, 게임 다운로드·처음으로 돌아가기 버튼)을 다시 보여 준다 */
+/* 영어 질문을 한 줄로: 한국어 줄은 위에 꽉 차게, 영어 두 조각은 나란히 */
+.ending.ending.ending h2.q{order:2;display:flex!important;margin:0!important;text-align:center;font-style:normal;flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:baseline}
+.ending.ending.ending h2.q .kr{order:1;margin:0!important;font-family:"Noto Serif KR","Nanum Myeongjo","Batang",serif!important;font-style:normal!important;font-weight:400!important;font-size:clamp(22px,2.7vw,44px)!important;line-height:1.5!important;letter-spacing:.04em!important;color:#efe6d2!important;opacity:0!important;transform:translateY(8px);filter:blur(5px);transition:opacity 1.6s,transform 1.6s cubic-bezier(.2,.7,.2,1),filter 1.6s!important;flex:0 0 100%;text-align:center}
+.ending.ending.ending h2.q span{order:2;display:inline!important;font-family:var(--serif)!important;font-style:italic!important;font-weight:400!important;font-size:clamp(12px,1.05vw,17px)!important;letter-spacing:.14em!important;line-height:1.6!important;color:rgba(236,226,207,.5)!important;opacity:0!important;transform:none!important;filter:none!important;transition:opacity 1.4s .2s!important;white-space:nowrap;margin-top:clamp(12px,2vh,22px)!important}
+.ending.ending.ending h2.q span:first-of-type{margin-top:clamp(12px,2vh,22px);margin-right:.32em}
+.ending.ending.ending .nag{order:3;display:block!important;text-align:center!important;border-left:0!important;padding-left:0!important;margin:clamp(16px,3vh,30px) 0 0!important;
+  font-family:"Noto Serif KR","Nanum Myeongjo",serif!important;font-size:clamp(12px,1.05vw,16px)!important;letter-spacing:.08em!important;color:#c79a86!important}
+.ending.ending.ending .en-ev{order:4;display:flex!important;flex-direction:row!important;flex-wrap:wrap;justify-content:center;gap:clamp(6px,1vw,12px)!important;
+  margin:clamp(20px,3.6vh,40px) 0 0!important;padding:0!important;border:0!important;opacity:0;transition:opacity .8s}
+.ending.ending.ending.e6 .en-ev{opacity:1}
+.ending.ending.ending.e6 .en-ev li{opacity:1;transform:none}
+.ending.ending.ending .en-ev li b{font-weight:400!important}
+.ending.ending.ending .en-ev:empty{display:none!important}
+.ending.ending.ending .en-stat{order:5;display:block!important;margin:clamp(12px,2vh,20px) 0 0!important;text-align:center;opacity:0;transition:opacity 1.2s .5s}
+.ending.ending.ending.e6 .en-stat{opacity:.85}
+.ending.ending.ending .row{justify-content:center!important;margin-top:clamp(34px,7vh,80px)!important;order:6;gap:14px!important}
+.ending.ending.ending .row #ctaBtn{display:inline-flex!important;align-items:center;order:0;font-family:var(--serif)!important;font-size:clamp(12px,1vw,16px)!important;font-weight:400!important;letter-spacing:.24em!important;
+  padding:1em 2.2em!important;border:1px solid rgba(210,173,99,.28)!important;border-radius:2px!important;background:transparent!important;color:rgba(233,220,192,.6)!important;cursor:default;opacity:1!important}

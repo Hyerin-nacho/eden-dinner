@@ -1,0 +1,117 @@
+/* 심문 화면: 엘레나 대화·자막·선택지·거짓말 도장. */
+
+/* ===== 심문 화면 v2 ===== */
+.talk{grid-template-rows:minmax(0,1fr) auto;backdrop-filter:blur(3px);display:block;background:#050302}
+.talk.hasvid .tk-por::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(2,3,2,.97) 0,rgba(2,3,2,.6) 9%,transparent 26%,transparent 52%,rgba(5,3,2,.94) 92%),linear-gradient(90deg,rgba(5,3,2,.75),transparent 28%,transparent 80%,rgba(5,3,2,.55))}
+.talk .tk-por::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;box-shadow:inset 0 0 160px rgba(0,0,0,.8)}
+.tk-tag small{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--brass)}
+.tk-tag b{font-family:var(--serif);font-size:clamp(18px,2.1vw,26px);color:#f2e9d4}
+.talk .tk-name{justify-content:center;gap:10px}
+.talk .tk-name.rock b{color:#a9bccb}
+.talk .tk-name small,.talk .tk-name .gauge{display:none}
+.talk[data-m="next"] .tk-line{cursor:pointer}
+.talk .tk-line.inner{color:#b9c6cf}
+.tc-h span{font-family:var(--serif);font-weight:700;color:#efe6d0;font-size:15px;letter-spacing:.08em}
+.tc-h small{font-family:var(--mono);font-size:10.5px;color:var(--brass);letter-spacing:.12em}
+.tcard{position:relative;border:0;text-align:left;padding:12px 14px 12px 46px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transform:rotate(var(--r));transition:transform .25s,filter .25s;color:var(--ink-t);font:inherit;filter:brightness(.82) drop-shadow(0 6px 10px rgba(0,0,0,.6))}
+.tcard:hover,.tcard.cur{transform:rotate(0) translateX(8px);filter:brightness(1) drop-shadow(0 10px 16px rgba(0,0,0,.7))}
+.tcard b{font-family:var(--serif);font-size:15px;color:var(--ink-b)}
+.tcard em{font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:#7a6c58}
+.tcard.cur em{color:var(--red)}
+.tcard.done{filter:brightness(.7) drop-shadow(0 6px 10px rgba(0,0,0,.6))}
+.tcard.done .k{background:var(--red)}
+.tstamp{position:absolute;right:10px;top:50%;transform:translateY(-50%) rotate(-12deg);border:2px solid var(--red);color:var(--red);font-style:normal;font-family:var(--serif);font-weight:800;font-size:13px;padding:1px 8px;letter-spacing:.2em;mix-blend-mode:multiply}
+.tk-meter span{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--brass)}
+.tk-meter i::after{content:"";position:absolute;left:-1px;right:-1px;bottom:0;height:var(--g,100%);background:linear-gradient(0deg,#8a5a2b,#e2c27f);transition:height .8s cubic-bezier(.2,.9,.3,1);box-shadow:0 0 12px rgba(226,194,127,.5)}
+.tk-meter.low i::after{background:linear-gradient(0deg,#6b1712,#d24a3a);box-shadow:0 0 14px rgba(210,74,58,.6)}
+.tk-meter em{font-style:normal;font-family:var(--serif);font-size:13px;color:#efe6d0;writing-mode:vertical-rl;letter-spacing:.3em}
+.tk-meter.low em{color:#e0685c}
+/* 선택지 */
+.talk .tk-opts{position:absolute;z-index:4;border:0;padding:0;max-height:none;overflow:visible;background:none}
+.talk .tk-opts .opt{background:rgba(12,9,7,.72);border:1px solid rgba(210,173,99,.35);color:#efe6d0;padding:10px 16px;font-size:14px;backdrop-filter:blur(6px)}
+.talk .tk-opts .opt:hover{background:rgba(210,173,99,.16);border-color:var(--brass)}
+.talk .tk-opts .opt.hot{border-color:#c9473a;color:#ffd9cf;background:rgba(120,24,18,.45)}
+.talk .tk-opts .opt.quiet{background:none;border-color:transparent;color:rgba(239,230,208,.6);font-size:12.5px}
+.talk .tk-opts .opt-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--brass);text-shadow:0 1px 3px #000}
+.tk-opts.m-next .opt{background:none;border:0;color:rgba(239,230,208,.75);font-size:12px;padding:4px 10px;animation:nb 1.6s ease-in-out infinite}
+@keyframes nb{50%{opacity:.4}}
+.talk[data-m="act"] .tk-meter,.talk[data-m="ev"] .tk-meter{opacity:.35}
+/* 증거 카드 트레이 */
+.talk[data-m="ev"] .tk-line{font-size:clamp(14px,1.4vw,17px);opacity:.85}
+.polar{position:relative;width:150px;border:0;padding:9px 9px 12px;background:#efe6d0;color:#2a211a;display:flex;flex-direction:column;gap:6px;cursor:pointer;transform:rotate(var(--r));transition:transform .25s cubic-bezier(.2,.9,.3,1.2),box-shadow .25s;box-shadow:0 10px 22px rgba(0,0,0,.6);font:inherit}
+.polar:hover,.polar:focus-visible{transform:translateY(-18px) rotate(0) scale(1.06);box-shadow:0 20px 34px rgba(0,0,0,.7);outline:none}
+.polar .ph{display:block;width:100%;aspect-ratio:16/10;background-color:#201f1b;background-repeat:no-repeat;filter:sepia(.2) saturate(.9) contrast(1.04)}
+.polar.thrown{animation:throw .52s cubic-bezier(.3,.7,.2,1) forwards;z-index:9}
+.tk-opts.m-ev .opt.quiet{align-self:center}
+@keyframes throw{40%{transform:translateY(-34vh) rotate(-4deg) scale(1.5)}100%{transform:translateY(-30vh) rotate(-2deg) scale(1.42);opacity:.0}}
+@media (max-width:760px){
+  .tk-case{position:absolute;left:3%;right:3%;top:auto;bottom:34%;width:auto;flex-direction:row;flex-wrap:wrap}
+  .tc-h{width:100%}
+  .tcard{flex:1;min-width:30%}
+  .talk .tk-box{width:92%}
+  .tk-meter{display:none}
+  .tk-opts.m-ev{width:94%}
+  .polar{width:104px}
+}
+.curl .bk{filter:drop-shadow(0 0 10px rgba(0,0,0,.35))}
+
+/* 심문 자막을 손 높이까지 올리고, 자막 뒤에 옅은 어둠 띠 */
+.talk .tk-box{position:absolute;transform:translateX(-50%);background:none;border:0;display:block;z-index:3;margin-bottom:clamp(36px,7vh,64px);bottom:13%}
+.talk .tk-main{padding:0;align-items:center;text-align:center;gap:6px;position:relative}
+.talk .tk-main::before{content:"";position:absolute;left:-12%;right:-12%;top:-28px;bottom:-22px;background:radial-gradient(ellipse at 50% 55%,rgba(4,3,2,.62),rgba(4,3,2,0) 70%);z-index:-1;pointer-events:none}
+.tk-opts.m-next{bottom:6%}
+/* 엘레나 영상: 대기 영상 두 개가 겹쳐 넘어가고, 반응 영상은 천천히 섞임 */
+.talk .tk-vid{transition:opacity .9s ease,transform .9s cubic-bezier(.2,.8,.2,1),filter .9s!important;object-position:40% 22%}
+
+.polar small{font-size:10.5px;color:#6b5c48;text-align:left;-webkit-box-orient:vertical;display:block;overflow:visible;-webkit-line-clamp:unset;line-height:1.35}
+.evc small{font-size:clamp(10px,.82vw,12.5px);line-height:1.35;color:#6b5c48;display:block;word-break:keep-all}
+.evc.dim{opacity:.22;filter:blur(1.5px) saturate(.6)}
+.evp-hint b{color:#d2ad63;font-weight:600}
+@media(max-width:760px){
+  .evc small{display:none}
+}
+/* 오른쪽 평정 게이지와 겹치지 않게 */
+.tk-opts.m-act .opt.main{border-color:rgba(210,173,99,.8);background:rgba(210,173,99,.16)}
+.tk-slam b{font-family:var(--serif);font-weight:900;font-size:clamp(46px,8vw,110px);letter-spacing:.12em;color:#c23a2c;padding:.05em .35em;border:.08em solid #c23a2c;border-radius:.12em;text-shadow:0 0 30px rgba(194,58,44,.35);mix-blend-mode:screen;
+  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='.8' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.6'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='.8' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.6'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.tk-slam small{font-family:var(--mono);font-size:12px;letter-spacing:.4em;color:#e6b0a6}
+
+.testmenu small{font-family:var(--mono);font-size:10.5px;letter-spacing:.25em;color:var(--brass)}
+
+.dpb-black b{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(34px,5.5vw,70px);letter-spacing:.25em;color:#c23a2c;opacity:0;transition:opacity .8s .5s}
+.dpb-black small{font-family:var(--serif);font-size:clamp(15px,1.7vw,21px);letter-spacing:.24em;color:rgba(239,230,208,.7);opacity:0;transition:opacity 1s .6s}
+
+/* --- 조정: 플립 시계도 덜 튀게 — 크기를 줄이고, 숫자판을 바랜 종이색으로, 전체 밝기·채도를 낮춤 --- */
+.pro .cold-t{filter:brightness(.74) saturate(.78)}
+
+.notify small{color:var(--brass)}
+
+.exfound b{letter-spacing:.06em;text-shadow:0 2px 18px rgba(0,0,0,.9),0 0 22px rgba(210,173,99,.25)}
+
+/* 심문 메뉴/선택지가 대사 상자와 겹치지 않게: 대사를 왼쪽으로 비킨다 */
+.talk[data-m="menu"] .tk-box,.talk[data-m="act"] .tk-box{left:4%;transform:none;width:min(780px,56%)}
+.talk .tk-line{padding-bottom:.4em;font-size:clamp(16px,1.75vw,22px);line-height:1.6;color:#f6eedc;text-shadow:0 2px 6px #000,0 0 22px rgba(0,0,0,.9);cursor:default;min-height:4.9em}
+
+/* '거짓말' 도장 */
+/* '거짓말' 도장 v2: 고무도장 느낌의 이중 테두리, 잉크 번짐 */
+.tk-slam{position:absolute;left:50%;top:40%;z-index:20;pointer-events:none;display:flex;flex-direction:column;align-items:center;opacity:0;transform:translate(-50%,-50%) rotate(-9deg) scale(2.4);gap:0!important}
+.tk-slam .sl{position:relative;display:flex;flex-direction:column;align-items:center;padding:.42em 1.1em .5em;font-size:clamp(16px,2.6vw,38px);color:#d93a2e;background:rgba(34,6,5,.62);border:.16em solid #c8332a;border-radius:.22em;box-shadow:0 0 0 .07em rgba(8,3,3,.55),0 .5em 1.6em rgba(0,0,0,.65),inset 0 0 1.2em rgba(200,51,42,.28);
+  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.6 2.35'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.6 2.35'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.tk-slam .sl::before{content:"";position:absolute;inset:.2em;border:.04em solid rgba(217,58,46,.75);border-radius:.12em;pointer-events:none}
+.tk-slam .sl .t{font-family:var(--mono);font-size:.4em;letter-spacing:.62em;margin-right:-.62em;color:#e8665b}
+.tk-slam::after{content:"";position:absolute;left:50%;top:50%;width:60%;aspect-ratio:1;border:2px solid rgba(226,64,47,.7);border-radius:50%;transform:translate(-50%,-50%) scale(.4);opacity:0;pointer-events:none}
+.tk-slam.on::after{animation:slring .7s ease-out .12s both}
+@keyframes slring{0%{opacity:.9;transform:translate(-50%,-50%) scale(.5)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.4)}}
+
+.ef-name small{display:block;margin-top:3px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#7a5a30}
+
+.talk .tk-line.punch{font-weight:800;color:#fff;font-size:clamp(19px,2.2vw,28px);letter-spacing:.01em;text-shadow:0 2px 10px #000,0 0 30px rgba(0,0,0,.95)}
+.hwz small{position:absolute;bottom:4%;left:0;right:0;text-align:center;font:12px/1 var(--mono,monospace);letter-spacing:.3em;color:rgba(233,223,200,.6)}
+.notify small{padding:2px 8px;border:1px solid rgba(210,173,99,.55);font-size:clamp(10.5px,.8vw,17px)}
+/* 쓴 증거 표시 */
+.evc.used{filter:saturate(.55) brightness(.82)}
+.evc.tried{filter:saturate(.7) brightness(.9)}
+
+.talk .tk-opts.m-next .opt{display:flex;align-items:center;gap:.6em;font-size:clamp(13px,1.02vw,19px);color:#efe6d0;padding:6px 10px}
+
+.tt-gate small{font-family:var(--sans,sans-serif);letter-spacing:.12em;font-size:max(10px,.72cqw);color:rgba(236,226,203,.4)}

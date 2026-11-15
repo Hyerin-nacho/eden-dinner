@@ -18,3 +18,5 @@
 | sfx/tearloop.mp3 | 종이 찢는 소리(초대장) | "Ripping Paper (Slow and Long)" by GemstoneProductions99 — https://freesound.org/people/GemstoneProductions99/sounds/571586 |
 | pro/intro_fast.mp4, pro/Memory.mp4 | 조용한 실내 공기음(대사 아래) | "room tone quiet apartment kitchen night nice with distant city traffic and ambient hum and hiss.flac" by kyles — https://freesound.org/people/kyles/sounds/635732 |
 | sv/evelyn·magician·margaret.mp4, pro/story_cut.mp4, pro/ending_cut.mp4 | 객차 실내음·옷 스침·발소리(대사·음악 아래) | 위 표의 같은 녹음 사용 |
+| sfx/title_in.mp3, sfx/title_loop.mp3 | 타이틀: 열차가 지나가는 소리 · 객차 덜컹거림(반복) | "DC Metro - Interior 1" by crashoverride6 — https://freesound.org/people/crashoverride6/sounds/219233 + sfx/rumble.mp3 (같은 표의 열차 진동 녹음)을 잘라 섞음 |
+| sfx/title_hover.mp3 | 타이틀 시작하기 호버: 종이 스치는 소리 | sfx/rustle.mp3 와 같은 "Clothes Rustling Movement" by Joao_Janz 녹음에서 잘라 냄 |

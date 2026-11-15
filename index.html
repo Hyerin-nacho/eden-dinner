@@ -5426,4 +5426,53 @@ html.mobile .excam,html.mobile #scrCam{display:none!important}
   if(document.readyState==="complete") setTimeout(init,60); else addEventListener("load",()=>setTimeout(init,60),{once:true});
 }catch(e){ console.warn("title sound",e); } })();
 </script>
+<style id="ending-more-style">
+/* 영상 뒤 질문 화면: 질문 아래에 원래 있던 것들(21:47 한 줄, 밝혀낸 증거, 플레이 기록, 게임 다운로드·처음으로 돌아가기 버튼)을 다시 보여 준다 */
+/* 영어 질문을 한 줄로: 한국어 줄은 위에 꽉 차게, 영어 두 조각은 나란히 */
+.ending.ending.ending h2.q{flex-direction:row!important;flex-wrap:wrap!important;justify-content:center!important;align-items:baseline!important}
+.ending.ending.ending h2.q .kr{flex:0 0 100%;text-align:center}
+.ending.ending.ending h2.q span{white-space:nowrap;margin-top:clamp(12px,2vh,22px)!important}
+.ending.ending.ending h2.q span:first-of-type{margin-right:.32em}
+.ending.ending.ending .nag{order:3;display:block!important;text-align:center!important;border-left:0!important;padding-left:0!important;margin:clamp(16px,3vh,30px) 0 0!important;
+  font-family:"Noto Serif KR","Nanum Myeongjo",serif!important;font-size:clamp(12px,1.05vw,16px)!important;letter-spacing:.08em!important;color:#c79a86!important}
+.ending.ending.ending .en-ev{order:4;display:flex!important;flex-direction:row!important;flex-wrap:wrap;justify-content:center;gap:clamp(6px,1vw,12px)!important;
+  margin:clamp(20px,3.6vh,40px) 0 0!important;padding:0!important;border:0!important;opacity:0;transition:opacity .8s}
+.ending.ending.ending.e6 .en-ev{opacity:1}
+.ending.ending.ending .en-ev li{display:block!important;padding:.42em 1em!important;border:1px solid rgba(210,173,99,.38)!important;border-radius:2px;background:rgba(210,173,99,.05);
+  font-size:clamp(11px,.85vw,13px);letter-spacing:.06em;color:rgba(236,226,203,.86);opacity:0;transform:translateY(6px);transition:opacity .6s var(--d,0s),transform .6s var(--d,0s)}
+.ending.ending.ending.e6 .en-ev li{opacity:1;transform:none}
+.ending.ending.ending .en-ev li b{font-weight:400!important}
+.ending.ending.ending .en-ev:empty{display:none!important}
+.ending.ending.ending .en-stat{order:5;display:block!important;margin:clamp(12px,2vh,20px) 0 0!important;text-align:center;opacity:0;transition:opacity 1.2s .5s}
+.ending.ending.ending.e6 .en-stat{opacity:.85}
+.ending.ending.ending .row{order:6;gap:14px!important}
+.ending.ending.ending .row #ctaBtn{display:inline-flex!important;align-items:center;order:0;font-family:var(--serif)!important;font-size:clamp(12px,1vw,16px)!important;font-weight:400!important;letter-spacing:.24em!important;
+  padding:1em 2.2em!important;border:1px solid rgba(210,173,99,.28)!important;border-radius:2px!important;background:transparent!important;color:rgba(233,220,192,.6)!important;cursor:default;opacity:1!important}
+</style>
+<script>
+/* 질문 화면: 소리를 풍성하게 (모두 실제 녹음)
+   - 열차는 여전히 달린다: 객차 실내음·열차 울림이 낮게 깔린다
+   - 도장이 찍힐 때 쿵, 시계가 21:48로 넘어갈 때 판 넘기는 소리
+   - 질문이 뜰 때 느린 심장 박동 두 번, 둘째 줄에 먼 객차 삐걱임 */
+(()=>{ try{
+  const again=document.getElementById("againBtn");
+  const bed=[];
+  const loopIn=(src,vol,ms)=>{ try{ if(typeof soundOn!=="undefined"&&!soundOn) return; const a=new Audio(src); a.loop=true; a.volume=0; a.play().catch(()=>{}); bed.push(a);
+      const t0=performance.now(), iv=setInterval(()=>{ const k=Math.min(1,(performance.now()-t0)/ms); a.volume=vol*k; if(k>=1) clearInterval(iv); },60); }catch(e){} };
+  const bedStop=()=>{ bed.splice(0).forEach(a=>{ const v0=a.volume, t0=performance.now(), iv=setInterval(()=>{ const k=Math.min(1,(performance.now()-t0)/500); a.volume=v0*(1-k); if(k>=1){ clearInterval(iv); a.pause(); } },50); }); };
+  const fx=(n,v,ms)=>setTimeout(()=>{ try{ if(typeof mode!=="undefined"&&mode!=="end") return; SFX(n,v); }catch(e){} },ms);
+  const orig=window.endSeq||endSeq;
+  endSeq=function(){
+    orig.apply(this,arguments);
+    loopIn("sfx/carriage.mp3",.13,2500);       // 열차는 계속 달린다
+    loopIn("sfx/rumble.mp3",.22,3000);
+    fx("thud",.35,520);                         // 도장 쾅에 무게
+    fx("flip",.32,2000);                        // 21:47 → 21:48
+    fx("heart",.55,2750); fx("heart",.45,3420); // 질문이 뜰 때 심장 박동
+    fx("woodcreak",.12,4200);                   // 둘째 줄: 먼 객차 삐걱임
+    fx("heart",.35,6000); fx("heart",.28,6700);
+  };
+  if(again){ const o=again.onclick; again.onclick=e=>{ bedStop(); o&&o.call(again,e); }; }
+}catch(e){ console.warn("ending more",e); } })();
+</script>
 </body></html>

@@ -9,7 +9,7 @@ const SPOTS = [
  {id:"card",x:30.2,y:55,tier:1,loc:"식탁 · 꽃병 옆",title:"룸서비스 전표",short:"전표",left:true,
   note:"VIP실 룸서비스<br>21:00 · 와인 1병 (대표 전용)<br>담당: E. 보로딘",ev:"룸서비스 전표 (21:00, 담당 E.B.)",th:"9시에 와인을 가져온 건 엘레나다."},
  {id:"bedside",x:50.5,y:26,tier:2,loc:"침대 옆 협탁",title:"복용량이 적힌 약병",short:"협탁",left:true,
-  text:"흩어진 서류 밑에 갈색 약병이 있다. 수면제 라벨 위에 손글씨로 복용량이 적혀 있고, 병 입구에 잔과 같은 하얀 가루가 묻어 있다.",note:"취침 전 2정 — E.B.",ev:"약병의 손글씨 (E.B.)",th:"E.B. 엘레나 보로딘의 이니셜이다."},
+  text:"흩어진 서류 밑에 갈색 약병이 있다. 수면제 라벨 위에 손글씨로 복용량이 적혀 있다. 그런데 알약은 거의 그대로 차 있다.",note:"취침 전 2정 — E.B.<br><span style=\"opacity:.75\">남은 약 28/30</span>",ev:"약병의 손글씨 (E.B.)",th:"E.B. 엘레나 보로딘의 이니셜이다."},
  {id:"victim",x:63.5,y:31,tier:2,mini:"watch",loc:"침대",title:"로크의 회중시계",short:"피해자",
   text:"밴더빌트 로크의 조끼 주머니. 회중시계가 21시 47분에서 멈춰 있다. 쓰러질 때 부딪힌 흔적이 있다.",ev:"21:47에 멈춘 회중시계",th:"오픈식은 8시. 두 시간도 안 돼 죽었다."},
  {id:"window",x:7,y:50,tier:2,loc:"창가",title:"잠긴 창문",short:"창문",
@@ -18,7 +18,7 @@ const SPOTS = [
   text:"소파 쿠션에 하얀 개털이 잔뜩 묻어 있다. 쿠션에 눌린 자국은 이미 식어 있다. 한참 전에 떠났다.",ev:"소파의 개털 (무관)",herring:true,th:"마가렛의 벨라다. 8시 반쯤 왔다가, 9시 전에 떠났다."},
  {id:"statue",x:83.6,y:45,tier:3,loc:"사이드 테이블",title:"천사 조각상",short:"조각상",left:true,
   text:"테이블 전체에 먼지가 쌓였는데, 조각상 둘레만 깨끗하다. 누군가 최근에 들었다 놓았다.",action:"받침대 들어 보기",
-  after:"받침대 속 빈 공간에 장식이 새겨진 작은 초록 병이 숨겨져 있다. 비어 있고, 안쪽에 하얀 가루가 남아 있다.",ev:"조각상 속의 초록 병",th:"발견자였다면서, 이걸 숨길 시간은 있었군."},
+  after:"받침대 속 빈 공간에 장식이 새겨진 작은 초록 병이 숨겨져 있다. 비어 있고, 안쪽에 하얀 가루가 남아 있다. 병 바닥의 문양… 어디서 봤더라. 내 초대장의 밀랍 도장과 같다.",ev:"조각상 속의 초록 병",th:"발견자였다면서, 이걸 숨길 시간은 있었군."},
  {id:"shawl",x:46,y:44,tier:2,mini:"crumple",loc:"뒤쪽 의자",title:"의자에 걸린 숄",short:"숄",sus:"margaret",
   text:"뒤쪽 의자 등받이에 보라색 캐시미어 숄이 걸려 있다. 향수 냄새가 짙다. 주머니에 구겨진 쪽지가 들어 있다.",
   note:"남편이 죽던 날, 당신은 서류를 바꿔치기했죠.<br>에덴라인은 내 것이에요. 오늘 밤 안에 돌려받겠어요. — M.C.",ev:"마가렛의 숄과 협박 쪽지",th:"오픈식 ‘전에’ 들렀다더니, 숄은 왜 여기 있지? 로크와 다툰 게 분명하다."},
@@ -843,6 +843,8 @@ function exBottle(){ const G=new THREE.Group(), r=.1;
     x.fillStyle="rgba(43,31,22,.6)"; x.font='20px "Nanum Myeongjo",serif'; x.textAlign="left"; x.fillText("복용 지시",36,58);
     x.fillStyle="#1a1410"; x.textAlign="center"; x.font='74px "Nanum Pen Script",cursive'; x.save(); x.translate(w/2,170); x.rotate(-.05); x.fillText("취침 전 2정",0,0); x.restore();
     x.font='58px "Nanum Pen Script",cursive'; x.save(); x.translate(w/2+90,262); x.rotate(-.03); x.fillText("— E.B.",0,0); x.restore();
+    // 반전 단서: 연필로 적은 남은 알약 수. 30정 중 두 알만 비었다 → 수면제로는 사람이 죽지 않는다(엔딩의 "수면제였어요!"와 이어진다)
+    x.fillStyle="rgba(70,66,62,.82)"; x.font='48px "Nanum Pen Script",cursive'; x.save(); x.translate(w/2-105,300); x.rotate(.02); x.fillText("남은 약 28/30",0,0); x.restore();
     x.fillStyle="rgba(26,20,16,.5)"; x.beginPath(); x.arc(w/2-30,182,2.2,0,7); x.fill(); });   // 펜이 멈춘 잉크 점
   const lab=(tex,start,len,hgt,y)=>{ const m=new THREE.Mesh(new THREE.CylinderGeometry(r+.0016,r+.0016,hgt,64,1,true,start,len),
       new THREE.MeshStandardMaterial({map:tex,roughness:.94,alphaTest:.5,side:THREE.DoubleSide})); m.position.y=y; m.renderOrder=3; return m; };

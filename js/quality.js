@@ -19,9 +19,9 @@
     if(/[?&]lite=1/.test(location.search)){ low=3; window.__PRC=.7; document.documentElement.classList.add("lowfx","lowfx2"); noBokeh(); }
     function tick(now){
       n++;
-      if(now-t0>1500){
+      if(now-t0>1000){
         var fps=n*1000/(now-t0); n=0; t0=now;
-        if(!document.hidden && fps>2 && fps<38){ bad++; } else bad=0;
+        if(!document.hidden && fps>2 && fps<42){ bad++; } else bad=0;
         if(bad>=2 && low<3){
           bad=0; low++; window.__PRC=Math.max(.55,window.__PRC-.25);
           noBokeh(); document.documentElement.classList.add("lowfx"); if(low>1) document.documentElement.classList.add("lowfx2");
@@ -46,3 +46,6 @@
     }catch(e){} },2500);
   }catch(e){}
 })();
+
+/* 화질이 낮아지면 카메라 창의 주사선·잡음 애니메이션도 끈다 (손 인식과 3D에 자원을 양보) */
+(function(){ try{ var st=document.createElement("style"); st.textContent="html.lowfx .cam-noise,html.lowfx .cam-scan,html.lowfx .cam-bar{display:none!important}"; document.head.appendChild(st); }catch(e){} })();

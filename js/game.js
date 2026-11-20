@@ -200,7 +200,7 @@ function frame(t){
   if(mode==="explore" && ptr.in && !touchMode){ focusPt.x=(ptr.x*W-tx)/(W*s)*100; focusPt.y=(ptr.y*H-ty)/(H*s)*100; }
   else { focusPt.x=(W/2-tx)/(W*s)*100; focusPt.y=(H/2-ty)/(H*s)*100; }
   const sh=$("lSharp").style;
-  if(Math.abs(focusPt.x-_fx)>.05||Math.abs(focusPt.y-_fy)>.05){ _fx=focusPt.x; _fy=focusPt.y; sh.setProperty("--fx",focusPt.x+"%"); sh.setProperty("--fy",focusPt.y+"%"); }
+  if(Math.abs(focusPt.x-_fx)>1.2||Math.abs(focusPt.y-_fy)>1.2){   /* 마스크를 다시 그리는 비용이 커서 1.2%(눈에 안 띄는 간격)마다만 갱신 */ _fx=focusPt.x; _fy=focusPt.y; sh.setProperty("--fx",focusPt.x+"%"); sh.setProperty("--fy",focusPt.y+"%"); }
   sh.setProperty("--mr",(mode==="inspect"?12:mode==="explore"?16:22)/s*1.3+"%");
   // 입체감: 시선이 움직이면 가까운 물건이 더 많이 움직임
   const par=reduce?0:(cam.fx-50)/35, parY=reduce?0:(cam.fy-50)/30;

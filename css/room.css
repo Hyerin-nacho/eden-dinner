@@ -211,3 +211,6 @@
 .pro .ps[data-s="start"] .tt-ticket .tk-r,.title-content .tt-ticket .tk-r{padding-right:2.2cqw;border-left:1px dashed rgba(210,173,99,.38)!important}
 .pro .ps[data-s="start"] .tt-ticket:hover,.pro .ps[data-s="start"] .tt-ticket:focus-visible,.title-content .tt-ticket:hover,.title-content .tt-ticket:focus-visible{background:rgba(210,173,99,.14)!important;border-color:rgba(226,192,121,.95)!important;filter:none!important;transform:translateY(-.4cqh)!important;box-shadow:0 2cqh 4cqh rgba(0,0,0,.6),0 0 3cqh rgba(217,178,106,.18)!important}
 .pro .ps[data-s="start"] .tt-ticket.punched,.title-content .tt-ticket.punched{animation:ttpunch .5s cubic-bezier(.3,.7,.2,1) both!important}
+
+/* ===== 메인(현장) 화면 가볍게: 움직임이 거의 없는 배경 영상은 한 장면으로 두고, 필름 입자는 고정 ===== */
+.grain{animation:none!important;inset:0!important}

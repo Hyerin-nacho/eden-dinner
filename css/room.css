@@ -171,7 +171,7 @@
 }
 @keyframes v3dust{from{transform:translate3d(0,0,0)}to{transform:translate3d(-3%,-7%,0)}}
 .dollv.chair .v3bg .l4{display:none}
-.v3d[data-where="bedside"] .v3bg canvas.v3room{filter:blur(1.1px)}
+
 /* 3D 화면 첫 등장: 배경이 준비될 때까지 증거 캔버스를 감췄다가 배경과 함께 부드럽게 나타냄 */
 .v3d>canvas{transition:opacity .4s ease}
 .v3d.bgwait>canvas{opacity:0}

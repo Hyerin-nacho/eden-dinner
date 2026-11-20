@@ -206,7 +206,7 @@
 
 /* 3D 방이 뜰 땐 흐린 사진 대비용 배경을 쓰지 않는다(사진→3D로 바뀌어 보이는 것 방지) */
 /* 3D 방 세트 캔버스: 증거 뒤에서 살짝 아웃포커스 */
-.v3d .v3bg canvas.v3room{opacity:0;transition:opacity .4s ease;position:absolute;inset:0;z-index:auto;width:100%!important;height:100%!important;display:block;filter:blur(2.5px);transform:scale(1.02)}
+.v3d .v3bg canvas.v3room{opacity:0;transition:opacity .4s ease;position:absolute;inset:0;z-index:auto;width:100%!important;height:100%!important;display:block;transform:scale(1.02)}   /* CSS blur 필터는 매 프레임 GPU를 먹어서 뺌: 낮은 해상도로 그려 늘려 보이는 것으로 흐림을 대신한다 */
 .sboard .sc .ph{height:clamp(150px,42cqh,400px)}
 /* 탑승권: 어두운 바탕 + 금테 */
 .pro .ps[data-s="start"] .tt-ticket,.title-content .tt-ticket{display:flex;align-items:stretch;gap:0;padding:0!important;letter-spacing:0;-webkit-backdrop-filter:none;transform-origin:50% 60%;mask:radial-gradient(circle at 0 50%,transparent .9cqh,#000 calc(.9cqh + .5px)) left/51% 100% no-repeat,radial-gradient(circle at 100% 50%,transparent .9cqh,#000 calc(.9cqh + .5px)) right/51% 100% no-repeat;margin-top:5.5cqh!important;zoom:.86;filter:none!important;background:rgba(9,8,6,.6)!important;border:1px solid rgba(210,173,99,.5)!important;border-radius:2px;color:#e9dcc0!important;box-shadow:0 1.4cqh 3cqh rgba(0,0,0,.55)!important;backdrop-filter:blur(3px);transition:background .4s ease,border-color .4s ease,transform .35s ease,box-shadow .35s ease!important;animation:ttUp 1.4s 5.6s cubic-bezier(.2,.7,.2,1) both!important}

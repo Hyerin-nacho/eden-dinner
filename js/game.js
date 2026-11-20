@@ -1031,11 +1031,11 @@ function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.
   }
   const draw=t=>{ const loop=draw;
     loop.n=(loop.n||0)+1;   // 흐리게 보이는 뒷배경이라 절반 해상도 · 한 프레임 걸러 그려 가볍게
-    const rs=where==="bedside"?1:.6, w=Math.round(host.clientWidth*rs),h=Math.round(host.clientHeight*rs); if(w&&h&&(cv.width!==w||cv.height!==h)) R.setSize(w,h,false);
+    const rs=where==="bedside"?.55:.45, w=Math.round(host.clientWidth*rs),h=Math.round(host.clientHeight*rs); if(w&&h&&(cv.width!==w||cv.height!==h)) R.setSize(w,h,false);
     const c=getCam&&getCam(); if(c){ c.updateMatrixWorld(); C.copy(c); C.near=.05; C.far=80; C.updateProjectionMatrix(); C.updateMatrixWorld(true); }
      /* 앞 증거 카메라가 움직이는 동안(다가가기·돌아보기)은 매 프레임 같이 그려 두 화면이 어긋나 겹쳐 보이지 않게 하고, 카메라가 멈춰 있으면(물체만 돌릴 때) 램프 흔들림용으로 가끔만 그린다 */
      { const me=C.matrixWorld.elements, lm=loop.m||(loop.m=new Array(16).fill(0)); let mv=false; for(let i=0;i<16;i++){ if(Math.abs(me[i]-lm[i])>1e-4){ mv=true; } lm[i]=me[i]; } loop.mv=mv?6:(loop.mv>0?loop.mv-1:0);
-       if(!loop.mv && loop.n%6) return; }
+       if(!loop.mv && loop.n%12) return; }
     lamps.forEach(l=>{ l[0].intensity=l[1]*(1+Math.sin(t/430+l[2])*.05+Math.sin(t/170+l[2])*.025); });   // 램프 불빛이 아주 살짝 흔들림
     if(!document.hidden){ R.render(S,C); if(need<=0&&!shown&&++drawn>=1) reveal(); } };
   /* 앞 증거를 그리는 같은 프레임 안에서 이 배경도 먼저 그린다(wrap.__rd) → 두 화면이 한 박자씩 어긋나 겹쳐 보이지 않는다. 앞쪽 루프가 아직 안 돌 때만 자체 루프로 그린다 */

@@ -22,8 +22,6 @@
 .pro .ps[data-s="hand"] .cta{top:auto!important;bottom:10%}
 .pro .ps[data-s="env"] .cap2{color:rgba(236,226,203,.75)}
 
-/* 회중시계 장면: 시계를 쥔 남자를 뒤에 깔기 (얼굴은 시계 오른쪽에 보이게) */
-.pro .ps[data-s="relic"] .bg{background:radial-gradient(ellipse at 50% 48%,rgba(8,6,4,.35),rgba(6,4,3,.82) 70%),linear-gradient(90deg,rgba(6,4,3,.75),rgba(6,4,3,.15) 55%,rgba(6,4,3,.45)),url(../pro/relic_bg.jpg) 0% 40%/150% auto no-repeat;filter:none}
 
 /* ===== 타이틀 v2 : 밤 열차 1등석 탑승권 =====
    레터박스 → 창밖 불빛이 훑으며 로고가 드러남 → 열차 흔들림·증기·먼지·그레인이 살아 있는 배경 → 금박 반짝임 → 탑승권 버튼 */

@@ -502,7 +502,6 @@ button{font:inherit;cursor:pointer;color:inherit}
 .pro.gone{opacity:0;pointer-events:none}
 .pro .ps{inset:0}
 .pro .ps>*:not(.bg):not(.hand):not(.hitz):not(.cta):not(video){position:relative}
-.pro .relic .glow{transform:none;mix-blend-mode:normal;border-radius:50%;transition:opacity .2s}
 .pro video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
 .pro .bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,#1d1812 0%,#0a0806 70%)}
 .pro .pbtn{position:relative;margin-top:2.4cqh;background:transparent;border:1px solid var(--brass);color:var(--brass);padding:1.3cqh 3cqw;letter-spacing:.25em;font-size:max(12px,1.5cqw);font-family:var(--serif);transition:.3s}
@@ -625,13 +624,6 @@ button{font:inherit;cursor:pointer;color:inherit}
 .pro .nl em{font-style:normal;color:var(--brass)}
 .pro .nl.red{color:#d65a5a}
 /* 회중시계 */
-.pro .relic{position:relative;height:58cqh;aspect-ratio:553/531;cursor:grab;touch-action:none;perspective:900px}
-.pro .relic:active{cursor:grabbing}
-.pro .relic .glow{position:absolute;inset:-12%;background:radial-gradient(circle,rgba(210,173,99,.18),transparent 62%)}
-.pro .relic .w{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
-.pro .relic .w img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 20px 30px rgba(0,0,0,.8))}
-.pro .relic .shine{position:absolute;inset:14% 16% 8% 16%;border-radius:50%;mix-blend-mode:screen;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,240,210,.22) 50%,transparent 65%)}
-.pro .relic .ndl{position:absolute;left:50%;top:56.5%;width:2.2%;height:28%;transform-origin:50% 94%;translate:-50% -94%;opacity:.9}
 .pro .rcap{margin-top:3cqh;color:rgba(236,226,203,.5);font-size:max(12px,1.3cqw);letter-spacing:.3em}
 .pro .rcap b{color:var(--brass)}
 .pro .ring{width:44px;height:44px;margin:1.6cqh auto 0;border-radius:50%;position:relative;opacity:0;transition:opacity .3s}
@@ -670,14 +662,6 @@ button{font:inherit;cursor:pointer;color:inherit}
 .pro .black{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:45;transition:opacity .7s}
 .pro .black.on{opacity:1}
 /* ---- 탑승 히어로샷: 드래그하면 기차 안으로 줌인 ---- */
-.pro .ps.hero{cursor:grab;touch-action:none;overflow:hidden}
-.pro .ps.hero.grip{cursor:grabbing}
-.pro .ps.hero video{transform:scale(1);transform-origin:50% 50%;will-change:transform;pointer-events:none}
-.pro .ps.hero .htitle{position:absolute!important;top:9%;left:0;right:0;text-align:center;font-family:var(--serif);font-weight:700;letter-spacing:.42em;color:var(--paper);font-size:max(13px,1.7cqw);text-shadow:0 2px 14px #000;opacity:.9;pointer-events:none}
-.pro .ps.hero .hhint{position:absolute!important;bottom:13%;left:0;right:0;text-align:center;font-family:var(--serif);color:var(--paper);font-size:max(13px,1.6cqw);text-shadow:0 2px 12px #000,0 0 3px #000;transition:opacity .6s;pointer-events:none}
-.pro .ps.hero .hhint b{color:var(--brass)}
-.pro .ps.hero .hprog{position:absolute!important;bottom:8.5%;left:50%;transform:translateX(-50%);width:min(360px,60%);height:3px;background:rgba(236,226,203,.2);border-radius:2px;pointer-events:none}
-.pro .ps.hero .hprog i{display:block;height:100%;width:0;background:var(--brass);border-radius:2px}
 /* ================= 용의자 보드 ================= */
 .sboard .sb-grid{position:absolute;display:grid;right:5%;gap:1.2%}
 .sc:hover{transform:rotate(0) translateY(-3px);box-shadow:0 1.2em 2.2em rgba(0,0,0,.7)}
@@ -824,3 +808,7 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .hud .keys,.keys{display:none!important}
 .prof .av{width:58px}
 .prof .av img{width:100%;height:100%;object-fit:cover;display:block;filter:sepia(.15) contrast(1.05)}
+
+/* 마지막 지목: 엘레나 보로딘 이름을 다른 이름보다 또렷하게 */
+.sc .nm.hl{font-size:1.65em;color:var(--red-ink,#8a1f1a);letter-spacing:.02em;text-shadow:0 0 .6em rgba(180,40,30,.28);border-bottom:2px solid currentColor;display:inline-block;align-self:flex-start;padding-bottom:.05em}
+#dedCh button.hl{font-weight:800;font-size:1.12em;color:#fff4e8;background:var(--red,#8a1f1a);border-color:var(--brass,#c8a45e);box-shadow:0 0 0 1px var(--brass,#c8a45e),0 0 1.2em rgba(200,60,40,.45)}

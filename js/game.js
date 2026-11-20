@@ -668,7 +668,7 @@ $("fndCamBtn").onclick=async e=>{ e.stopPropagation(); const hint=$("fndHint"); 
   if(!CAMHUB.handsReady){ hint.innerHTML="손 인식을 불러오지 못했다 — 수상한 책을 <b>클릭</b>하라"; return; }
   hint.innerHTML=`손을 ${FND?FND.f.what:"그것"} 위로 옮기고 <b>엄지와 검지로 집어라</b>`; fndOn=true; };
 /* 증거마다 처음 조사할 때 한 번 — 손으로 훑어보는 짧은 영상 */
-const EVCLIP={books:"ev/books.mp4",window:"ev/window.mp4",sofa:"ev/sofa.mp4"};
+const EVCLIP={};
 let evSeen=new Set();
 function playEvClip(s){ const w=$("evClip"), v=$("evClipV"); evSeen.add(s.id); mode="clip"; $("prompt").classList.remove("show"); $("prompt").classList.remove("show");
   let done=false; const end=()=>{ if(done) return; done=true; v.pause(); w.classList.remove("on"); v.onended=v.onerror=w.onclick=null; mode="explore"; inspect(s); };
@@ -2013,7 +2013,7 @@ function sbRender(){
     const known=d.always||got.length>0;
     const out=sbOut.has(id), done=confessed;
     c.innerHTML=`<div class="ph" style="--pbg:${({margaret:"#5d5d5d",evelyn:"#6a6a6a",magician:"#646464",elena:"#5f5f5f"})[id]||"#606060"}"><i class="pi" style="background-image:url(${d.img})"></i>${d.vid?`<button class="play">라운지 목격</button>`:""}${mk?`<span class="mk ${mk==="sus"?"sus":""}">${mk==="sus"?"의심":"보류"}</span>`:""}</div>
-      <div class="nm">${n}</div><div class="rl">${r}</div>
+      <div class="nm${id==="elena"?" hl":""}">${n}</div><div class="rl">${r}</div>
       <button class="history" type="button">행적 정리 보기 ›</button>
       <div class="row"><button data-m="sus" class="${mk==="sus"?"on":""}">의심</button><button data-m="hold" class="${mk==="hold"?"on":""}">보류</button></div>
       <button class="acc" ${out||done?"disabled":""}>${done&&!why?"범인 확정":out?"혐의 없음":done?"—":"이 사람을 지목한다"}</button>
@@ -2083,7 +2083,7 @@ function dedChoices(){
   const c=$("dedCh"); if(!dedAct){ c.innerHTML=""; return; }
   const os=DED[dedAct].opts();
   c.innerHTML=os.length?"":`<small>아직 모은 증거가 없다.</small>`;
-  os.forEach(o=>{ const b=document.createElement("button"); b.textContent=o.t; b.onclick=()=>{ ded[dedAct]=o.v; paper();
+  os.forEach(o=>{ const b=document.createElement("button"); b.textContent=o.t; if(dedAct==="who"&&o.v==="elena") b.classList.add("hl"); b.onclick=()=>{ ded[dedAct]=o.v; paper();
     const order=["who","how","when","proof"]; dedAct=order.find(k=>!ded[k])||null; dedLine(); dedChoices(); }; c.appendChild(b); });
 }
 function openDeduction(who){ ded={who,how:"pill"}; dedAct="when"; $("sbDed").classList.add("on"); dedLine(); dedChoices(); }
@@ -2114,7 +2114,7 @@ function badEnd(){ closeBoard(); vidStop&&vidStop(); talkEl.hidden=true; mode="e
 
 /* ================= 프롤로그 : 초대장 → 회상 → VIP실 =================
    원본 오르페우스(Joljak_S1 → 봉투 → 찢기 → 명부 → 회중시계 → 회상)를 480p로 옮겨 온 부분.
-   연결 영상(아내의 복수 → VIP실 문 앞)이 준비되면 PRO.bridge 에 경로만 넣으면 된다. */
+ */
 /* 자막은 영어 한 줄 + 한국어 한 줄(줄바꿈 \n은 영어와 한국어 사이에만 둔다) */
 const STORY_CAPS=[[.2,"He killed my wife. I boarded this train for revenge.\n그는 내 아내를 죽였다. 나는 복수하려고 이 열차에 올랐다.",null,3000],
   /* 아래 시각(초)은 영상 컷에 맞춘 것: 3.7~5.5 창에 비친 손 · 5.5~7.4 그림자·아내(자막 없음) · 7.5~ 객실의 주인공 · 13 일어남 · 14.1 복도 · 15.4 문 손잡이 */
@@ -2123,11 +2123,8 @@ const STORY_CAPS=[[.2,"He killed my wife. I boarded this train for revenge.\n그
   [9.9,"That voice, begging for help…\n도움을 청하던 그 목소리…",null,1700],
   [11.8,"…belonged to the one who killed my wife.\n내 아내를 죽인, 바로 그 사람의 것이었다.","red",2200],
   [14.2,"Locke is behind that door.\n로크는 저 문 뒤에 있다.",null,2100]];
-const PRO={ intro:"pro/intro_fast.mp4", rewind:"pro/rewind_cut.mp4", memory:"pro/Memory.mp4", corridor:"pro/corridor_cut.mp4", reflect:"pro/memoryReflection.mp4", news:"pro/news.mp4",
-  /* VIP실까지 가는 연결 컷 — 순서대로 재생, 빈 칸("")은 건너뜀. [시계·다짐 컷], [VIP실 문 앞 컷]이 준비되면 해당 칸에 경로만 넣으면 된다 */
-  bridge:[ {src:"pro/seated.mp4"}, {src:"pro/16_corridorWalk.mp4",steps:true,caps:[[.4,"VIP실은, 이 복도 끝이다.",null,3000]]}, {src:"pro/bridge_door.mp4"} ] };
+const PRO={ intro:"pro/intro_fast.mp4" };
 const PRO_ON=true;              // 프롤로그(초대장·회상) 켜기/끄기 — 지금은 VIP실만 보기용으로 꺼 둠
-const PRO_HOLD_MS=1600;           // 시계를 이만큼 꾹 누르고 있으면 회상 시작
 const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완료
 (function(){
   const pro=$("pro"), pv=$("proVid"), cap=$("proCap"), black=$("proBlack");
@@ -2149,7 +2146,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   addEventListener("keydown",e=>{ if(e.key==="`"&&!/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) goTest("#test"); });
   if(location.hash==="#cold"){ setTimeout(()=>$("proStart").click(),400); }
   if(location.hash==="#door"){ setTimeout(()=>{ show(""); finish(); },300); }
-  if(location.hash==="#story"){ $("title").classList.add("gone"); addEventListener("pointerdown",()=>flashback(),{once:true}); }   // 테스트: 화면을 한 번 누르면 열차 회상 영상(자막 확인용)
+  if(location.hash==="#story"){ $("title").classList.add("gone"); addEventListener("pointerdown",()=>dip(()=>clip("pro/story_cut.mp4",STORY_CAPS,finish),180),{once:true}); }   // 테스트: 화면을 한 번 누르면 열차 회상 영상(자막 확인용)
   if(location.hash==="#press"){ pro.hidden=true; $("title").classList.add("gone"); setTimeout(()=>{ enterExplore(); EVID.forEach(e=>found.add(e.id)); warmTalk(); setTimeout(()=>{ talkEl.dataset.met=1; openTalk(); },900); },60); return; }   // 테스트: 심문 진술 1 + 추궁 선택지부터
   if(location.hash==="#talk"||location.hash==="#ending"||location.hash==="#statue"||location.hash==="#doll"){ pro.hidden=true; $("title").classList.add("gone");
     setTimeout(()=>{ enterExplore(); const h=location.hash;
@@ -2451,27 +2448,12 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   if(location.hash==="#tear") startTearTest();
   addEventListener("keydown",e=>{ if(typeof TEST_SKIP!=="undefined"&&!TEST_SKIP) return;
     if(e.key.toLowerCase()==="t"&&!e.repeat&&!pro.hidden&&!/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) startTearTest(); });
-  /* 4. 회중시계 — 드래그로 기울여 보고, 가만히 누르고 있으면 회상 */
-  
-  const relic=$("proRelic"), W=$("proW"), ring=$("proRing"), glow=$("proGlow"), shine=$("proShine");
-  let handOn=false, handCenter=null;
-  let ry=0, rx=0, vy=0, rd=false, rlx=0, rly=0, moved=false, sx=0, t0=0, raf=0, holdT=0, flash=false;
-  (function spin(){ if(pro.hidden) return; if(!rd && !(handOn && handCenter!==null)){ ry+=vy; vy*=.94; ry*=.985; rx*=.94; }
-    if(window.__relic3d&&relic.closest(".ps.on")&&window.__relic3d(ry,rx)) W.style.transform="none";   // 3D 시계는 시계 장면이 보일 때만 띄운다(첫 화면에서 1.2MB 모델을 미리 받지 않게) else W.style.transform=`rotateY(${ry}deg) rotateX(${rx}deg)`; shine.style.backgroundPosition=`${50+ry*1.2}% 50%`;
-    requestAnimationFrame(spin); })();
-  const cancelHold=()=>{ clearTimeout(holdT); cancelAnimationFrame(raf); ring.classList.remove("show"); ring.style.setProperty("--p",0); glow.style.opacity=""; };
-  function holdStep(){ if(moved) return; const p=Math.min(1,(performance.now()-t0)/PRO_HOLD_MS); ring.style.setProperty("--p",p); glow.style.opacity=String(1+p*1.4); if(p<1) raf=requestAnimationFrame(holdStep); }
-  relic.addEventListener("pointerdown",e=>{ if(flash) return; rd=true; rlx=sx=e.clientX; rly=e.clientY; moved=false; t0=performance.now(); ring.classList.add("show"); raf=requestAnimationFrame(holdStep);
-    holdT=setTimeout(()=>{ if(!moved){ cancelHold(); rd=false; flashback(); } },PRO_HOLD_MS); });
-  window.addEventListener("pointermove",e=>{ if(!rd) return; if(!moved&&Math.abs(e.clientX-sx)>8){ moved=true; cancelHold(); }
-    const dx=e.clientX-rlx, dy=e.clientY-rly; rlx=e.clientX; rly=e.clientY;
-    ry=Math.max(-55,Math.min(55,ry+dx*.4)); rx=Math.max(-30,Math.min(30,rx-dy*.3)); vy=dx*.2; });
-  window.addEventListener("pointerup",()=>{ rd=false; cancelHold(); });
+  let handOn=false;
 
   /* 2-1. 생체 검문 — 웹캠은 시작 버튼을 누르는 순간부터 켜져 있고(영상 오른쪽 아래의 제미나이 로고를 가린다),
      손 인식은 공용 카메라 허브(CAMHUB)가 한다. 실패하거나 거부하면 마우스로 진행 */
   const camBox=$("proCam"), camV=$("proCamV"), camOff=$("proCamOff"), camTag=$("proCamTag"), hTag=$("proHTag");
-  let hx=.5, hy=.5, still0=0, lastHx=.5;
+  let hx=.5, hy=.5;
   const PRO_TEAR_TOL=.42;          // 손 마크가 가운데 선에서 카드 너비의 이 비율 안이면 찢기 진행
    const camFine=document.querySelector(".pro .consent .fine");
    const camError=e=>{
@@ -2490,7 +2472,7 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   const placeCam=()=>{ const w=pro.clientWidth,h=pro.clientHeight; if(!w||!h) return; const k=Math.min(w/854,h/480), vw=854*k, vh=480*k, ox=(w-vw)/2, oy=(h-vh)/2;
     pro.style.setProperty("--cw",(vw*.17).toFixed(1)+"px"); pro.style.setProperty("--cr",(ox+vw*.006).toFixed(1)+"px"); pro.style.setProperty("--cb",(oy+vh*.012).toFixed(1)+"px"); };
   try{ new ResizeObserver(placeCam).observe(pro); }catch(e){} placeCam();
-  const handScene=()=>onScene("tear")||onScene("relic")||doorWait;
+  const handScene=()=>onScene("tear")||doorWait;
   const setH=t=>{ hTag.textContent=handScene()?t:""; };
   function camOn(){ camBox.classList.add("on"); camTag.textContent="● REC"; }
   function stopCam(){ camBox.classList.remove("on"); }   // 화면에서만 숨긴다. 카메라는 조사 화면에서 계속 쓴다
@@ -2520,56 +2502,14 @@ const PRO_TEAR_PX=230;            // 짧은 드래그 한 번으로 찢기 완�
   function onHands(lm){
     setH(lm?"✋ 손 감지":"손 미감지 — 손바닥을 보여주세요");
     const tc=$("proTCur");
-     if(!lm){ tc.style.display="none"; handCenter=null; window.__proDoorPush?.(null); return; }
+     if(!lm){ tc.style.display="none"; window.__proDoorPush?.(null); return; }
     const p=lm[9]; hx=1-p.x; hy=p.y; if(window.__proDoorPush) window.__proDoorPush(lm);
     /* 찢기: 손 마크가 가운데 선 근처에서 내려간 만큼 찢어진다 */
     if(onScene("tear")&&!torn){ const r=$("proCard").getBoundingClientRect(); const cx=hx*r.width, cy=hy*r.height;
       tc.style.display="block"; tc.style.left=cx+"px"; tc.style.top=cy+"px";
       const on=Math.abs(cx-r.width/2)<r.width*PRO_TEAR_TOL; tc.classList.toggle("online",on);
       if(on) setTear(Math.max(tear,Math.min(1,cy/r.height)/.55)); } else tc.style.display="none";
-    /* 회중시계: 손을 좌우로 → 회전, 손을 멈추고 있으면 회상 */
-    if(onScene("relic")&&!flash){ if(handCenter===null){ handCenter=hx; still0=performance.now(); }
-      const tgt=Math.max(-55,Math.min(55,(hx-handCenter)*2.6*110)); ry+=(tgt-ry)*.3; rx+=((hy-.5)*-40-rx)*.2;
-      const now=performance.now(); if(Math.abs(hx-lastHx)>.012){ still0=now; ring.classList.remove("show"); glow.style.opacity=""; }
-      else{ const pr=Math.min(1,(now-still0)/(PRO_HOLD_MS*1.4)); if(pr>.08){ ring.classList.add("show"); ring.style.setProperty("--p",pr); glow.style.opacity=String(1+pr*1.4); } if(pr>=1){ ring.classList.remove("show"); flashback(); } }
-      lastHx=hx; }
   }
-  /* 5. 회상 : 시간 되감기 → 공방(Ada) → 붉은 복도 */
-  function flashback(){ if(flash) return; flash=true;
-    dip(()=>clip("pro/story_cut.mp4",STORY_CAPS,finish),200); }   // 체험 시간 단축: 창에 비친 남자 장면은 뺐다
-  /* 5-1. 탑승 히어로샷 — 드래그(또는 휠)한 만큼 영상이 진행되며 기차 안으로 줌인 (원본 P7-1 스크롤 스크럽) */
-  const HERO_DRAG_PX=1400, HERO_ZOOM=1.35;   // 드래그 거리(px)만큼 가면 끝까지, 마지막 확대 배율
-  function hero(next){
-    const hv=$("proHeroV"), bar=$("proHeroBar"), hint=$("proHeroHint"), sc=pro.querySelector('.ps[data-s="hero"]');
-    if(!hv||!sc) return next();
-    hideVid(); show("hero");
-    let p=0, tp=0, on=false, lx=0, ly=0, fin=false, raf=0, lastSnd=0;
-    hv.pause(); hv.style.transition="none"; hv.style.transform="scale(1)"; try{ hv.currentTime=0; }catch(e){}
-    bar.style.width="0%"; hint.style.opacity=1;
-    const add=d=>{ if(!fin) tp=Math.max(0,Math.min(1,tp+d)); };
-    const down=e=>{ on=true; lx=e.clientX; ly=e.clientY; sc.classList.add("grip"); };
-    const move=e=>{ if(!on) return; const d=Math.hypot(e.clientX-lx,e.clientY-ly); lx=e.clientX; ly=e.clientY; add(d/HERO_DRAG_PX);
-      const now=performance.now(); if(d>2&&now-lastSnd>260){ lastSnd=now; sfx(160+tp*120,.05,.12); } };
-    const up=()=>{ on=false; sc.classList.remove("grip"); };
-    const wheel=e=>{ e.preventDefault(); add(e.deltaY/2600); };
-    const key=e=>{ if(["ArrowDown","ArrowRight"," "].includes(e.key)){ e.preventDefault(); add(.05); } else if(["ArrowUp","ArrowLeft"].includes(e.key)){ e.preventDefault(); add(-.05); } };
-    sc.addEventListener("pointerdown",down); addEventListener("pointermove",move); addEventListener("pointerup",up); sc.addEventListener("wheel",wheel,{passive:false}); addEventListener("keydown",key);
-    window.__heroSkip=()=>{ if(fin) return false; tp=1; return true; };
-    const cleanup=()=>{ window.__heroSkip=null; sc.removeEventListener("pointerdown",down); removeEventListener("pointermove",move); removeEventListener("pointerup",up); sc.removeEventListener("wheel",wheel); removeEventListener("keydown",key); cancelAnimationFrame(raf); up(); };
-    (function tick(){
-      p+=(tp-p)*.14; if(Math.abs(tp-p)<.0005) p=tp;
-      const dur=hv.duration||0; if(dur&&!hv.seeking){ const t=Math.min(dur-.05,p*dur); if(Math.abs(hv.currentTime-t)>.02) hv.currentTime=t; }
-      if(!fin) hv.style.transform="scale("+(1+(HERO_ZOOM-1)*p).toFixed(4)+")";
-      bar.style.width=(p*100).toFixed(1)+"%"; hint.style.opacity=p>.02?0:1;
-      if(p>=.995&&!fin){ fin=true; cleanup();
-        /* 끝은 1.35배 클로즈업 — 한 호흡 물러난 뒤 암전으로 다음 컷 */
-        hv.style.transition="transform 1.05s cubic-bezier(.22,.72,.24,1)"; hv.style.transform="scale(1.03)";
-        setTimeout(()=>dip(()=>{ hv.style.transition="none"; next(); },200),1250); return; }
-      raf=requestAnimationFrame(tick); })();
-  }
-   /* 탑승 컷 다음에는 실제 문 앞 컷을 보여 주고, 그 프레임 위에서 문을 열게 한다. */
-   function playScream(){ try{ if(!soundOn) return; const a=new Audio("pro/scream.mp3"); a.volume=.7; a.play().catch(()=>{}); }catch(e){} }   // pro/scream.mp3 가 있으면 재생, 없으면 조용히 건너뜀
-  function toRoom(){ dip(()=>clip("pro/bridge_door.mp4",null,finish,2.8),180); }
   /* 7. VIP실 문 앞 — 영상 마지막 장면에서 "문을 연다" (클릭 / 카메라 앞으로 손 밀기) */
   let doorWait=false, doorBase=null, doorHold=0;
   /* 문 열기: 손잡이를 잡은 첫 장면에서, 아래로 끌어 내리는 만큼 손잡이가 돌고 문이 열린다 (문 여는 영상이 손을 따라감).

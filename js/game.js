@@ -70,10 +70,10 @@ const CAMHUB=(()=>{
   const set=st=>{ state=st; H.state=st; stSubs.forEach(f=>{ try{ f(st); }catch(e){} }); };
   const attach=el=>{ if(el.srcObject!==stream){ el.srcObject=stream; if(stream) el.play().catch(()=>{}); } };
   const want=()=>document.visibilityState==="visible"&&[...subs].some(x=>!x.when||x.when());
-  let lastSend=0, gap=40, cost=14;
+  let lastSend=0, gap=33, cost=14;
   const tick=async()=>{ if(!hands||!stream){ loopOn=false; return; }
     /* 인식 주기를 기기 속도에 맞춘다: 한 번 인식에 걸린 시간의 약 2.4배 간격(40~100ms)으로 돌려, 느린 기기에서 3D 화면이 버벅이지 않게 */
-    const now=performance.now(); if(want()&&v.readyState>=2&&!busy&&now-lastSend>=gap){ lastSend=now; busy=true; try{ await hands.send({image:v}); }catch(e){} busy=false; const d=performance.now()-now; cost+=(d-cost)*.2; gap=Math.max(40,Math.min(100,cost*2.4)); H.cost=cost; H.gap=gap; }
+    const now=performance.now(); if(want()&&v.readyState>=2&&!busy&&now-lastSend>=gap){ lastSend=now; busy=true; try{ await hands.send({image:v}); }catch(e){} busy=false; const d=performance.now()-now; cost+=(d-cost)*.2; gap=Math.max(33,Math.min(100,cost*2.4)); H.cost=cost; H.gap=gap; }
     if(want()) requestAnimationFrame(tick); else setTimeout(tick,300); };
   const H={ state:"off", blocked:false, err:null, ratio:1, video:v,
     get on(){ return !!stream; }, get handsReady(){ return state==="hands"; },
@@ -98,8 +98,12 @@ const CAMHUB=(()=>{
         await gate;
         try{ if(!window.Hands) await loadJS("https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.min.js");
           if(!hands){ hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
-            hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.5,minTrackingConfidence:.45});
-            hands.onResults(res=>{ const lm=(res.multiHandLandmarks||[])[0]||null; subs.forEach(x=>{ if(!x.when||x.when()){ try{ x.fn(lm); }catch(e){ console.warn(e); } } }); try{ H.tap&&H.tap(lm); }catch(e){} }); }   // tap: 카메라 창에 손 뼈대를 그리는 표시용(인식 실행 여부에는 관여하지 않음)
+            hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.45,minTrackingConfidence:.35});
+            /* 손이 한두 프레임 놓쳐져도(빠르게 움직이거나 손가락이 겹칠 때) 0.28초까지는 직전 자세를 유지해 커서·회전이 튀지 않게 한다 */
+            let lastLm=null, lostAt=0;
+            hands.onResults(res=>{ let lm=(res.multiHandLandmarks||[])[0]||null; const tn=performance.now();
+              if(lm){ lastLm=lm; lostAt=0; } else if(lastLm){ if(!lostAt) lostAt=tn; if(tn-lostAt<280) lm=lastLm; else lastLm=null; }
+              subs.forEach(x=>{ if(!x.when||x.when()){ try{ x.fn(lm); }catch(e){ console.warn(e); } } }); try{ H.tap&&H.tap(lm); }catch(e){} }); }   // tap: 카메라 창에 손 뼈대를 그리는 표시용(인식 실행 여부에는 관여하지 않음)
           if(!stream) return false; set("hands"); if(!loopOn){ loopOn=true; tick(); }
         }catch(e){ H.err=e; set("nohands"); }
         return true;
@@ -2013,7 +2017,7 @@ function sbRender(){
     const known=d.always||got.length>0;
     const out=sbOut.has(id), done=confessed;
     c.innerHTML=`<div class="ph" style="--pbg:${({margaret:"#5d5d5d",evelyn:"#6a6a6a",magician:"#646464",elena:"#5f5f5f"})[id]||"#606060"}"><i class="pi" style="background-image:url(${d.img})"></i>${d.vid?`<button class="play">라운지 목격</button>`:""}${mk?`<span class="mk ${mk==="sus"?"sus":""}">${mk==="sus"?"의심":"보류"}</span>`:""}</div>
-      <div class="nm${id==="elena"?" hl":""}">${n}</div><div class="rl">${r}</div>
+      <div class="nm${id==="elena"?" hl":" lo"}">${n}</div><div class="rl">${r}</div>
       <button class="history" type="button">행적 정리 보기 ›</button>
       <div class="row"><button data-m="sus" class="${mk==="sus"?"on":""}">의심</button><button data-m="hold" class="${mk==="hold"?"on":""}">보류</button></div>
       <button class="acc" ${out||done?"disabled":""}>${done&&!why?"범인 확정":out?"혐의 없음":done?"—":"이 사람을 지목한다"}</button>
@@ -2083,7 +2087,7 @@ function dedChoices(){
   const c=$("dedCh"); if(!dedAct){ c.innerHTML=""; return; }
   const os=DED[dedAct].opts();
   c.innerHTML=os.length?"":`<small>아직 모은 증거가 없다.</small>`;
-  os.forEach(o=>{ const b=document.createElement("button"); b.textContent=o.t; if(dedAct==="who"&&o.v==="elena") b.classList.add("hl"); b.onclick=()=>{ ded[dedAct]=o.v; paper();
+  os.forEach(o=>{ const b=document.createElement("button"); b.textContent=o.t; if(dedAct==="who") b.classList.add(o.v==="elena"?"hl":"lo"); b.onclick=()=>{ ded[dedAct]=o.v; paper();
     const order=["who","how","when","proof"]; dedAct=order.find(k=>!ded[k])||null; dedLine(); dedChoices(); }; c.appendChild(b); });
 }
 function openDeduction(who){ ded={who,how:"pill"}; dedAct="when"; $("sbDed").classList.add("on"); dedLine(); dedChoices(); }

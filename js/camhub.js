@@ -57,7 +57,6 @@
        S3.liftT=Math.max(0,Math.min(1,(S3.liftT||0)+up*(pinch?10:7)-.0025)); const bar=S3.wrap.querySelector(".v3bar i"); if(bar) bar.style.width=S3.liftT*100+"%"; if(S3.liftT>=1) S3.step(0); } }
  }
  CAMHUB.sub(onRes,active);
- CAMHUB.onState(st=>{ try{ window.__QHAND&&window.__QHAND(st==="hands"); }catch(e){} });   // 손 카메라가 켜진 동안 3D를 가볍게(quality.js)
  /* 카메라 켜기/끄기: 손이 필요한 순간에만 */
  let shown=false, idle=0, wasNeed=false;
  const sync=()=>{ const proOn=!$("pro").hidden;

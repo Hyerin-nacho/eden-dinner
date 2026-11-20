@@ -6,8 +6,7 @@
    - ?blur=0 이면 끈다. 모델을 못 불러오면 원래 화면을 그대로 보여 준다 */
 (()=>{ try{
   if(typeof CAMHUB==="undefined"||window.__MOBILE) return;
-  /* 성능: 배경 흐림은 손 인식 외에 두 번째 AI 모델(약 수 MB 내려받기 + 계속 실행)을 돌려서 기본은 끈다. 켜려면 주소 끝에 ?blur=1 */
-  if(new URLSearchParams(location.search).get("blur")!=="1") return;
+  if(new URLSearchParams(location.search).get("blur")==="0") return;
   const D=Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,"srcObject");
   const src=document.createElement("video"); src.muted=true; src.playsInline=true; src.autoplay=true;
   const OW=400;

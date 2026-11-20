@@ -810,6 +810,5 @@ p,li,.tk-line,.v3hint,.txt,.hand,.note,.slip,.cap,.vcap,#thought,#cuTh,.consent,
 .prof .av img{width:100%;height:100%;object-fit:cover;display:block;filter:sepia(.15) contrast(1.05)}
 
 /* 마지막 지목: 엘레나 보로딘 이름을 다른 이름보다 또렷하게 */
-#dedCh button.hl{font-weight:800;font-size:1.12em;color:#fff4e8;background:var(--red,#8a1f1a);border-color:var(--brass,#c8a45e);box-shadow:0 0 0 1px var(--brass,#c8a45e),0 0 1.2em rgba(200,60,40,.45)}
 #dedCh button.lo{opacity:.35}
 #dedCh button.lo:hover{opacity:.8}

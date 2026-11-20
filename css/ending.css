@@ -164,8 +164,9 @@
   padding:1em 2.2em!important;border:1px solid rgba(210,173,99,.28)!important;border-radius:2px!important;background:transparent!important;color:rgba(233,220,192,.6)!important;cursor:default;opacity:1!important}
 
 /* ===== 엔딩: 한마디 남기기 ===== */
-.ending #noteBtn{position:static;cursor:pointer}
-.gb-pop{position:absolute;inset:0;z-index:90;display:grid;place-items:center;background:rgba(4,3,2,.82)}
+.ending.ending #noteBtn{position:static;cursor:pointer;font-family:var(--serif)!important;font-size:clamp(12px,1vw,16px)!important;font-weight:400!important;letter-spacing:.34em!important;padding:1em 2.4em 1em 2.74em!important;border:1px solid rgba(210,173,99,.5)!important;border-radius:2px!important;background:rgba(9,8,6,.6)!important;color:#e9dcc0!important;box-shadow:0 12px 26px rgba(0,0,0,.5);transition:background .4s,border-color .4s,transform .35s!important}
+.ending.ending #noteBtn:hover,.ending.ending #noteBtn:focus-visible{background:rgba(210,173,99,.14)!important;border-color:rgba(226,192,121,.95)!important;transform:translateY(-2px)}
+.gb-pop{position:fixed;inset:0;z-index:2147482000;display:grid;place-items:center;background:rgba(4,3,2,.84);visibility:visible!important}
 .gb-card{width:min(440px,90%);box-sizing:border-box;padding:22px 24px;background:#14100b;border:1px solid rgba(210,173,99,.55);color:#efe3c8;text-align:left;font-family:var(--serif,serif);display:flex;flex-direction:column;gap:10px}
 .gb-card h3{margin:0;font-size:20px}.gb-card p{margin:0;font-size:13px;line-height:1.6;color:#b9ad92}
 .gb-card input,.gb-card textarea{width:100%;box-sizing:border-box;background:#0b0907;border:1px solid rgba(210,173,99,.35);color:#efe3c8;padding:9px 10px;font:inherit;font-size:15px;resize:none}

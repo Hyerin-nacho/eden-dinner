@@ -27,7 +27,7 @@
     box.innerHTML=`<form class="gb-card" autocomplete="off"><h3>한마디 남기기</h3><p>이 사건에 대해, 혹은 오늘 경험에 대해 남기고 싶은 말을 적어 주세요.</p>
       <input id="gbName" maxlength="12" placeholder="이름 (비워도 됩니다)"><textarea id="gbMsg" maxlength="120" rows="4" placeholder="한마디 (120자까지)"></textarea>
       <div class="gb-cnt"><span id="gbN">0</span> / 120</div><div class="gb-row"><button type="submit" id="gbSend" disabled>남기기</button><button type="button" id="gbX">닫기</button></div><div class="gb-thx" id="gbThx" hidden>남겨 주셔서 감사합니다.</div></form>`;
-    host.appendChild(box);
+    document.body.appendChild(box);   // 엔딩 화면 레이아웃과 무관하게 화면 전체를 덮는다
     const msg=$("gbMsg"), nm=$("gbName"), send=$("gbSend"), cnt=$("gbN");
     box.addEventListener("keydown",e=>{ e.stopPropagation(); if(e.key==="Escape") close(); });   // 글자 키가 게임 단축키로 새지 않게
     box.addEventListener("keyup",e=>e.stopPropagation());

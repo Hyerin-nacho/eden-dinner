@@ -118,3 +118,8 @@
 
 /* 심문 화면: 복도 뒤의 다른 인물들은 어둡게 가라앉히고 엘레나 보로딘만 또렷하게 */
 .talk .tk-lamp::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(2,3,2,.78) 0,rgba(2,3,2,.78) 29%,rgba(2,3,2,.35) 36%,transparent 41%,transparent 59%,rgba(2,3,2,.35) 64%,rgba(2,3,2,.78) 71%,rgba(2,3,2,.78) 100%)}
+
+/* 최종 지목 목록: 다른 이름은 흐리게, 엘레나 보로딘만 또렷하게 */
+.talk .tk-opts .opt.lo{opacity:.3}
+.talk .tk-opts .opt.lo:hover{opacity:.75}
+.talk .tk-opts .opt.hot{font-size:16px;font-weight:800;color:#fff4e8;background:rgba(140,28,22,.82);border-color:rgba(230,190,110,.95);box-shadow:0 0 1.4em rgba(200,60,40,.45)}

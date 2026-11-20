@@ -1897,7 +1897,7 @@ function confess(){ confessed=true; $("objSub").textContent="사건 종결"; pla
 function accuse(){
   say("r","지금까지의 증거가 가리키는 사람은 한 명이다.");
   const L=[{h:"범인 지목"}];
-  SUSPECTS.forEach(([id,n,r,why])=>L.push({k:"◆",t:`${n} <small style="color:var(--muted)">· ${r}</small>`,f:()=>{
+  SUSPECTS.forEach(([id,n,r,why])=>L.push({k:"◆",cls:id==="elena"?"hot":"lo",t:`${n} <small style="color:var(--muted)">· ${r}</small>`,f:()=>{
     if(!why) confess();
     else play([["r",why]],accuse);
   }}));
@@ -2017,7 +2017,7 @@ function sbRender(){
     const known=d.always||got.length>0;
     const out=sbOut.has(id), done=confessed;
     c.innerHTML=`<div class="ph" style="--pbg:${({margaret:"#5d5d5d",evelyn:"#6a6a6a",magician:"#646464",elena:"#5f5f5f"})[id]||"#606060"}"><i class="pi" style="background-image:url(${d.img})"></i>${d.vid?`<button class="play">라운지 목격</button>`:""}${mk?`<span class="mk ${mk==="sus"?"sus":""}">${mk==="sus"?"의심":"보류"}</span>`:""}</div>
-      <div class="nm${id==="elena"?" hl":" lo"}">${n}</div><div class="rl">${r}</div>
+      <div class="nm">${n}</div><div class="rl">${r}</div>
       <button class="history" type="button">행적 정리 보기 ›</button>
       <div class="row"><button data-m="sus" class="${mk==="sus"?"on":""}">의심</button><button data-m="hold" class="${mk==="hold"?"on":""}">보류</button></div>
       <button class="acc" ${out||done?"disabled":""}>${done&&!why?"범인 확정":out?"혐의 없음":done?"—":"이 사람을 지목한다"}</button>

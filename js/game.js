@@ -190,10 +190,9 @@ function frame(t){
   cam.fx+=(tgt.fx-cam.fx)*ease; cam.fy+=(tgt.fy-cam.fy)*ease; cam.s+=(tgt.s-cam.s)*ease;
   const W=stage.clientWidth, H=stage.clientHeight, s=cam.s;
   let tx=W/2-cam.fx/100*W*s, ty=H/2-cam.fy/100*H*s;
-  if(!reduce && mode!=="title"){ tx+=Math.sin(t/1700)*3.2; ty+=Math.sin(t/1100)*2.4; }
   tx=clamp(tx,W-W*s,0); ty=clamp(ty,H-H*s,0);
   if(jolt>.01 && !reduce){ tx=clamp(tx+(Math.random()-.5)*jolt*7,W-W*s,0); ty=clamp(ty+(Math.random()-.5)*jolt*5,H-H*s,0); jolt*=.9; }
-  const rot = reduce?0:Math.sin(t/2300)*.18;
+  const rot = 0;   // 가만히 있어도 계속 흔들리던 카메라 흔들림 제거(그리기 비용 절감)
   world.style.transform=`translate(${tx}px,${ty}px) scale(${s}) rotate(${rot}deg)`;
   if(Math.abs(s-_fs)>.002){ _fs=s; world.style.setProperty("--s",s.toFixed(3)); }
   // 초점: 탐색 중엔 커서가 보는 곳, 그 외엔 화면 중심
@@ -634,7 +633,7 @@ function closeCloseup(){
   dollClose();
   $("cuPh").querySelector("video.cuv")?.remove();
   $("cu").classList.remove("open"); $("cuLayer").innerHTML=""; CU=null; activeSpot=null;
-  mode="explore"; stage.classList.add("explore"); ease=.05; tgt.s=1.4; setPrompt(); checkDone();
+  mode="explore"; stage.classList.add("explore"); ease=.1; tgt.s=1.4; setPrompt(); checkDone();
 }
 $("cuClose").onclick=closeCloseup; $("cuBook").onclick=()=>{ closeCloseup(); openBook(); };
 /* ---------- 책장: 이상하게 꽂힌 책을 찾아 클릭 / 손으로 집으면 꺼내는 영상 ---------- */
@@ -1338,7 +1337,7 @@ function closeInspect(){
   unmountStatue3D();
   $("insp").classList.remove("open"); activeSpot=null; freshId=null;
   mode="explore"; stage.classList.add("explore"); stage.classList.remove("inspect");
-  ease=.05; tgt.s=1.4;
+  ease=.1; tgt.s=1.4;
   if(ptr.in && !touchMode){ tgt.fx=15+ptr.x*70; tgt.fy=20+ptr.y*60; }
   setPrompt(); checkDone();
 }
@@ -1562,7 +1561,7 @@ function finishManip(){
 function endManip(done){
   $("manipBar").hidden=true; stage.classList.remove("manip","grip");
   if(!done) $("manipLayer").innerHTML=""; else setTimeout(()=>$("manipLayer").innerHTML="",500);
-  MP=null; mode="explore"; stage.classList.add("explore"); ease=.05; tgt.s=1.4; setPrompt();
+  MP=null; mode="explore"; stage.classList.add("explore"); ease=.1; tgt.s=1.4; setPrompt();
 }
 function handAt(cx,cy){ handEl.style.transform=`translate(${cx-handEl.clientWidth*.07}px,${cy-handEl.clientHeight*.05}px) rotate(${-8+(MP?MP.p*6:0)}deg)`; }
 stage.addEventListener("pointermove",e=>{
@@ -1812,7 +1811,7 @@ function openTalk(){
   else menu();
 }
 function closeTalk(){
-  talkEl.classList.remove("press","jolt","lying"); hbStop(); vidStop(); talkEl.hidden=true; mode="explore"; stage.classList.add("explore"); ease=.05; tgt.s=1.4;
+  talkEl.classList.remove("press","jolt","lying"); hbStop(); vidStop(); talkEl.hidden=true; mode="explore"; stage.classList.add("explore"); ease=.1; tgt.s=1.4;
   $("tabTalk").setAttribute("aria-selected",false); $("tabScene").setAttribute("aria-selected",true);
   setPrompt(); checkDone();
 }

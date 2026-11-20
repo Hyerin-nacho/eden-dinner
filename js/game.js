@@ -1030,7 +1030,7 @@ function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.
     if(!underChair) tlamp(.8,.74,-1.3); sconce(-.22,.92,CFG.wz); frame(.22,.86,CFG.wz,.34,.26);
   }
   const loop=t=>{ if(!wrap.isConnected){ try{ R.dispose(); R.forceContextLoss(); }catch(e){} return; }
-    if((loop.n=(loop.n||0)+1)%2){ requestAnimationFrame(loop); return; }   // 흐리게 보이는 뒷배경이라 절반 해상도 · 한 프레임 걸러 그려 가볍게
+    if((loop.n=(loop.n||0)+1)%((window.CAMHUB&&CAMHUB.state==="hands")?4:2)){ requestAnimationFrame(loop); return; }   // 흐리게 보이는 뒷배경이라 절반 해상도 · 한 프레임 걸러 그려 가볍게
     const rs=where==="bedside"?1:.6, w=Math.round(host.clientWidth*rs),h=Math.round(host.clientHeight*rs); if(w&&h&&(cv.width!==w||cv.height!==h)) R.setSize(w,h,false);
     const c=getCam&&getCam(); if(c){ c.updateMatrixWorld(); C.copy(c); C.near=.05; C.far=80; C.updateProjectionMatrix(); C.updateMatrixWorld(true); }
     lamps.forEach(l=>{ l[0].intensity=l[1]*(1+Math.sin(t/430+l[2])*.05+Math.sin(t/170+l[2])*.025); });   // 램프 불빛이 아주 살짝 흔들림
@@ -1073,6 +1073,7 @@ function mountExam(s){ const CF=EXAM[s.id]; if(!window.THREE) return;
     hit(900,.25,.3); paper(); setTimeout(()=>{ fb.remove(); if(activeSpot!==s) return; EX.zoomT=1; EX.zin=false; collect(s); renderInspect(s); renderSide(); $("iBody").classList.add("rise"); if(s.th) think(s.th); },3400); };
   const wp=new THREE.Vector3(), wn=new THREE.Vector3(), tc=new THREE.Vector3(), q=new THREE.Quaternion();
   const loop=t=>{ if(!EX||EX.s!==s) return; if(activeSpot!==s||mode!=="inspect"){ unmountExam(); return; }
+    try{ const pr=(window.CAMHUB&&CAMHUB.state==="hands")?1:Math.min(devicePixelRatio,1.5); if(R.getPixelRatio()!==pr) R.setPixelRatio(pr); }catch(e){}   // 손 카메라가 켜진 동안은 해상도 1배
     const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&R.domElement.width!==Math.round(w*R.getPixelRatio())){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
     const dt0=Math.min(.05,(t-(EX.pt||t))/1000); EX.pt=t;
     if(!EX.drag && (Math.abs(EX.vy)>.01||Math.abs(EX.vp)>.01)){                 // 던진 회전이 마찰로 서서히 멈춤

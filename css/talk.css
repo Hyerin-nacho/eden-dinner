@@ -115,3 +115,6 @@
 .talk .tk-opts.m-next .opt{display:flex;align-items:center;gap:.6em;font-size:clamp(13px,1.02vw,19px);color:#efe6d0;padding:6px 10px}
 
 .tt-gate small{font-family:var(--sans,sans-serif);letter-spacing:.12em;font-size:max(10px,.72cqw);color:rgba(236,226,203,.4)}
+
+/* 심문 화면: 복도 뒤의 다른 인물들은 어둡게 가라앉히고 엘레나 보로딘만 또렷하게 */
+.talk .tk-lamp::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(2,3,2,.78) 0,rgba(2,3,2,.78) 29%,rgba(2,3,2,.35) 36%,transparent 41%,transparent 59%,rgba(2,3,2,.35) 64%,rgba(2,3,2,.78) 71%,rgba(2,3,2,.78) 100%)}

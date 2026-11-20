@@ -1,0 +1,28 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>오르페우스 · 전시 전 미리 받기</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0f0c;color:#efe3c8;font-family:"Malgun Gothic",system-ui,sans-serif}
+.b{width:min(560px,90vw)}h1{font-size:22px;margin:0 0 6px;font-weight:700}p{color:#b9ad92;line-height:1.6;margin:6px 0}
+.bar{height:10px;background:#1c231e;border-radius:6px;overflow:hidden;margin:18px 0 8px}.bar i{display:block;height:100%;width:0;background:#d9a85f;transition:width .2s}
+#st{font-size:14px;color:#d9c9a4;min-height:20px}button,a.go{display:inline-block;margin-top:16px;padding:12px 22px;border-radius:6px;border:1px solid #d9a85f;background:#d9a85f;color:#1a1208;font-weight:700;font-size:16px;text-decoration:none;cursor:pointer}
+a.go{display:none}#fail{color:#e07a6a;font-size:13px;white-space:pre-wrap}</style></head><body><div class="b">
+<h1>전시 전 미리 받기</h1><p>좋은 인터넷에서 <b>한 번만</b> 눌러 두면, 영상·소리·3D·손 인식 파일이 이 컴퓨터에 저장되어 전시장에서는 인터넷이 느리거나 없어도 바로 열립니다. 약 45MB.</p>
+<p>이 컴퓨터, 이 브라우저(크롬/엣지)에서 같은 주소로 열어야 합니다. 시크릿 창은 저장되지 않습니다.</p>
+<button id="go">미리 받기 시작</button><div class="bar"><i id="pb"></i></div><div id="st"></div><div id="fail"></div><a class="go" id="done" href="./">게임 열기</a></div>
+<script>
+const $=id=>document.getElementById(id);
+$("go").onclick=async()=>{ $("go").disabled=true; $("go").style.opacity=.5;
+ try{
+  if(!("serviceWorker" in navigator)) throw new Error("이 브라우저는 저장 기능을 지원하지 않습니다(주소가 https여야 합니다).");
+  await navigator.serviceWorker.register("sw.js"); await navigator.serviceWorker.ready;
+  if(!navigator.serviceWorker.controller){ await new Promise(r=>{ navigator.serviceWorker.addEventListener("controllerchange",r,{once:true}); setTimeout(r,4000); }); }
+  const A=await (await fetch("assets.json",{cache:"no-store"})).json(), urls=[...A.files.map(f=>new URL(f,location.href).href),...A.cdn];
+  for(const css of A.fontCss){ try{ const t=await (await fetch(css)).text(); (t.match(/url\((https:[^)]+)\)/g)||[]).forEach(m=>urls.push(m.slice(4,-1))); }catch(e){} }
+  let n=0,bad=[]; const total=urls.length, q=urls.slice();
+  const work=async()=>{ while(q.length){ const u=q.shift(); let ok=false; for(let k=0;k<3&&!ok;k++){ try{ const r=await fetch(u,{cache:"reload"}); if(r.ok||r.type==="opaque"){ await r.arrayBuffer().catch(()=>{}); ok=true; } }catch(e){} } if(!ok) bad.push(u); n++; $("pb").style.width=(n/total*100)+"%"; $("st").textContent=n+" / "+total+" 받는 중…"; } };
+  await Promise.all([work(),work(),work()]);
+  const cache=await caches.open((await caches.keys()).find(k=>k.startsWith("orpheus-"))||"orpheus-v1"); let saved=0; for(const u of urls){ if(await cache.match(u,{ignoreVary:true})) saved++; }
+  $("st").textContent=saved+" / "+total+" 저장됨"+(bad.length?" · 실패 "+bad.length+"개":" · 모두 완료");
+  if(bad.length) $("fail").textContent="받지 못한 파일(인터넷이 안정된 곳에서 다시 눌러 주세요):\n"+bad.slice(0,8).join("\n");
+  $("done").style.display="inline-block"; if(bad.length){ $("go").disabled=false; $("go").style.opacity=1; $("go").textContent="다시 받기"; }
+ }catch(e){ $("st").textContent="실패: "+e.message; $("go").disabled=false; $("go").style.opacity=1; }
+};
+</script></body></html>

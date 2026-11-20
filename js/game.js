@@ -569,7 +569,7 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
       glint.material.opacity=(1-u*.6)*(.08+tw*.85); glint.scale.setScalar(.005+tw*.003); eyeL.intensity=tw*.012;   /* 눈동자 크기에 맞춰 작게, 붉은 번짐도 눈 주변에만 */ reveal.intensity=p*3; }
     C.position.set(.1+Math.sin(t/2600)*.01,.15+u*.03,1.0+u*.1); C.lookAt(0,.15+u*.05,-.02); roomLamp.intensity=1.1+Math.sin(t/430)*.08+Math.sin(t/170)*.04;
     if(p>=.985&&DV.p>=1&&!DV.done&&DV.ready){ DV.done=true; hint.innerHTML="<b>인형을 꺼냈다.</b>"; SFX("thud",.45); SFX("rustle",.45); window.__dollOut=1; setTimeout(()=>{ if(!DV||DV.wrap!==wrap) return; dollClose(); dollPick(); },1100); }
-    { const a=pg.attributes.position; for(let i=0;i<NP;i++){ let y=a.getY(i)-pv[i]*dt; if(y<0) y=1.8; a.setY(i,y); a.setX(i,a.getX(i)+Math.sin(t/1700+i)*.0004); } a.needsUpdate=true; } if(!document.hidden){ if(comp) comp.render(); else R.render(S,C);
+    { const a=pg.attributes.position; for(let i=0;i<NP;i++){ let y=a.getY(i)-pv[i]*dt; if(y<0) y=1.8; a.setY(i,y); a.setX(i,a.getX(i)+Math.sin(t/1700+i)*.0004); } a.needsUpdate=true; } if(!document.hidden){ wrap.__rd&&wrap.__rd(); if(comp) comp.render(); else R.render(S,C);
       if(DV.done&&!DV.shot&&p>.97){ DV.shot=1; try{ EVIMG.doll=R.domElement.toDataURL("image/jpeg",.9); }catch(e){} } }   // 꺼내서 의자 앞에 세운 장면을 그대로 증거 사진으로
     DV.raf=requestAnimationFrame(loop); };
   DV.raf=requestAnimationFrame(loop);
@@ -620,7 +620,7 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
       const dt=Math.min(.1,(t-(DV.lt||t))/1000); DV.lt=t; DV.face=wn.dot(tc)>.55?Math.min(1,DV.face+dt*4):Math.max(0,DV.face-dt*6);
       if(!DV.done&&DV.face>=1){ const sp=wp.clone().project(C); spot.style.left=((sp.x+1)/2*100)+"%"; spot.style.top=((1-sp.y)/2*100)+"%"; if(!spot.classList.contains("on")){ spot.classList.add("on"); hit(1800,.05,.08,"bandpass"); } }
       else if(spot.classList.contains("on")&&DV.face<.5) spot.classList.remove("on"); }
-    if(!document.hidden) R.render(S,C); DV.raf=requestAnimationFrame(loop); };
+    if(!document.hidden){ wrap.__rd&&wrap.__rd(); R.render(S,C); } DV.raf=requestAnimationFrame(loop); };
   DV.raf=requestAnimationFrame(loop); roomBack(wrap,"doll",()=>DV&&DV.C); window.__excam&&window.__excam(true); }
 function recPanel(){
   const {s}=CU, L=$("cuLayer"); $("cuPh").classList.add("cudim");
@@ -1029,15 +1029,18 @@ function roomBack(wrap,where,getCam){ if(!window.THREE) return; const host=wrap.
     if(!underChair){ add(new THREE.CylinderGeometry(.5,.56,.74,40),std(0x6a242e,.95),.98,.37,-1.15); add(new THREE.CylinderGeometry(.11,.11,.008,24),std(0xe6dfcf,.4),.82,.746,-.95); }   // 붉은 식탁보의 식탁·접시: 의자 밑 장면에서는 뺀다
     if(!underChair) tlamp(.8,.74,-1.3); sconce(-.22,.92,CFG.wz); frame(.22,.86,CFG.wz,.34,.26);
   }
-  const loop=t=>{ if(!wrap.isConnected){ try{ R.dispose(); R.forceContextLoss(); }catch(e){} return; }
+  const draw=t=>{ const loop=draw;
     loop.n=(loop.n||0)+1;   // 흐리게 보이는 뒷배경이라 절반 해상도 · 한 프레임 걸러 그려 가볍게
     const rs=where==="bedside"?1:.6, w=Math.round(host.clientWidth*rs),h=Math.round(host.clientHeight*rs); if(w&&h&&(cv.width!==w||cv.height!==h)) R.setSize(w,h,false);
     const c=getCam&&getCam(); if(c){ c.updateMatrixWorld(); C.copy(c); C.near=.05; C.far=80; C.updateProjectionMatrix(); C.updateMatrixWorld(true); }
      /* 앞 증거 카메라가 움직이는 동안(다가가기·돌아보기)은 매 프레임 같이 그려 두 화면이 어긋나 겹쳐 보이지 않게 하고, 카메라가 멈춰 있으면(물체만 돌릴 때) 램프 흔들림용으로 가끔만 그린다 */
      { const me=C.matrixWorld.elements, lm=loop.m||(loop.m=new Array(16).fill(0)); let mv=false; for(let i=0;i<16;i++){ if(Math.abs(me[i]-lm[i])>1e-4){ mv=true; } lm[i]=me[i]; } loop.mv=mv?6:(loop.mv>0?loop.mv-1:0);
-       if(!loop.mv && loop.n%6){ requestAnimationFrame(loop); return; } }
+       if(!loop.mv && loop.n%6) return; }
     lamps.forEach(l=>{ l[0].intensity=l[1]*(1+Math.sin(t/430+l[2])*.05+Math.sin(t/170+l[2])*.025); });   // 램프 불빛이 아주 살짝 흔들림
-    if(!document.hidden){ R.render(S,C); if(need<=0&&!shown&&++drawn>=1) reveal(); } requestAnimationFrame(loop); };
+    if(!document.hidden){ R.render(S,C); if(need<=0&&!shown&&++drawn>=1) reveal(); } };
+  /* 앞 증거를 그리는 같은 프레임 안에서 이 배경도 먼저 그린다(wrap.__rd) → 두 화면이 한 박자씩 어긋나 겹쳐 보이지 않는다. 앞쪽 루프가 아직 안 돌 때만 자체 루프로 그린다 */
+  wrap.__rd=()=>{ wrap.__sy=performance.now(); draw(wrap.__sy); };
+  const loop=t=>{ if(!wrap.isConnected){ try{ R.dispose(); R.forceContextLoss(); }catch(e){} return; } if(!wrap.__sy||t-wrap.__sy>200) draw(t); requestAnimationFrame(loop); };
   requestAnimationFrame(loop); }
 function unmountExam(){ if(!EX) return; cancelAnimationFrame(EX.raf); EX.wrap.remove(); try{ EX.R.dispose(); }catch(e){} EX=null; }
 function cropContent(cv){ const W=cv.width,H=cv.height, t=document.createElement("canvas"); t.width=W; t.height=H; const g=t.getContext("2d"); g.drawImage(cv,0,0);
@@ -1097,6 +1100,7 @@ function mountExam(s){ const CF=EXAM[s.id]; if(!window.THREE) return;
     EX.face=facing>.55?Math.min(1,EX.face+dt*4):Math.max(0,EX.face-dt*6);
     if(!EX.done && EX.face>=1){ const sp=wp.clone().project(C); spot.style.left=((sp.x+1)/2*100)+"%"; spot.style.top=((1-sp.y)/2*100)+"%"; if(!spot.classList.contains("on")){ spot.classList.add("on"); hit(1800,.05,.08,"bandpass"); } }
     else if(spot.classList.contains("on")&&EX.face<.5) spot.classList.remove("on");
+    wrap.__rd&&wrap.__rd();
     R.render(S,C);
     if(s.id==="bedside"&&!EVIMG.bedside&&w&&h){   // 증거 사진: 라벨 뒤 손글씨 쪽을 가까이서 찍고, 약병만 잘라 크게
       try{ const kp=C.position.clone(), kr=obj.rotation.y; C.position.set(0,.06,.8); C.lookAt(0,0,0); obj.rotation.set(0,Math.PI+.12,0); obj.updateMatrixWorld(true); R.render(S,C);
@@ -1272,7 +1276,7 @@ function mountStatue3D(s){ const CF=M3D[s.id];
     const cp=CF.cam, kz=$("insp").classList.contains("exam")?1.45:1;
     /* 들어 올릴수록 카메라가 받침 밑 병 쪽으로 내려가며 다가간다 (조각상은 위로 빠지고 병이 화면 가운데) */
     const rq=CF.lift?Math.max(0,Math.min(1,(S3.lift-.25)/.75)):0, rv=rq*rq*(3-2*rq);
-    C.position.set(cp[0],(cp[1]+S3.lift*.15)*(1-rv)+.3*rv,cp[2]*S3.zoom*kz*(1-rv*.62)); C.lookAt(0,(CF.look+S3.lift*.12)*(1-rv)+.1*rv,0); R.render(S,C); S3.raf=requestAnimationFrame(loop); };
+    C.position.set(cp[0],(cp[1]+S3.lift*.15)*(1-rv)+.3*rv,cp[2]*S3.zoom*kz*(1-rv*.62)); C.lookAt(0,(CF.look+S3.lift*.12)*(1-rv)+.1*rv,0); wrap.__rd&&wrap.__rd(); R.render(S,C); S3.raf=requestAnimationFrame(loop); };
   S3.raf=requestAnimationFrame(loop); roomBack(wrap,s.id,()=>S3&&S3.C);
 }
 function renderInspect(s){

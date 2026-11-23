@@ -1,3 +1,8 @@
+/* 전체화면에서도 3D 렌더 해상도가 가로 1280px(안팎)을 넘지 않게 한다 — 화면은 CSS로 늘려 보여 준다.
+   (전체화면+배율 150%면 렌더 픽셀이 4배 이상 늘어 렉의 주원인이 된다) */
+function fitR(R,w,comp){ const b=R.__base||(R.__base=R.getPixelRatio()); const pr=Math.min(b,Math.max(.5,1280/w));
+  if(Math.abs(R.getPixelRatio()-pr)>.001){ R.setPixelRatio(pr); if(comp&&comp.setPixelRatio) comp.setPixelRatio(pr); }
+  return R.domElement.width!==Math.round(w*pr); }
 /* 영상 인트로를 쓰려면 같은 폴더에 올린 mp4 경로를 넣으세요. 비어 있으면 카메라 연출로 대체됩니다. */
 const INTRO_VIDEO = "sv/door.mp4";   // "문을 연다" → 손잡이를 잡고 VIP실 문을 여는 영상
 
@@ -230,7 +235,7 @@ requestAnimationFrame(frame);
   const dim=$("dim");
   // 먼지
   const cv=$("dust"), cx=cv.getContext("2d"); let P=[];
-  function size(){ const r=world.getBoundingClientRect(); const w=stage.clientWidth, h=stage.clientHeight; cv.width=w*Math.min(devicePixelRatio,2); cv.height=h*Math.min(devicePixelRatio,2); }
+  function size(){ const r=world.getBoundingClientRect(); const w=stage.clientWidth, h=stage.clientHeight; const k=Math.min(1,960/Math.max(1,w)); cv.width=Math.round(w*k); cv.height=Math.round(h*k); }   // 먼지는 작고 흐린 점이라 가로 960px이면 충분(전체화면 렉 방지)
   size(); addEventListener("resize",size);
   const LAMPS=[[.275,.45,.22],[.535,.2,.12],[.9,.16,.1],[.08,.4,.2]];
   for(let i=0;i<110;i++) P.push(spawn(true));
@@ -559,7 +564,7 @@ function dollChair(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").cla
   el.onpointerup=()=>{ if(!DV) return; DV.drag=false; wrap.classList.remove("grab"); if(!DV.mv) DV.p=Math.min(1,DV.p+.34); if(DV.p>.25) DV.auto=1; };   // 짧게 눌러도 조금씩, 어느 정도 당기면 알아서 끝까지
   const sm=t=>t*t*(3-2*t);
   const loop=t=>{ if(!DV||DV.wrap!==wrap) return; if(mode!=="closeup"){ dollClose(); return; }
-    const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&R.domElement.width!==Math.round(w*R.getPixelRatio())){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); if(comp) comp.setSize(w,h); }
+    const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&fitR(R,w,comp)){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); if(comp) comp.setSize(w,h); }
     const dt=Math.min(.05,(t-(DV.pt||t))/1000); DV.pt=t;
     if(DV.auto&&!DV.drag&&!DV.done) DV.p=Math.min(1,DV.p+dt*.45);   // 놓아도 되돌아가지 않고 끝까지 나온다
     /* 손을 바로 따라오지 않고 바닥 마찰만큼 살짝 늦게 끌려온다. 의자 밖으로 나온 뒤(60%~)에야 일으켜 들어 올림 */
@@ -614,7 +619,7 @@ function dollPick(){ if(DV) return; const L=$("cuLayer"), s=CU.s; $("cuPh").clas
     setTimeout(()=>{ if(DV&&DV.wrap===wrap) dollPlayback(); },2000); };
   const wp=new THREE.Vector3(), wn=new THREE.Vector3(), tc=new THREE.Vector3(), q=new THREE.Quaternion();
   const loop=t=>{ if(!DV) return; if(mode!=="closeup"){ dollClose(); return; }
-    const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&R.domElement.width!==Math.round(w*R.getPixelRatio())){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
+    const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&fitR(R,w)){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
     const dtv=Math.min(.05,(t-(DV.pt2||t))/1000); DV.pt2=t; if(DV.ry===undefined){ DV.ry=DV.yaw; DV.rp=DV.pitch; } const fk=1-Math.pow(.00002,dtv); DV.ry+=(DV.yaw-DV.ry)*fk; DV.rp+=(DV.pitch-DV.rp)*fk;   // 약병처럼 손을 살짝 늦게 따라옴
     obj.rotation.set(DV.rp,DV.ry+(DV.drag||DV.done?0:Math.sin(t/900)*.04),0); const d=2.7*DV.zoom; C.position.set(0,.05*d,d); C.lookAt(0,0,0); obj.updateMatrixWorld(true);
     if(DV.zin){ DV.sz=Math.min(1,(DV.sz||0)+(1-(DV.sz||0))*.07+.002); const e=DV.sz*DV.sz*(3-2*DV.sz); if(spkP){ const sp2=spkP.clone(); obj.localToWorld(sp2); const nn=new THREE.Vector3(0,0,-1).applyQuaternion(obj.getWorldQuaternion(new THREE.Quaternion())); const tp=sp2.clone().add(nn.multiplyScalar(.38)); C.position.lerp(tp,e); C.lookAt(new THREE.Vector3(0,0,0).lerp(sp2,e)); } }
@@ -1082,8 +1087,8 @@ function mountExam(s){ const CF=EXAM[s.id]; if(!window.THREE) return;
     hit(900,.25,.3); paper(); setTimeout(()=>{ fb.remove(); if(activeSpot!==s) return; EX.zoomT=1; EX.zin=false; collect(s); renderInspect(s); renderSide(); $("iBody").classList.add("rise"); if(s.th) think(s.th); },3400); };
   const wp=new THREE.Vector3(), wn=new THREE.Vector3(), tc=new THREE.Vector3(), q=new THREE.Quaternion();
   const loop=t=>{ if(!EX||EX.s!==s) return; if(activeSpot!==s||mode!=="inspect"){ unmountExam(); return; }
-    try{ const pr=(window.CAMHUB&&CAMHUB.state==="hands")?1:Math.min(devicePixelRatio,1.5); if(R.getPixelRatio()!==pr) R.setPixelRatio(pr); }catch(e){}   // 손 카메라가 켜진 동안은 해상도 1배
-    const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&R.domElement.width!==Math.round(w*R.getPixelRatio())){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
+    try{ R.__base=(window.CAMHUB&&CAMHUB.state==="hands")?1:Math.min(devicePixelRatio,1.5); }catch(e){}   // 손 카메라가 켜진 동안은 해상도 1배
+    const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&fitR(R,w)){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
     const dt0=Math.min(.05,(t-(EX.pt||t))/1000); EX.pt=t;
     if(!EX.drag && (Math.abs(EX.vy)>.01||Math.abs(EX.vp)>.01)){                 // 던진 회전이 마찰로 서서히 멈춤
       EX.yaw+=EX.vy*dt0; EX.pitch=Math.max(CF.pitch[0],Math.min(CF.pitch[1],EX.pitch+EX.vp*dt0));
@@ -1251,7 +1256,7 @@ function mountStatue3D(s){ const CF=M3D[s.id];
   el.onpointerup=()=>{ if(!S3) return; if(performance.now()-S3.lm>80) S3.vy=0; S3.drag=null; wrap.classList.remove("grab"); };
   el.onwheel=e=>{ e.preventDefault(); S3.zoom=Math.max(.3,Math.min(1.5,S3.zoom*(e.deltaY>0?1.08:.92))); };
   S3.step=d=>{ if(S3.done||!CF.lift) return; S3.liftT=Math.min(1,S3.liftT+d); bar.firstChild.style.width=(S3.liftT*100)+"%"; if(S3.liftT>=1){ S3.done=true; hit(900,.25,.3); paper(); opened.add(s.id); refreshMarkers(); setTimeout(()=>{ renderInspect(s); renderSide(); think(s.th); },500);} };
-  const loop=t=>{ if(!S3) return; const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&(R.domElement.width!==Math.round(w*R.getPixelRatio()))){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
+  const loop=t=>{ if(!S3) return; const w=wrap.clientWidth,h=wrap.clientHeight; if(w&&h&&(fitR(R,w))){ R.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix(); }
     const dt0=Math.min(.05,(t-(S3.pt||t))/1000); S3.pt=t;
     if(!S3.drag&&!S3.done&&!S3.hand) S3.liftT=0;                                   // 손을 놓으면 무게 때문에 떨어진다
     /* 들어 올리기: 무게 있는 용수철. 올릴 땐 묵직하게 늦게 따라오고, 놓으면 중력처럼 가속해 떨어져 '쿵' 하고 살짝 튄다 */

@@ -2,7 +2,7 @@
    - 한 번 받은 영상·소리·3D·이미지·폰트·라이브러리는 이 PC 브라우저에 저장하고, 다음부터는 인터넷 없이 바로 꺼내 쓴다.
    - 코드(html/js/css)는 네트워크를 2.5초만 기다리고 늦으면 저장본을 쓴다 → 와이파이가 나빠도 멈추지 않는다.
    - 파일을 바꿔 올렸는데 저장본이 낡아 보이면 아래 VER 숫자를 올린다(전부 새로 받는다). */
-const VER="v5", CACHE="orpheus-"+VER;
+const VER="v6", CACHE="orpheus-"+VER;
 const HOSTS=["cdn.jsdelivr.net","cdnjs.cloudflare.com","fonts.googleapis.com","fonts.gstatic.com"];
 const CODE=/\.(?:html|js|css)(?:\?|$)|\/$/;
 self.addEventListener("install",e=>{ self.skipWaiting(); });

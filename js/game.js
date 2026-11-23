@@ -1337,14 +1337,13 @@ function collect(s){ found.add(s.id); freshId=s.id; lastFound=s.id; paper(); not
 /* 단서 5개를 모두 모으면 잠시 뒤 자동으로 엘레나 심문으로 넘어간다 */
 let invAuto=false;
 function invDone(s){ if(invAuto||!EVID.every(e=>found.has(e.id))) return; invAuto=true;
-  const wait=(s&&s.id==="doll")?5200:1700;   // 인형 녹음은 거의 끝까지 재생, 그 외엔 짧게. F·Enter·스페이스로 바로 넘어갈 수 있다
+  const wait=1100;   // 세 번째 증거를 얻으면 바로(약 1초 뒤) 심문으로 넘어간다. F·Enter·스페이스는 더 빨리 넘기는 용
   let fired=false, T1, T2;
-  const run=()=>{ if(fired) return; fired=true; clearTimeout(T1); clearTimeout(T2); removeEventListener("keydown",kd,true); try{ document.getElementById("goTalk")?.remove(); }catch(e){}
+  const run=()=>{ if(fired) return; fired=true; clearTimeout(T1); clearTimeout(T2); removeEventListener("keydown",kd,true);
     try{ if(mode==="inspect") closeInspect(); else if(mode==="closeup") closeCloseup(); }catch(e){} try{ closeBook(); }catch(e){}
     const go=()=>{ if(mode==="explore") openTalk(); else if(mode!=="talk"&&mode!=="end"&&mode!=="board") setTimeout(go,300); }; setTimeout(go,250); };
   const kd=e=>{ const k=(e.key||"").toLowerCase(); if(k==="enter"||k==="f"||k===" "){ e.stopImmediatePropagation(); e.preventDefault(); run(); } };
-  { const g=document.createElement("button"); g.id="goTalk"; g.type="button"; g.textContent="증거 확보 완료 — 엘레나를 심문한다 ▸"; g.onclick=run; document.body.appendChild(g); }   // 키보드·손 없이도 바로 넘어가는 버튼
-  T1=setTimeout(()=>{ notify("조사 끝 — 엘레나를 심문한다 (F 바로 가기)"); addEventListener("keydown",kd,true); },Math.max(300,wait-1300));
+  T1=setTimeout(()=>{ notify("조사 끝 — 엘레나를 심문한다"); addEventListener("keydown",kd,true); },Math.max(300,wait-1300));
   T2=setTimeout(run,wait); }
 function closeInspect(){
   unmountStatue3D();

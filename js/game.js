@@ -1330,16 +1330,20 @@ function renderInspect(s){
   add("div","stamp2"+(s.herring||!s.ev?" gray":"")+(now?" hit":""),`<span>${!s.ev?"관찰 기록":s.herring?"사건과 무관":"증거 확보"}<small>ORPHEUS R.R.</small></span>`);
   $("iNew").hidden=!(now && s.ev);
 }
-function collect(s){ found.add(s.id); freshId=s.id; lastFound=s.id; paper(); notify(s.ev); render(); if(found.size>=3) warmTalk(); invDone(s); }
+/* 심문 영상 미리 받기는 3D 조사 화면이 열려 있는 동안엔 하지 않는다(영상 7개 디코딩+썸네일 렌더가 겹쳐 끊김의 원인) — 탐색 화면으로 돌아오면 한다 */
+let warmTries=0;
+function warmTalkIdle(){ if(vid.getAttribute("src")) return; if(mode==="explore"||warmTries++>40){ try{ warmTalk(); }catch(e){} return; } setTimeout(warmTalkIdle,500); }
+function collect(s){ found.add(s.id); freshId=s.id; lastFound=s.id; paper(); notify(s.ev); render(); if(found.size>=2) warmTalkIdle(); invDone(s); }
 /* 단서 5개를 모두 모으면 잠시 뒤 자동으로 엘레나 심문으로 넘어간다 */
 let invAuto=false;
 function invDone(s){ if(invAuto||!EVID.every(e=>found.has(e.id))) return; invAuto=true;
   const wait=(s&&s.id==="doll")?5200:1700;   // 인형 녹음은 거의 끝까지 재생, 그 외엔 짧게. F·Enter·스페이스로 바로 넘어갈 수 있다
   let fired=false, T1, T2;
-  const run=()=>{ if(fired) return; fired=true; clearTimeout(T1); clearTimeout(T2); removeEventListener("keydown",kd,true);
+  const run=()=>{ if(fired) return; fired=true; clearTimeout(T1); clearTimeout(T2); removeEventListener("keydown",kd,true); try{ document.getElementById("goTalk")?.remove(); }catch(e){}
     try{ if(mode==="inspect") closeInspect(); else if(mode==="closeup") closeCloseup(); }catch(e){} try{ closeBook(); }catch(e){}
     const go=()=>{ if(mode==="explore") openTalk(); else if(mode!=="talk"&&mode!=="end"&&mode!=="board") setTimeout(go,300); }; setTimeout(go,250); };
   const kd=e=>{ const k=(e.key||"").toLowerCase(); if(k==="enter"||k==="f"||k===" "){ e.stopImmediatePropagation(); e.preventDefault(); run(); } };
+  { const g=document.createElement("button"); g.id="goTalk"; g.type="button"; g.textContent="증거 확보 완료 — 엘레나를 심문한다 ▸"; g.onclick=run; document.body.appendChild(g); }   // 키보드·손 없이도 바로 넘어가는 버튼
   T1=setTimeout(()=>{ notify("조사 끝 — 엘레나를 심문한다 (F 바로 가기)"); addEventListener("keydown",kd,true); },Math.max(300,wait-1300));
   T2=setTimeout(run,wait); }
 function closeInspect(){

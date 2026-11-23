@@ -121,3 +121,8 @@
 /* 최종 지목 목록: 다른 이름은 흐리게, 엘레나 보로딘만 또렷하게 */
 .talk .tk-opts .opt.lo{opacity:.3}
 .talk .tk-opts .opt.lo:hover{opacity:.75}
+
+/* 증거 3개를 모으면 바로 심문으로 넘어가는 버튼 */
+#goTalk{position:fixed;left:50%;bottom:6%;transform:translateX(-50%);z-index:9500;padding:14px 26px;font:700 17px/1.2 "Malgun Gothic",system-ui,sans-serif;color:#fff4e0;background:rgba(14,10,7,.88);border:1px solid rgba(220,180,100,.9);border-radius:4px;cursor:pointer;box-shadow:0 0 1.4em rgba(0,0,0,.6);animation:goTalkIn .35s ease-out both}
+#goTalk:hover{background:rgba(60,38,16,.95)}
+@keyframes goTalkIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
